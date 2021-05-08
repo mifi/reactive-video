@@ -8,7 +8,7 @@
 	<br>
 </div>
 
-Reactive Videos are created using HTML and React components. This allows you the almost leverage the almost limitless possibilities of the web browser to render dynamic content into a video file.
+Reactive Videos are videos created using HTML and React components. This allows you to leverage the almost limitless possibilities of the web browser to render dynamic content into a video file.
 
 ## How does it work?
 
@@ -225,7 +225,7 @@ A hook used to get a `waitFor` function that must be used when you want the fram
 ```js
 const { waitFor } = useAsyncRenderer();
 waitFor(async () => {
-	setState(await api.loadSomeData());
+  setState(await api.loadSomeData());
 });
 ```
 
