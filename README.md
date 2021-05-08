@@ -14,7 +14,7 @@ Reactive Videos are created using HTML and React components. This allows you the
 
 Reactive Video fires up one or more Puppeteer/Chromium tabs to render the React component hierarchy and rapidly capture screenshots for each frame when they are done rendering.
 
-NOTE: It starts a HTTP server on `localhost` serving files in the current directory.
+NOTE: It starts a HTTP server on `localhost` serving files in the current directory for the Puppeteer client.
 
 ## Features
 
@@ -80,10 +80,14 @@ const MyVideo = () => {
 setRoot(MyVideo);
 ```
 
+### Shell
+
 Then run in a shell:
 ```bash
 reactive-video --duration-frames 90 MyVideo.js
 ```
+
+### Live preview
 
 Or to start a live preview:
 
@@ -91,36 +95,126 @@ Or to start a live preview:
 reactive-video --duration-frames 90 MyVideo.js --preview
 ```
 
+### Programmatic API
+
+Or you can use the programmatic API. Create a new Node.js project, then add reactive-video:
+```bash
+mkdir awesome-project
+cd awesome-project
+npm init
+npm i --save reactive-video
+```
+
+Create `index.js`:
+```js
+const Editor = require('reactive-video/editor');
+
+(async () => {
+  const editor = Editor({
+    devMode: true,
+  });
+
+  const width = 1280;
+  const height = 720;
+  const fps = 25;
+  const durationFrames = 90;
+  const reactVideo = 'MyVideo.js'
+
+await editor.edit({
+    reactVideo,
+
+    output: 'my-video.mp4',
+
+    width,
+    height,
+    durationFrames,
+    concurrency: 3,
+    // headless: false,
+  });
+
+  // Or start a live preview
+  await editor.preview({
+    reactVideo,
+
+    width,
+    height,
+    fps: 25,
+    durationFrames,
+  });
+})().catch(console.error);
+```
+
 ## Documentation
 
 Reactive Video provides certain components that must be used in order to correctly.
 
+### Editor.edit / Editor.preview
+
+```js
+const Editor = require('reactive-video/editor');
+
+const { edit, preview } = Editor({ ffmpegPath, ffprobePath });
+```
+
+See editor.js [edit](https://github.com/mifi/reactive-video/blob/09c8dba1726065f927bd8811111fc4354e6637c8/editor.js#L91) and [preview](https://github.com/mifi/reactive-video/blob/09c8dba1726065f927bd8811111fc4354e6637c8/editor.js#L329) for options.
+
 ### FFmpegVideo
-Backed by ffmpeg, streamed to `canvas`
-*NOTE:* `src` must be supplied as a local path e.g. `./video.mp4`. This is a current limitation.
+Video backed by ffmpeg, streamed to `canvas`. Efficiently reuses the ffmpeg instance for serial rendering. Supports virtually all formats.
+
+*NOTE:* `src` must be supplied as a local path **without** `file://`. (e.g. `./video.mp4`). This is a current limitation that will be improved.
 
 ### HTML5Video
-Works the same as HTML `<video>`. Only supports certain codecs.
-*NOTE:* `src` must be supplied as a full, absolute `file://` path (e.g. `file:///path/to/video`). This is a current limitation.
+Works the same as HTML `<video>`. Only supports certain codecs due to Chromium limitations (e.g. does not support `h264`.)
+
+*NOTE:* `src` must be supplied as a full, absolute path (e.g. `file:///Users/me/video.webm` or `https://example.com/video.webm`). This is a current limitation that will be improved.
 
 ### IFrame
 Works the same as HTML `<iframe>`
-*NOTE:* `src` must be supplied as a full, absolute `file://` path (e.g. `file:///path/to/video`). This is a current limitation.
+
+*NOTE:* `src` must be supplied as a full, absolute path (e.g. `file:///Users/me/index.html` or `https://example.com/index.html`). This is a current limitation that will be improved.
 
 ### Image
 Works the same as HTML `<image>`
-*NOTE:* `src` must be supplied as a full, absolute `file://` path (e.g. `file:///path/to/video`). This is a current limitation.
+
+*NOTE:* `src` must be supplied as a full, absolute path (e.g. `file:///Users/me/photo.jpg` or `https://example.com/photo.jpg`). This is a current limitation that will be improved.
 
 ### setRoot
-You must call this with your root component.
+You must call this *once* with your root component.
 
 ### getUserData
-Call this function to get user JSON data passed from CLI or Node.js
+Call this function to get user JSON data passed from CLI (`--user-data`) or Node.js `userData` option.
 
 ### useVideo
 A hook that can be used to get the current video state.
 
+```js
+const {
+  // Video (or Segment relative) frame count:
+  currentFrame,
+  // Video (or Segment relative) time:
+  currentTime,
+  // Video (or Segment) duration in frames:
+  durationFrames,
+  // Video (or Segment) duration in seconds:
+  durationTime,
+
+  // Global, never altered:
+  video: {
+    currentFrame,
+    currentTime,
+    durationFrames,
+    durationTime,
+  },
+
+  // Global video properties
+  fps,
+  width,
+  height,
+} = useVideo();
+```
+
 ### useAsyncRenderer
+
 A hook to get a `waitFor` function that must be used when you want the frame capture operation to be delayed due to an asynchronous task that needs to finish first.
 ```js
 const { waitFor } = useAsyncRenderer();
@@ -129,13 +223,35 @@ waitFor(async () => {
 });
 ```
 
+### Segment
+
+A Segment will, for a specific timespan specified by frame number `start` and `duration`, render either:
+1. Its provided `children`:
+  ```js
+  <Segment><MyComponents /></Segment>
+  ```
+2. or a render prop:
+  ```js
+  <Segment render={(props) => <MyComponents />} />
+  ```
+
+#### Segment props
+- `start` - First frame that contents should be shown from (default 0)
+- `duration` - Number of frames that contents should be visible for (default video `durationFrames`).
+
+Segments will override the following variables in the `useVideo` hook for its `children`:
+- `currentFrame`
+- `currentTime`
+- `durationFrames`
+- `durationTime`
+
+Theses variables will instead be relative to the start/duration of the Segment.
+
+If the `render` prop is used, the render function's provided `props` argument will also contain the same variables.
+
 ## Examples
 
-![See examples](examples/)
-
-## Donate 🙈
-
-This project is maintained by me alone. The project will always remain free and open source, but if it's useful for you, consider supporting me. :) It will give me extra motivation to improve it. Or even better [donate to ffmpeg](https://www.ffmpeg.org/donations.html) because they are doing the world a big favor 🙏
+[See examples](examples/)
 
 # Your video here?
 
@@ -143,6 +259,8 @@ Submit a PR if you want to share your Reactive Video here.
 
 ## TODO
 
+- Preview doesn't support local paths (unless imported)
+- Improve docs
 - Audio
 - ci tests
 - Improve logging
@@ -152,15 +270,24 @@ Submit a PR if you want to share your Reactive Video here.
 - puppeteer intercept request instead of starting local express server (if possible/fast to send big binary data)
 - Improve preview (don't use query string) webpack inject?
 - preview.html wait for render complete, to avoid flooding with ffmpeg processes
-- Retry screencast (sometimes (very rare) `Page.screencastFrame` stops getting called)
+- Retry screencast (sometimes, very rarely, `Page.screencastFrame` stops getting called)
+- Do we need webpack mode `production`? We don't need all the uglifying etc. `development` is much faster
+- Webpack cache?
+- `[BABEL] Note: The code generator has deoptimised the styling of awesome-project/node_modules/react-dom/cjs/react-dom.development.js as it exceeds the max of 500KB.`
 
 ## Ideas
+
 - subtitle rendering (programmatically create Segments)
-- merge videos
+- easy merge videos recipe/helper
 - webgl
 - react three js
-- editly
-- Recreate editly video
+- create demo video, YouTube video
+- editly features
+- Recreate editly's video in reactive-video
+
+## Donate 🙈
+
+This project is maintained by me alone. The project will always remain free and open source, but if it's useful for you, consider supporting me. :) It will give me extra motivation to improve it. Or even better [donate to ffmpeg](https://www.ffmpeg.org/donations.html) because they are doing the world a big favor 🙏
 
 ## See also
 
