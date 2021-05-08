@@ -16,7 +16,7 @@ async function serve({ ffmpegPath, ffprobePath, serveStaticPath, port: requested
       res.send(frame);
     } catch (err) {
       console.log(err.message);
-      res.send(400);
+      res.sendStatus(400);
     }
   }));
 
