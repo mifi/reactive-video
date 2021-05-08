@@ -11,13 +11,20 @@ function createBundler({ entryPath, userEntryPath, outDir, mode, entryOutName = 
       path: outDir,
       filename: entryOutName,
     },
+    resolve: {
+      extensions: ['.jsx', '.js'],
+      alias: {
+        'reactive-video': require.resolve('.'),
+      },
+    },
+
     module: {
       rules: [
         {
           test: /\.(jsx|js)$/,
-          exclude: /node_modules/,
+          // exclude: /node_modules/,
           use: [{
-            loader: 'babel-loader',
+            loader: require.resolve('babel-loader'),
             options: {
               presets: [
                 ['@babel/preset-env', {
