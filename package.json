@@ -3,7 +3,7 @@
   "version": "1.0.2",
   "main": "index.js",
   "bin": {
-    "react-video": "cli.js"
+    "reactive-video": "cli.js"
   },
   "license": "GPL-3.0-only",
   "description": "Create videos using React!",

@@ -6,7 +6,7 @@ const Editor = require('./editor');
 // See also readme
 const cli = meow(`
   Usage
-    $ react-video <Video.js>
+    $ reactive-video <Video.js>
     Video.js is your React component file
 
   REQUIRED flags (one of these are required)

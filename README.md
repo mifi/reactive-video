@@ -12,7 +12,7 @@ Reactive Videos are created using HTML and React components. This allows you the
 
 ## How does it work?
 
-Reactive Video fires up one or more Puppeteer tabs to render the React component hierarchy and rapidly capture screenshots for each frame when they are done rendering.
+Reactive Video fires up one or more Puppeteer/Chromium tabs to render the React component hierarchy and rapidly capture screenshots for each frame when they are done rendering.
 
 NOTE: It starts a HTTP server on `localhost` serving files in the current directory.
 
@@ -82,13 +82,13 @@ setRoot(MyVideo);
 
 Then run in a shell:
 ```bash
-react-video --duration-frames 90 MyVideo.js
+reactive-video --duration-frames 90 MyVideo.js
 ```
 
 Or to start a live preview:
 
 ```bash
-react-video --duration-frames 90 MyVideo.js --preview
+reactive-video --duration-frames 90 MyVideo.js --preview
 ```
 
 ## Documentation
