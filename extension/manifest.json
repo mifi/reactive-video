@@ -1,0 +1,11 @@
+{
+	"name": "CaptureFrame",
+	"version": "1.0.0",
+	"key": "jjndjgheafjngoipoacpjgeicjeomjli",
+	"manifest_version": 2,
+	"background": {
+		"persistent": true,
+		"scripts": ["background.js"]
+	},
+	"permissions": ["tabs", "<all_urls>", "tabCapture"]
+}

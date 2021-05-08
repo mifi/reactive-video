@@ -1,0 +1,50 @@
+{
+  "name": "reactive-video",
+  "version": "1.0.0",
+  "main": "index.js",
+  "bin": {
+    "react-video": "cli.js"
+  },
+  "license": "GPL-3.0-only",
+  "description": "Edit videos using React!",
+  "author": "Mikael Finstad <finstaden@gmail.com>",
+  "scripts": {
+    "test": "exit 0",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@babel/preset-env": "^7.14.1",
+    "@babel/preset-react": "^7.13.13",
+    "babel-loader": "^8.2.2",
+    "body-parser": "^1.19.0",
+    "css-loader": "^5.2.4",
+    "execa": "^5.0.0",
+    "express": "^4.17.1",
+    "express-async-handler": "^1.1.4",
+    "file-url": "^3.0.0",
+    "fs-extra": "^10.0.0",
+    "get-port": "^5.1.1",
+    "hasha": "^5.2.2",
+    "json-stable-stringify": "^1.0.1",
+    "meow": "9",
+    "p-map": "4",
+    "png-split-stream": "^1.0.1",
+    "puppeteer": "^8.0.0",
+    "react": "17.0.2",
+    "react-dom": "^17.0.2",
+    "strtok3": "^6.0.8",
+    "style-loader": "^2.0.0",
+    "webpack": "^5.36.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.14.0",
+    "@types/jest": "^26.0.23",
+    "eslint": "^7.2.0",
+    "eslint-config-airbnb": "18.2.1",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-react": "^7.21.5",
+    "eslint-plugin-react-hooks": "^1.7.0",
+    "jest": "^26.6.3"
+  }
+}
