@@ -17,6 +17,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@babel/core": "^7.14.0",
     "@babel/preset-env": "^7.14.1",
     "@babel/preset-react": "^7.13.13",
     "babel-loader": "^8.2.2",
@@ -41,7 +42,6 @@
     "webpack": "^5.36.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.14.0",
     "@types/jest": "^26.0.23",
     "eslint": "^7.2.0",
     "eslint-config-airbnb": "18.2.1",
