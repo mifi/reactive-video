@@ -119,34 +119,38 @@ const Editor = require('reactive-video/editor');
   const fps = 25;
   const durationFrames = 90;
   const reactVideo = 'MyVideo.js'
+  const userData = { some: 'value' };
 
-await editor.edit({
+  await editor.edit({
     reactVideo,
-
-    output: 'my-video.mp4',
-
     width,
     height,
     durationFrames,
+    userData,
+
+    output: 'my-video.mp4',
     concurrency: 3,
     // headless: false,
+
   });
 
   // Or start a live preview
   await editor.preview({
     reactVideo,
-
     width,
     height,
-    fps: 25,
+    fps,
     durationFrames,
+    userData,
   });
 })().catch(console.error);
 ```
 
-## Documentation
+## Node API
 
-Reactive Video provides certain components that must be used in order to correctly.
+Reactive Video is split between code that runs in Node.js and code that runs in the React world. Coordination can happen through `userData`.
+
+The Node API is being used directly by the CLI.
 
 ### Editor.edit / Editor.preview
 
@@ -157,6 +161,8 @@ const { edit, preview } = Editor({ ffmpegPath, ffprobePath });
 ```
 
 See editor.js [edit](https://github.com/mifi/reactive-video/blob/09c8dba1726065f927bd8811111fc4354e6637c8/editor.js#L91) and [preview](https://github.com/mifi/reactive-video/blob/09c8dba1726065f927bd8811111fc4354e6637c8/editor.js#L329) for options.
+
+## React API
 
 ### FFmpegVideo
 Video backed by ffmpeg, streamed to `canvas`. Efficiently reuses the ffmpeg instance for serial rendering. Supports virtually all formats.
@@ -215,7 +221,7 @@ const {
 
 ### useAsyncRenderer
 
-A hook to get a `waitFor` function that must be used when you want the frame capture operation to be delayed due to an asynchronous task that needs to finish first.
+A hook used to get a `waitFor` function that must be used when you want the frame capture operation to be delayed due to an asynchronous task that needs to finish first.
 ```js
 const { waitFor } = useAsyncRenderer();
 waitFor(async () => {
