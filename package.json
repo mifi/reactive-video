@@ -1,13 +1,17 @@
 {
   "name": "reactive-video",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "main": "index.js",
   "bin": {
     "react-video": "cli.js"
   },
   "license": "GPL-3.0-only",
-  "description": "Edit videos using React!",
+  "description": "Create videos using React!",
   "author": "Mikael Finstad <finstaden@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mifi/reactive-video.git"
+  },
   "scripts": {
     "test": "exit 0",
     "lint": "eslint ."
