@@ -278,8 +278,9 @@ Submit a PR if you want to share your Reactive Video here.
 - preview.html wait for render complete, to avoid flooding with ffmpeg processes
 - Retry screencast (sometimes, very rarely, `Page.screencastFrame` stops getting called)
 - Do we need webpack mode `production`? We don't need all the uglifying etc. `development` is much faster
-- Webpack cache?
-- `[BABEL] Note: The code generator has deoptimised the styling of awesome-project/node_modules/react-dom/cjs/react-dom.development.js as it exceeds the max of 500KB.`
+- Source maps would be great in production too
+- make it easiser to animate (mount/unmount?) provide a react component that clamps animations? something like `<Segment start={} duration={} render=((animation) => 0..1) easing="easeIn" />`
+
 
 ## Ideas
 
