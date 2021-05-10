@@ -4,7 +4,10 @@ import ReactDOM from 'react-dom';
 import { Main, onRootComponentRegistered, setUserData } from './entry';
 
 const Preview = () => {
-  const [currentFrame, setCurrentFrame] = useState(0);
+  const hash = new URLSearchParams(window.location.hash.substr(1));
+  const currentFrameInitial = hash.get('currentFrame') ? parseInt(hash.get('currentFrame'), 10) : 0;
+
+  const [currentFrame, setCurrentFrame] = useState(currentFrameInitial);
 
   const params = new URLSearchParams(window.location.search);
   const devMode = params.get('devMode') === 'true';
@@ -15,11 +18,17 @@ const Preview = () => {
   const durationFrames = parseInt(params.get('durationFrames'), 10);
   const userData = params.get('userData') && JSON.parse(params.get('userData'));
 
+  function handleCurrentFrameChange(newVal) {
+    hash.set('currentFrame', newVal);
+    window.history.pushState(undefined, undefined, `#${hash.toString()}`);
+    setCurrentFrame(newVal);
+  }
+
   setUserData(userData);
 
   return (
     <>
-      <input type="range" min={0} max={durationFrames - 1} onChange={(e) => setCurrentFrame(parseInt(e.target.value, 10))} value={currentFrame} style={{ width: '100%' }} />
+      <input type="range" min={0} max={durationFrames - 1} onChange={(e) => handleCurrentFrameChange(parseInt(e.target.value, 10))} value={currentFrame} style={{ width: '100%', margin: '10px 0' }} />
 
       <div style={{ border: '3px solid black', borderRadius: 5, width, height, overflow: 'hidden', scale: 0.5 }}>
         <Main devMode={devMode} width={width} height={height} fps={fps} serverPort={serverPort} durationFrames={durationFrames} currentFrame={currentFrame} />
