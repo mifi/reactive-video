@@ -15,6 +15,8 @@ function createBundler({ entryPath, userEntryPath, outDir, mode, entryOutName = 
       extensions: ['.jsx', '.js'],
       alias: {
         'reactive-video': require.resolve('.'),
+        react: require.resolve('react'), // Use reactive-video's react package
+        'react-dom': require.resolve('react-dom'),
       },
     },
 
@@ -22,17 +24,22 @@ function createBundler({ entryPath, userEntryPath, outDir, mode, entryOutName = 
       rules: [
         {
           test: /\.(jsx|js)$/,
-          // exclude: /node_modules/,
+
+          exclude: (modulePath) => !(
+            !/node_modules/.test(modulePath)
+            || (/node_modules\/reactive-video/.test(modulePath) && !/node_modules\/reactive-video\/node_modules/.test(modulePath))
+          ),
+
           use: [{
             loader: require.resolve('babel-loader'),
             options: {
               presets: [
-                ['@babel/preset-env', {
+                [require.resolve('@babel/preset-env'), {
                   targets: {
                     chrome: 90,
                   },
                 }],
-                '@babel/preset-react',
+                require.resolve('@babel/preset-react'),
               ],
             },
           }],
@@ -43,7 +50,7 @@ function createBundler({ entryPath, userEntryPath, outDir, mode, entryOutName = 
         },
         {
           test: /\.css$/i,
-          use: ['style-loader', 'css-loader'],
+          use: [require.resolve('style-loader'), require.resolve('css-loader')],
         },
       ],
     },
