@@ -41,13 +41,19 @@ async function startBundler({ bundler, reactHtmlPath, reactHtmlDistName, distPat
   });
 }
 
-async function stopBundleWatcher(watcher) {
+async function stopBundleWatcher(bundler, watcher) {
   console.log('Stopping bundle watcher');
   try {
     await new Promise((resolve, reject) => watcher.close((err) => {
       if (err) reject(err);
       else resolve();
     }));
+
+    await new Promise((resolve, reject) => bundler.close((err) => {
+      if (err) reject(err);
+      else resolve();
+    }));
+    console.log('Bundle watcher stopped');
   } catch (err) {
     console.error(err);
   }
@@ -318,7 +324,7 @@ function Editor({
     } finally {
       if (browser && autoCloseBrowser) await browser.close();
       if (stopServer) stopServer();
-      if (watcher) stopBundleWatcher(watcher);
+      if (watcher) stopBundleWatcher(bundler, watcher);
     }
 
     console.log('Edit finished:', finalOutPath);
@@ -366,7 +372,7 @@ function Editor({
       console.log('Caught SIGINT, shutting down');
       sig = true;
       stopServer();
-      stopBundleWatcher(watcher);
+      stopBundleWatcher(bundler, watcher);
     });
   }
 
