@@ -56,6 +56,12 @@ window.setupReact = ({ devMode, width, height, fps, serverPort, durationFrames, 
 
 // This is a bit hacky. trying to make sure we don't get dup frames (previous frame rendered again)
 // So we wait for the browser to completely finish rendering of all DOM updates that react have done
+// https://stackoverflow.com/questions/15875128/is-there-element-rendered-event
+// https://stackoverflow.com/questions/26556436/react-after-render-code
+// Alternatively we could try to run requestAnimationFrame twice to skip the first frame
+// Alternative2: callback from ReactDOM.render(element, container[, callback])
+// https://reactjs.org/docs/react-dom.html#render
+// alternatively we could clear the screen between each frame render and detect that screenshot is not white (retry if it is)
 window.awaitDomRenderSettled = async () => new Promise((resolve) => {
   window.requestAnimationFrame(() => {
     setTimeout(() => {

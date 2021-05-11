@@ -280,7 +280,7 @@ Submit a PR if you want to share your Reactive Video here.
 - Do we need webpack mode `production`? We don't need all the uglifying etc. `development` is much faster
 - Source maps would be great in production too
 - make it easiser to animate (mount/unmount?) provide a react component that clamps animations? something like `<Segment start={} duration={} render=((animation) => 0..1) easing="easeIn" />`
-
+- render single image
 
 ## Ideas
 

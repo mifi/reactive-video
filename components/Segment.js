@@ -15,6 +15,7 @@ const Segment = (props) => {
   const segmentDurationFrames = duration != null ? duration : videoContext.durationFrames - start;
   const segmentDurationTime = getFrameTime(segmentDurationFrames);
 
+  // Override the existing video context
   const videoContextNew = useMemo(() => ({
     ...videoContext,
 

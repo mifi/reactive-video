@@ -217,9 +217,7 @@ function Editor({
                     timeoutTimer = setTimeout(() => reject(new Error(`Frame render timed out for part starting at ${partStart}`)), frameRenderTimeout);
                   }),
                   (async () => {
-                    // https://stackoverflow.com/questions/15875128/is-there-element-rendered-event
-                    // alternatively we could clear the screen between each frame render and detect that screenshot is not white (retry if it is)
-                    // Clearing the canvas doesn't work well with html5 videos (need to reload the video every time)
+                    // Clearing the canvas doesn't work well with html5 videos (need to reload the video every frame)
                     // await page.evaluate(() => renderFrame());
                     // await page.waitForSelector('#frame-cleared');
 
