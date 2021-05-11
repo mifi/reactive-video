@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 
 import { useAsyncRenderer } from '../entry';
 
-const IFrame = (props) => {
+const Image = (props) => {
   const { waitFor } = useAsyncRenderer();
   const { src, onError: userOnError, onLoad: userOnLoad } = props;
 
@@ -30,4 +30,4 @@ const IFrame = (props) => {
   return <img {...props} onError={onError} onLoad={onLoad} />;
 };
 
-export default IFrame;
+export default Image;
