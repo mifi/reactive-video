@@ -1,22 +1,12 @@
 import React, { useMemo, useContext } from 'react';
+// eslint-disable-next-line import/no-unresolved
+import RootComponent from 'reactive-video-root-component';
 
 import { VideoContext } from './contexts';
 
 const getId = (currentFrame) => `frame-${currentFrame}`;
 
-let rootComponent;
 let userData;
-
-let rootComponentListener;
-
-export function onRootComponentRegistered(cb) {
-  rootComponentListener = cb;
-}
-
-export function setRoot(component) {
-  rootComponent = component;
-  if (rootComponentListener) rootComponentListener();
-}
 
 export function setUserData(d) {
   userData = d;
@@ -29,9 +19,6 @@ export function getUserData() {
 export const Main = ({
   devMode, width, height, fps, serverPort, durationFrames, currentFrame, renderId,
 }) => {
-  const RootComponent = rootComponent;
-  if (!RootComponent) throw new Error('No root component found. Please call setRoot');
-
   const videoContext = useMemo(() => {
     const getFrameTime = (f) => f / fps;
     const currentTime = getFrameTime(currentFrame);

@@ -5,7 +5,6 @@ import Segment from './components/Segment';
 import HTML5Video from './components/HTML5Video';
 
 export {
-  setRoot,
   getUserData,
   useVideo,
   useAsyncRenderer,

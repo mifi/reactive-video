@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 
-import { Main, onRootComponentRegistered, setUserData } from './entry';
+import { Main, setUserData } from './entry';
 
 const Preview = () => {
   const hash = new URLSearchParams(window.location.hash.substr(1));
@@ -37,6 +37,4 @@ const Preview = () => {
   );
 };
 
-onRootComponentRegistered(() => {
-  ReactDOM.render(<Preview />, document.getElementById('root'));
-});
+ReactDOM.render(<Preview />, document.getElementById('root'));

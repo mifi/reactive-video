@@ -17,6 +17,7 @@ function createBundler({ entryPath, userEntryPath, outDir, mode, entryOutName = 
         'reactive-video': require.resolve('.'),
         react: require.resolve('react'), // Use reactive-video's react package
         'react-dom': require.resolve('react-dom'),
+        'reactive-video-root-component': userEntryPath,
       },
     },
 

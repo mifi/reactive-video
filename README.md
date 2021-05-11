@@ -41,9 +41,9 @@ Create a file `MyVideo.js` with the content:
 
 ```js
 import React from 'react';
-import { Image, Segment, FFmpegVideo, useVideo, setRoot } from 'reactive-video';
+import { Image, Segment, FFmpegVideo, useVideo } from 'reactive-video';
 
-const MyVideo = () => {
+export default () => {
   const { currentFrame, currentTime, durationFrames, durationTime } = useVideo();
 
   return (
@@ -75,9 +75,6 @@ const MyVideo = () => {
     </>
   );
 };
-
-// Set this as the root component, so we know what to render
-setRoot(MyVideo);
 ```
 
 ### Shell
@@ -183,9 +180,6 @@ Works the same as HTML `<iframe>`
 Works the same as HTML `<image>`
 
 *NOTE:* `src` must be supplied as a full, absolute path (e.g. `file:///Users/me/photo.jpg` or `https://example.com/photo.jpg`). This is a current limitation that will be improved.
-
-### setRoot
-You must call this *once* with your root component.
 
 ### getUserData
 Call this function to get user JSON data passed from CLI (`--user-data`) or Node.js `userData` option.
