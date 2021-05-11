@@ -12,10 +12,6 @@ export function setUserData(d) {
   userData = d;
 }
 
-export function getUserData() {
-  return userData;
-}
-
 export const Main = ({
   devMode, width, height, fps, serverPort, durationFrames, currentFrame, renderId,
 }) => {
@@ -53,6 +49,8 @@ export const Main = ({
       height,
 
       getFrameTime,
+
+      userData,
 
       api: {
         readVideoFrame,

@@ -181,9 +181,6 @@ Works the same as HTML `<image>`
 
 *NOTE:* `src` must be supplied as a full, absolute path (e.g. `file:///Users/me/photo.jpg` or `https://example.com/photo.jpg`). This is a current limitation that will be improved.
 
-### getUserData
-Call this function to get user JSON data passed from CLI (`--user-data`) or Node.js `userData` option.
-
 ### useVideo
 A hook that can be used to get the current video state.
 
@@ -205,6 +202,9 @@ const {
     durationFrames,
     durationTime,
   },
+
+  // Parsed user JSON data passed from CLI (`--user-data`) or Node.js `userData` option
+  userData,
 
   // Global video properties
   fps,
