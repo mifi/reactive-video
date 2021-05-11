@@ -31,6 +31,7 @@
     "get-port": "^5.1.1",
     "hasha": "^5.2.2",
     "json-stable-stringify": "^1.0.1",
+    "json5": "^2.2.0",
     "meow": "9",
     "p-map": "4",
     "png-split-stream": "^1.0.1",

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const meow = require('meow');
+const JSON5 = require('json5');
 
 const Editor = require('./editor');
 
@@ -24,7 +25,7 @@ const cli = meow(`
     --ffmpeg-path  Path to ffmpeg executable
     --ffprobe-path  Path to ffprobe executable
     --temp-dir  Temporary working directory where files will be built and hosted from
-    --user-data  JSON data passed to React
+    --user-data  JSON data passed to React (can be JSON5)
     --concurrency  Divide rendering up into this many parts and run them in parallel
     --headless  Set to false to show the browser
 
@@ -79,7 +80,7 @@ const {
 
   const editor = Editor({ ffmpegPath, ffprobePath, devMode });
 
-  const userData = userDataStr && JSON.parse(userDataStr);
+  const userData = userDataStr && JSON5.parse(userDataStr);
   if (cli.flags.preview) {
     await editor.preview({
       reactVideo,
