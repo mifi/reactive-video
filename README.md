@@ -151,8 +151,8 @@ const Editor = require('@reactive-video/builder');
 ## Node API
 
 Reactive Video has two parts:
-- Code that runs in Node.js `@reactive-video/builder`. This is used directly by the CLI.
-- Code that runs in the React world `reactive-video`. This package can also be installed in a separate frontend where you want to reuse Reactive Video code to render a video.
+- `@reactive-video/builder`: CLI and Node.js video builder API
+- `reactive-video`: Code that runs in the React world. This package can also be installed in a separate frontend where you want to reuse Reactive Video code to render a video.
 
 Data can be passed from Node.js to React via `userData`, which will become available in the `useVideo` hook.
 
