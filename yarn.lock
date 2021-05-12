@@ -1657,7 +1657,7 @@ __metadata:
     puppeteer: ^8.0.0
     react: 17
     react-dom: 17
-    reactive-video: 1
+    reactive-video: 2
     strtok3: ^6.0.8
     style-loader: ^2.0.0
     webpack: ^5.36.2
@@ -7668,7 +7668,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"reactive-video@1, reactive-video@workspace:packages/frontend":
+"reactive-video@2, reactive-video@workspace:packages/frontend":
   version: 0.0.0-use.local
   resolution: "reactive-video@workspace:packages/frontend"
   dependencies:
