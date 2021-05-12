@@ -2,9 +2,7 @@
   "name": "reactive-video",
   "version": "1.0.5",
   "main": "index.js",
-  "bin": {
-    "reactive-video": "cli.js"
-  },
+  "bin": "cli.js",
   "license": "GPL-3.0-only",
   "description": "Create videos using React!",
   "author": "Mikael Finstad <finstaden@gmail.com>",

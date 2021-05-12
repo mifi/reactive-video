@@ -1,3 +1,11 @@
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+
 dist
 reactive-video-tmp
 node_modules
