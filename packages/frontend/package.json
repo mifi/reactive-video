@@ -1,0 +1,28 @@
+{
+  "name": "reactive-video",
+  "version": "1.0.5",
+  "main": "dist/index.js",
+  "files": [
+    "dist/**"
+  ],
+  "license": "GPL-3.0-only",
+  "description": "Create videos using React!",
+  "author": "Mikael Finstad <finstaden@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mifi/reactive-video.git"
+  },
+  "scripts": {
+    "build": "babel src -d dist --presets=@babel/preset-react",
+    "watch": "babel -w src -d dist --presets=@babel/preset-react",
+    "prepublish": "npm run build"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.13.16",
+    "@babel/core": "^7.14.0",
+    "@babel/preset-react": "^7.13.13"
+  },
+  "peerDependencies": {
+    "react": "17"
+  }
+}

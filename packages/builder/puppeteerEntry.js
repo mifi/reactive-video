@@ -5,9 +5,9 @@ import ReactDOM from 'react-dom';
 // eslint-disable-next-line import/no-unresolved
 import RootComponent from 'reactive-video-root-component';
 
-import { setAsyncRenderDoneCb, anyAsyncRendersRegistered } from './asyncRegistry';
-import { VideoContextProvider } from './contexts';
-import Api from './api';
+import { VideoContextProvider, setAsyncRenderDoneCb, anyAsyncRendersRegistered, Api } from 'reactive-video';
+// import { setAsyncRenderDoneCb, anyAsyncRendersRegistered } from 'reactive-video/dist/asyncRegistry';
+// import Api from 'reactive-video/dist/api';
 
 const getId = (currentFrame) => `frame-${currentFrame}`;
 

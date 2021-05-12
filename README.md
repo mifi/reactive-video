@@ -29,13 +29,14 @@ Reactive Video fires up one or more Puppeteer/Chromium tabs to render the React 
 
 First install and setup ffmpeg/ffprobe.
 
+Then we can install the Reactive Video builder globally as a command line tool:
 ```
-npm i -g reactive-video
+npm i -g @reactive-video/builder
 ```
 
 ## Usage
 
-Create a file `MyVideo.js` with the content:
+Now create a file `MyVideo.js` with the content:
 
 ```js
 import React from 'react';
@@ -46,7 +47,7 @@ export default () => {
 
   return (
     <>
-      {/* This segment lasts 30 frames. Print out the current frame number */}
+      {/* This segment lasts for 30 frames. Print out the current frame number */}
       <Segment duration={30}>
         <div
           style={{ width: '100%', height: '100%', backgroundColor: `hsl(${(currentFrame * 10) % 360}deg 78% 37%)`, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', fontSize: 100 }}
@@ -64,7 +65,7 @@ export default () => {
         )}
       />
 
-      {/* This segment starts from 60 frames. Cut from 100 frames in the source video */}
+      {/* This segment starts from 60 frames. Starts 100 frames into the source video (seek to) */}
       <Segment start={60}>
         <Segment start={-100}>
           <Video src="https://static.mifi.no/Zv5RvLhCz4M-small.mp4" style={{ width: '100%' }} />
@@ -77,10 +78,11 @@ export default () => {
 
 ### Shell
 
-Then run in a shell:
+Then run the CLI:
 ```bash
 reactive-video --duration-frames 90 MyVideo.js
 ```
+Duration can also be specified in seconds. See `reactive-video --help`
 
 ### Live preview
 
@@ -88,24 +90,29 @@ Or to start a live preview:
 
 ```bash
 reactive-video --duration-frames 90 MyVideo.js --preview
+# or for HTML5 video:
+reactive-video --duration-frames 90 MyVideo.js --preview-html
 ```
 
 ### Programmatic API
 
-Or you can use the programmatic API. Create a new Node.js project, then add reactive-video:
+Or you can use the programmatic Node API. Create a new Node.js project, then add `@reactive-video/builder`:
+
 ```bash
-mkdir awesome-project
-cd awesome-project
+mkdir awesome-reactive-video
+cd awesome-reactive-video
 npm init
-npm i --save reactive-video
+npm i --save @reactive-video/builder
 ```
 
 Create `index.js`:
 ```js
-const Editor = require('reactive-video/editor');
+const Editor = require('@reactive-video/builder');
 
 (async () => {
   const editor = Editor({
+    ffmpegPath: 'ffmpeg',
+    ffprobePath: 'ffprobe',
     devMode: true,
   });
 
@@ -116,6 +123,7 @@ const Editor = require('reactive-video/editor');
   const reactVideo = 'MyVideo.js'
   const userData = { some: 'value' };
 
+  // Build the video
   await editor.edit({
     reactVideo,
     width,
@@ -126,10 +134,9 @@ const Editor = require('reactive-video/editor');
     output: 'my-video.mp4',
     concurrency: 3,
     // headless: false,
-
   });
 
-  // Or start a live preview
+  // Or start a live preview:
   await editor.preview({
     reactVideo,
     width,
@@ -143,19 +150,21 @@ const Editor = require('reactive-video/editor');
 
 ## Node API
 
-Reactive Video is split between code that runs in Node.js and code that runs in the React world. Coordination can happen through `userData`.
+Reactive Video has two parts:
+- Code that runs in Node.js `@reactive-video/builder`. This is used directly by the CLI.
+- Code that runs in the React world `reactive-video`. This package can also be installed in a separate frontend where you want to reuse Reactive Video code to render a video.
 
-The Node API is being used directly by the CLI.
+Data can be passed from Node.js to React via `userData`, which will become available in the `useVideo` hook.
 
-### Editor.edit / Editor.preview
+### `Editor.edit` / `Editor.preview`
 
 ```js
-const Editor = require('reactive-video/editor');
+const Editor = require('@reactive-video/builder');
 
 const { edit, preview } = Editor({ ffmpegPath, ffprobePath });
 ```
 
-See editor.js [edit](https://github.com/mifi/reactive-video/blob/09c8dba1726065f927bd8811111fc4354e6637c8/editor.js#L91) and [preview](https://github.com/mifi/reactive-video/blob/09c8dba1726065f927bd8811111fc4354e6637c8/editor.js#L329) for options.
+See [editor.js edit and preview](packages/builder/index.js) for options.
 
 ## React API
 
@@ -172,21 +181,23 @@ impprt {
 
 ### `<Video>` component
 
-Renders a video at the current
+Renders video frames synced to time
 
 - `src` - See **src** below.
 - `htmlSrc` - Override `Video` component `src` when reusing the video code in a separate React frontend.
 
-For final rendering and preview, uses ffmpeg, streamed to `canvas`. Efficiently reuses the ffmpeg instance for sequential rendering. Supports virtually all formats that ffmpeg can seek in.
+For final rendering and preview, it uses ffmpeg to stream to a `canvas`. Efficiently reuses the ffmpeg instance for sequential rendering. Supports virtually all formats that ffmpeg can seek in.
 
 Can also use `<video>` for preview. Much faster seeking, but only supports certain codecs. Enabled with the `--preview-html` CLI flag.
 
 ### `<Image>`
+
 Works the same as HTML `<image>`. Waits for data to load.
 
 - `src` - See **src** below.
 
 ### `<IFrame>`
+
 Works the same as HTML `<iframe>`. Waits for data to load.
 
 - `src` - See **src** below.
@@ -293,7 +304,7 @@ Submit a PR if you want to share your Reactive Video here.
 - Do we need webpack mode `production`? We don't need all the uglifying etc. `development` is much faster
 - Source maps would be great in production too
 - make it easiser to animate (mount/unmount?) provide a react component that clamps animations? something like `<Segment start={} duration={} render=((animation) => 0..1) easing="easeIn" />`
-- render single image
+- render single frame as image
 
 ## Ideas
 

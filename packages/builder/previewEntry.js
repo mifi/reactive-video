@@ -5,8 +5,8 @@ import ReactDOM from 'react-dom';
 // eslint-disable-next-line import/no-unresolved
 import RootComponent from 'reactive-video-root-component';
 
-import Api from './api';
-import { VideoContextProvider } from './contexts';
+import { VideoContextProvider, Api } from 'reactive-video';
+// import Api from 'reactive-video/dist/api';
 
 const PreviewRoot = () => {
   const hash = new URLSearchParams(window.location.hash.substr(1));

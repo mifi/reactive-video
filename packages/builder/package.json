@@ -1,0 +1,47 @@
+{
+  "name": "@reactive-video/builder",
+  "version": "1.0.5",
+  "main": "index.js",
+  "bin": {
+    "reactive-video": "cli.js"
+  },
+  "license": "GPL-3.0-only",
+  "description": "Create videos using React!",
+  "author": "Mikael Finstad <finstaden@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mifi/reactive-video.git"
+  },
+  "scripts": {},
+  "dependencies": {
+    "@babel/core": "^7.14.0",
+    "@babel/preset-env": "^7.14.1",
+    "@babel/preset-react": "^7.13.13",
+    "babel-loader": "^8.2.2",
+    "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.5",
+    "css-loader": "^5.2.4",
+    "execa": "^5.0.0",
+    "express": "^4.17.1",
+    "express-async-handler": "^1.1.4",
+    "express-basic-auth": "^1.2.0",
+    "file-uri-to-path": "^2.0.0",
+    "file-url": "^3.0.0",
+    "fs-extra": "^10.0.0",
+    "get-port": "^5.1.1",
+    "hasha": "^5.2.2",
+    "json-stable-stringify": "^1.0.1",
+    "json5": "^2.2.0",
+    "lodash": "^4.17.21",
+    "meow": "9",
+    "p-map": "4",
+    "png-split-stream": "^1.0.1",
+    "puppeteer": "^8.0.0",
+    "react": "17",
+    "react-dom": "17",
+    "reactive-video": "1",
+    "strtok3": "^6.0.8",
+    "style-loader": "^2.0.0",
+    "webpack": "^5.36.2"
+  }
+}

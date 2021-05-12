@@ -2,7 +2,7 @@
 const meow = require('meow');
 const JSON5 = require('json5');
 
-const Editor = require('./editor');
+const Editor = require('.');
 
 // See also readme
 const cli = meow(`

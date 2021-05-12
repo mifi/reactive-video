@@ -5,8 +5,12 @@ import Segment from './components/Segment';
 import HTML5Video from './components/HTML5Video';
 import Video from './components/Video';
 
-export { useVideo } from './contexts';
+import Api from './api';
+
+export { useVideo, VideoContextProvider } from './contexts';
 export { useAsyncRenderer } from './asyncRegistry';
+
+export { anyAsyncRendersRegistered, setAsyncRenderDoneCb } from './asyncRegistry';
 
 export {
   FFmpegVideo,
@@ -15,4 +19,5 @@ export {
   IFrame,
   Image,
   Segment,
+  Api,
 };
