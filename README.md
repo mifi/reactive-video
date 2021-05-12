@@ -12,9 +12,7 @@ Reactive Videos are videos created using HTML and React components. This allows 
 
 ## How does it work?
 
-Reactive Video fires up one or more Puppeteer/Chromium tabs to render the React component hierarchy and rapidly capture screenshots for each frame when they are done rendering.
-
-NOTE: It starts a HTTP server on `localhost` serving files in the current directory for the Puppeteer client.
+Reactive Video fires up one or more Puppeteer/Chromium tabs to render the React component hierarchy and rapidly capture screenshots for each frame when they are done rendering. It starts a HTTP server on `localhost` serving files (videos, images etc) needed to the Puppeteer client (protected by a token.)
 
 ## Features
 
@@ -41,7 +39,7 @@ Create a file `MyVideo.js` with the content:
 
 ```js
 import React from 'react';
-import { Image, Segment, FFmpegVideo, useVideo } from 'reactive-video';
+import { Image, Segment, Video, useVideo } from 'reactive-video';
 
 export default () => {
   const { currentFrame, currentTime, durationFrames, durationTime } = useVideo();
@@ -69,7 +67,7 @@ export default () => {
       {/* This segment starts from 60 frames. Cut from 100 frames in the source video */}
       <Segment start={60}>
         <Segment start={-100}>
-          <FFmpegVideo src="https://static.mifi.no/Zv5RvLhCz4M-small.mp4" style={{ width: '100%' }} />
+          <Video src="https://static.mifi.no/Zv5RvLhCz4M-small.mp4" style={{ width: '100%' }} />
         </Segment>
       </Segment>
     </>
@@ -161,34 +159,56 @@ See editor.js [edit](https://github.com/mifi/reactive-video/blob/09c8dba1726065f
 
 ## React API
 
-### FFmpegVideo
-Video backed by ffmpeg, streamed to `canvas`. Efficiently reuses the ffmpeg instance for serial rendering. Supports virtually all formats.
+```js
+impprt {
+  Video,
+  IFrame,
+  Image,
+  Segment,
+  useVideo,
+  useAsyncRenderer,
+} from 'reactive-video'
+```
 
-*NOTE:* `src` must be supplied as a local path **without** `file://`. (e.g. `./video.mp4`). This is a current limitation that will be improved.
+### `<Video>` component
 
-### HTML5Video
-Works the same as HTML `<video>`. Only supports certain codecs due to Chromium limitations (e.g. does not support `h264`.)
+Renders a video at the current
 
-*NOTE:* `src` must be supplied as a full, absolute path (e.g. `file:///Users/me/video.webm` or `https://example.com/video.webm`). This is a current limitation that will be improved.
+- `src` - See **src** below.
+- `htmlSrc` - Override `Video` component `src` when reusing the video code in a separate React frontend.
 
-### IFrame
-Works the same as HTML `<iframe>`
+For final rendering and preview, uses ffmpeg, streamed to `canvas`. Efficiently reuses the ffmpeg instance for sequential rendering. Supports virtually all formats that ffmpeg can seek in.
 
-*NOTE:* `src` must be supplied as a full, absolute path (e.g. `file:///Users/me/index.html` or `https://example.com/index.html`). This is a current limitation that will be improved.
+Can also use `<video>` for preview. Much faster seeking, but only supports certain codecs. Enabled with the `--preview-html` CLI flag.
 
-### Image
-Works the same as HTML `<image>`
+### `<Image>`
+Works the same as HTML `<image>`. Waits for data to load.
 
-*NOTE:* `src` must be supplied as a full, absolute path (e.g. `file:///Users/me/photo.jpg` or `https://example.com/photo.jpg`). This is a current limitation that will be improved.
+- `src` - See **src** below.
+
+### `<IFrame>`
+Works the same as HTML `<iframe>`. Waits for data to load.
+
+- `src` - See **src** below.
+
+### `src` attribute
+
+`src` must be a full, absolute `file://` path (e.g. `file:///Users/me/video.webm` or `https://example.com/image.jpeg`). Note the three slashes for local files!
 
 ### useVideo
+
 A hook that can be used to get the current video state.
 
 ```js
 const {
-  // Video (or Segment relative) frame count:
+  // Global video properties
+  fps,
+  width,
+  height,
+
+  // Video (or Segment-relative) current frame:
   currentFrame,
-  // Video (or Segment relative) time:
+  // Video (or Segment-relative) time:
   currentTime,
   // Video (or Segment) duration in frames:
   durationFrames,
@@ -205,27 +225,29 @@ const {
 
   // Parsed user JSON data passed from CLI (`--user-data`) or Node.js `userData` option
   userData,
-
-  // Global video properties
-  fps,
-  width,
-  height,
 } = useVideo();
 ```
 
 ### useAsyncRenderer
 
-A hook used to get a `waitFor` function that must be used when you want the frame capture operation to be delayed due to an asynchronous task that needs to finish first.
+A hook used to get a `waitFor` function that can be used to delay the frame capture operation due to an asynchronous task that needs to finish before drawing.
 ```js
-const { waitFor } = useAsyncRenderer();
-waitFor(async () => {
-  setState(await api.loadSomeData());
-});
+const MyVideoOrComponent = () => {
+  // ...
+  const { waitFor } = useAsyncRenderer();
+
+  useEffect(() => {
+    waitFor(async () => {
+      setState(await api.loadSomeData());
+    });
+  }, [waitFor]);
+  // ...
+};
 ```
 
-### Segment
+### `<Segment>`
 
-A Segment will, for a specific timespan specified by frame number `start` and `duration`, render either:
+A Segment will, for a specific timespan specified by `start` and `duration` (specified in **frames**), render one of either:
 1. Its provided `children`:
   ```js
   <Segment><MyComponents /></Segment>
@@ -236,7 +258,7 @@ A Segment will, for a specific timespan specified by frame number `start` and `d
   ```
 
 #### Segment props
-- `start` - First frame that contents should be shown from (default 0)
+- `start` - First frame that contents should be shown from (default `0`)
 - `duration` - Number of frames that contents should be visible for (default video `durationFrames`).
 
 Segments will override the following variables in the `useVideo` hook for its `children`:
@@ -245,7 +267,7 @@ Segments will override the following variables in the `useVideo` hook for its `c
 - `durationFrames`
 - `durationTime`
 
-Theses variables will instead be relative to the start/duration of the Segment.
+Theses variables will instead be relative to the start/duration of the `Segment`.
 
 If the `render` prop is used, the render function's provided `props` argument will also contain the same variables.
 
@@ -259,18 +281,15 @@ Submit a PR if you want to share your Reactive Video here.
 
 ## TODO
 
-- Preview doesn't support local paths (unless imported)
 - Improve docs
 - Audio
 - ci tests
 - Improve logging
 - multiple FFmpegVideos from the same source file (videoServer.js) not supported
-- FFmpegVideo/HTML5Video fallback to previous frame if missing?
-- HTML5Video calculate file:// paths relative to cwd, or proxy local files
-- puppeteer intercept request instead of starting local express server (if possible/fast to send big binary data)
-- Improve preview (don't use query string) webpack inject?
-- preview.html wait for render complete, to avoid flooding with ffmpeg processes
-- Retry screencast (sometimes, very rarely, `Page.screencastFrame` stops getting called)
+- FFmpegVideo fallback to previous frame if missing? (like HTML5Video)
+- puppeteer [intercept request](https://github.com/puppeteer/puppeteer/blob/v9.1.1/docs/api.md#httprequestrespondresponse) instead of starting local express server (if possible and fast to send big binary data), will not work for preview
+- Improve preview (don't use query string) - webpack inject?
+- Retry screencast: Sometimes (very rarely) `Page.screencastFrame` stops getting called
 - Do we need webpack mode `production`? We don't need all the uglifying etc. `development` is much faster
 - Source maps would be great in production too
 - make it easiser to animate (mount/unmount?) provide a react component that clamps animations? something like `<Segment start={} duration={} render=((animation) => 0..1) easing="easeIn" />`

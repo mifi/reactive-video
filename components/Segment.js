@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
-import { useVideo } from '../entry';
-import { VideoContext } from '../contexts';
+import { VideoContext, useVideo } from '../contexts';
 
 const Segment = (props) => {
   const videoContext = useVideo();

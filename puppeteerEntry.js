@@ -1,10 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 
-import { Main, setAsyncRenderDoneCb, anyAsyncRendersRegistered, setUserData } from './entry';
+// reactive-video-root-component is a webpack alias
+// eslint-disable-next-line import/no-unresolved
+import RootComponent from 'reactive-video-root-component';
 
-const PuppeteerRenderer = ({
-  devMode, width, height, fps, serverPort, durationFrames, waitForAsyncRenders, renderId,
+import { setAsyncRenderDoneCb, anyAsyncRendersRegistered } from './asyncRegistry';
+import { VideoContextProvider } from './contexts';
+import Api from './api';
+
+const getId = (currentFrame) => `frame-${currentFrame}`;
+
+const PuppeteerRoot = ({
+  devMode, width, height, fps, serverPort, durationFrames, waitForAsyncRenders, renderId, userData, secret,
 }) => {
   const [currentFrame, setCurrentFrame] = useState();
 
@@ -12,46 +20,76 @@ const PuppeteerRenderer = ({
     window.renderFrame = async (n) => {
       if (n == null) {
         setCurrentFrame(); // clear screen
-      } else {
-        // const promise = tryElement(getId(n));
-        setCurrentFrame(n);
-        // await promise
-
-        const promise = waitForAsyncRenders();
-
-        // Need to wait for all components to register themselves
-        // setTimeout 0 seems to work well (I'm guessing because all react components will get initialized in the same tick)
-        await new Promise((resolve) => setTimeout(resolve, 0));
-        // await new Promise((resolve) => window.requestAnimationFrame(resolve));
-        // await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // If none were registered (e.g. just simple HTML), don't await
-        if (anyAsyncRendersRegistered()) {
-          await promise;
-        }
+        return [];
       }
+      // const promise = tryElement(getId(n));
+      setCurrentFrame(n);
+      // await promise
+
+      const promise = waitForAsyncRenders();
+
+      // Need to wait for all components to register themselves
+      // setTimeout 0 seems to work well (I'm guessing because all react components will get initialized in the same tick)
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      // await new Promise((resolve) => window.requestAnimationFrame(resolve));
+      // await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // If none were registered (e.g. just simple HTML), don't await
+      if (anyAsyncRendersRegistered()) {
+        return promise;
+      }
+      return [];
     };
   }, [waitForAsyncRenders]);
 
+  const api = useMemo(() => Api({ serverPort, renderId, secret }), [renderId, serverPort, secret]);
+
+  // if (currentFrame == null) return <div id="frame-cleared" />;
+  if (currentFrame == null) return null;
+
+  // Allow the user to override?
+  const videoComponentType = 'ffmpeg';
+
+  const frameCanvasStyle = {
+    width,
+    height,
+    overflow: 'hidden',
+    position: 'relative',
+  };
+
+  // <div key={currentFrame} id={getId(currentFrame)}>
   return (
-    // eslint-disable-next-line react/jsx-props-no-spreading
-    <Main devMode={devMode} width={width} height={height} fps={fps} serverPort={serverPort} durationFrames={durationFrames} currentFrame={currentFrame} renderId={renderId} />
+    <div id={getId(currentFrame)} style={frameCanvasStyle}>
+      <VideoContextProvider
+        currentFrame={currentFrame}
+        durationFrames={durationFrames}
+        width={width}
+        height={height}
+        fps={fps}
+        api={api}
+        userData={userData}
+        videoComponentType={videoComponentType}
+        isPuppeteer
+      >
+        {devMode && <div id="currentFrame" style={{ fontSize: 18, position: 'absolute', zIndex: 100, background: 'white' }}>{currentFrame} ID{renderId}</div>}
+
+        <RootComponent />
+      </VideoContextProvider>
+    </div>
   );
 };
 
-window.setupReact = ({ devMode, width, height, fps, serverPort, durationFrames, renderId, userData }) => {
+window.setupReact = ({ devMode, width, height, fps, serverPort, durationFrames, renderId, userData, secret }) => {
   async function waitForAsyncRenders() {
     return new Promise((resolve) => {
-      setAsyncRenderDoneCb(() => {
+      setAsyncRenderDoneCb((errors) => {
         console.log('asyncRenderDoneCb');
-        resolve();
+        resolve(errors);
       });
     });
   }
 
-  setUserData(userData);
-
-  ReactDOM.render(<PuppeteerRenderer devMode={devMode} width={width} height={height} fps={fps} serverPort={serverPort} durationFrames={durationFrames} waitForAsyncRenders={waitForAsyncRenders} renderId={renderId} userData={userData} />, document.getElementById('root'));
+  ReactDOM.render(<PuppeteerRoot devMode={devMode} width={width} height={height} fps={fps} serverPort={serverPort} durationFrames={durationFrames} waitForAsyncRenders={waitForAsyncRenders} renderId={renderId} userData={userData} secret={secret} />, document.getElementById('root'));
 };
 
 // This is a bit hacky. trying to make sure we don't get dup frames (previous frame rendered again)

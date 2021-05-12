@@ -11,8 +11,8 @@ const cli = meow(`
     Video.js is your React component file
 
   REQUIRED flags (one of these are required)
-    --duration-frames,-f  Duration of the resulting video, in FRAMES
-    --duration-time,-t  Duration of the resulting video, in SECONDS
+    --duration-frames, -f  Duration of the resulting video, in FRAMES
+    --duration-time, -t  Duration of the resulting video, in SECONDS
 
   Options
     --output  Resulting video file name or path
@@ -21,6 +21,7 @@ const cli = meow(`
     --fps  FPS of the resulting video
 
     --preview  Launch a browser live preview instead of editing
+    --preview-html  HTML5 video previewing. Allows faster previews by using your browser's HTML5 video player
 
     --ffmpeg-path  Path to ffmpeg executable
     --ffprobe-path  Path to ffprobe executable
@@ -38,6 +39,7 @@ const cli = meow(`
     devMode: { type: 'boolean' },
 
     preview: { type: 'boolean' },
+    previewHtml: { type: 'boolean' },
 
     headless: { type: 'boolean', default: true },
     autoCloseBrowser: { type: 'boolean', default: true },
@@ -72,20 +74,21 @@ const cli = meow(`
 const reactVideo = cli.input[0];
 
 const {
-  preview, ffmpegPath, ffprobePath, devMode, userData: userDataStr, verbose, ...rest
+  preview, ffmpegPath, ffprobePath, devMode, userData: userDataStr, verbose, previewHtml, ...rest
 } = cli.flags;
 
 (async () => {
-  if (cli.input.length !== 1) cli.showHelp();
+  if (cli.input.length !== 1 || (!cli.flags.durationTime && !cli.flags.durationFrames)) cli.showHelp();
 
   const editor = Editor({ ffmpegPath, ffprobePath, devMode });
 
   const userData = userDataStr && JSON5.parse(userDataStr);
-  if (cli.flags.preview) {
+  if (preview || previewHtml) {
     await editor.preview({
       reactVideo,
       userData,
       debug: verbose,
+      videoComponentType: previewHtml ? 'html-proxied' : undefined,
       ...rest,
     });
   } else {

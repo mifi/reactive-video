@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-import { useAsyncRenderer } from '../entry';
+import { useAsyncRenderer } from '../asyncRegistry';
 
 const Image = (props) => {
   const { waitFor } = useAsyncRenderer();

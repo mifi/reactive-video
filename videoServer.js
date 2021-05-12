@@ -4,11 +4,14 @@ const execa = require('execa');
 // const MjpegConsumer = require('mjpeg-consumer');
 const pngSplitStream = require('png-split-stream');
 const assert = require('assert');
+const uri2path = require('file-uri-to-path');
 
 const videoProcesses = {};
 
-function createRawFfmpeg({ ffmpegPath, fps, path, width, height, scale, fileFps, cutFrom, streamIndex, type }) {
+function createRawFfmpeg({ ffmpegPath, fps, uri, width, height, scale, fileFps, cutFrom, streamIndex, type }) {
   const fileFrameDuration = 1 / fileFps;
+
+  const path = uri.startsWith('file://') ? uri2path(uri) : uri;
 
   const filters = [
     `fps=${fps}`,
@@ -66,15 +69,15 @@ async function readFrame(props) {
   let key;
 
   try {
-    const { ffmpegPath, fps, path, width, height, scale, fileFps, time = 0, streamIndex, type, renderId } = props;
+    const { ffmpegPath, fps, uri, width, height, scale, fileFps, time = 0, streamIndex, type, renderId } = props;
 
     const frameDuration = 1 / fps;
 
-    key = stringify({ fps, path, width, height, scale, fileFps, streamIndex, type, renderId });
+    key = stringify({ fps, uri, width, height, scale, fileFps, streamIndex, type, renderId });
 
     // console.log(videoProcesses[key] && videoProcesses[key].time, time);
 
-    // TODO half a frame is ok?
+    // Assume half a frame is ok
     if (videoProcesses[key] && Math.abs(videoProcesses[key].time - time) < frameDuration * 0.5) {
       // OK, will reuse
       // console.log('Reusing ffmpeg');
@@ -86,7 +89,7 @@ async function readFrame(props) {
       // Parameters changed (or time is not next frame). need to restart encoding
       cleanupProcess(key); // in case only time has changed, cleanup old process
 
-      process = createRawFfmpeg({ ffmpegPath, fps, path, width, height, scale, fileFps, cutFrom: time, streamIndex, type });
+      process = createRawFfmpeg({ ffmpegPath, fps, uri, width, height, scale, fileFps, cutFrom: time, streamIndex, type });
 
       let readNextFrame;
       if (type === 'raw') {

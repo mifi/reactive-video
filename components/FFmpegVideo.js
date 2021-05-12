@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import { useAsyncRenderer, useVideo } from '../entry';
+import { useVideo } from '../contexts';
+import { useAsyncRenderer } from '../asyncRegistry';
 
 const FFmpegVideo = (props) => {
-  const { src, scaleToWidth, scaleToHeight, streamIndex = 0, style, ...rest } = props;
+  const { src, scaleToWidth, scaleToHeight, streamIndex = 0, style, isPuppeteer, ...rest } = props;
 
   // PNG is also possible, but I don't see the benefit
   const type = 'raw';
@@ -17,6 +18,8 @@ const FFmpegVideo = (props) => {
   const imgRef = useRef();
 
   const videoMetaCache = useRef({});
+
+  const ongoingRequestsRef = useRef();
 
   const [visible, setVisible] = useState(true);
 
@@ -49,6 +52,7 @@ const FFmpegVideo = (props) => {
         const cacheKey = src;
         if (!videoMetaCache.current[cacheKey]) {
           const videoMetadataResponse = await api.readVideoMetadata({ path: src, streamIndex });
+          if (!videoMetadataResponse.ok) throw new Error('HTTP error');
           const meta = await videoMetadataResponse.json();
           videoMetaCache.current[cacheKey] = { width: meta.width, height: meta.height, fps: meta.fps };
         }
@@ -59,11 +63,36 @@ const FFmpegVideo = (props) => {
         }
         const fileFps = cached.fps;
 
-        const response = await api.readVideoFrame({ fps, path: src, width, height, fileFps, scale, time: currentTime, streamIndex, type });
-        if (!response.ok) throw new Error('HTTP error');
-        const blob = await response.blob();
+        // eslint-disable-next-line no-inner-declarations
+        async function readVideoFrame() {
+          const response = await api.readVideoFrame({ fps, uri: src, width, height, fileFps, scale, time: currentTime, streamIndex, type });
+          if (!response.ok) throw new Error('HTTP error');
+          return response;
+        }
+
+        let fetchResponse;
+        if (isPuppeteer) {
+          fetchResponse = await readVideoFrame();
+        } else {
+          // Throttle requests to server when only previewing
+          if (!ongoingRequestsRef.current) {
+            ongoingRequestsRef.current = (async () => {
+              try {
+                const response = await readVideoFrame();
+                if (!response.ok) throw new Error('HTTP error');
+                return response;
+              } finally {
+                ongoingRequestsRef.current = undefined;
+              }
+            })();
+          }
+
+          fetchResponse = await ongoingRequestsRef.current;
+        }
 
         if (!canceled) {
+          const blob = await fetchResponse.blob();
+
           if (type === 'raw') {
             drawOnCanvas(await blob.arrayBuffer(), width, height);
           } else if (type === 'png') {
@@ -82,7 +111,7 @@ const FFmpegVideo = (props) => {
       canceled = true;
       if (pngBlobUrl) URL.revokeObjectURL(pngBlobUrl);
     };
-  }, [src, currentTime, scaleToWidth, scaleToHeight, fps, api, streamIndex, waitFor]);
+  }, [src, currentTime, scaleToWidth, scaleToHeight, fps, api, streamIndex, waitFor, isPuppeteer]);
 
   // eslint-disable-next-line react/jsx-props-no-spreading
   if (type === 'raw') return <canvas {...rest} style={alteredStyle} ref={canvasRef} />;

@@ -5,6 +5,9 @@ const hasha = require('hasha');
 const { copyFile } = require('fs').promises;
 const { mkdirp } = require('fs-extra');
 const assert = require('assert');
+const crypto = require('crypto');
+const { promisify } = require('util');
+
 const { concatParts, createOutputFfmpeg } = require('./ffmpeg');
 
 const { readVideoFormatMetadata, readVideoStreamsMetadata, readDurationFrames } = require('./videoServer');
@@ -12,6 +15,12 @@ const { serve } = require('./server');
 const { createBundler } = require('./bundler');
 
 const { createExtensionFrameCapturer, captureFrameScreenshot, startScreencast } = require('./frameCapture');
+
+const randomBytes = promisify(crypto.randomBytes);
+
+async function generateSecret() {
+  return (await randomBytes(32)).toString('base64');
+}
 
 async function startBundler({ bundler, reactHtmlPath, reactHtmlDistName, distPath }) {
   return new Promise((resolve, reject) => {
@@ -150,9 +159,10 @@ function Editor({
       console.log('Compiling');
       watcher = await startBundler({ bundler, reactHtmlPath, reactHtmlDistName, distPath });
 
-      // TODO security issue? can cd ..?
+      const secret = await generateSecret();
+
       // const server = await serve({ ffmpegPath, ffprobePath, serveStaticPath: distPath });
-      const server = await serve({ ffmpegPath, ffprobePath });
+      const server = await serve({ ffmpegPath, ffprobePath, secret });
       stopServer = server.stop;
       const { port } = server;
 
@@ -209,7 +219,7 @@ function Editor({
             // await page.goto(`http://localhost:${port}/index.html`);
             await page.goto(fileUrl(join(distPath, 'index.html')));
 
-            await page.evaluate((params) => window.setupReact(params), { devMode, width, height, fps, serverPort: port, durationFrames, renderId, userData });
+            await page.evaluate((params) => window.setupReact(params), { devMode, width, height, fps, serverPort: port, durationFrames, renderId, userData, secret });
 
             const screencast = captureType === 'screencast' && await startScreencast(page);
 
@@ -229,7 +239,8 @@ function Editor({
 
                     console.log('renderFrame', i);
                     // eslint-disable-next-line no-shadow
-                    await page.evaluate((i) => window.renderFrame(i), i);
+                    const errors = await page.evaluate(async (i) => window.renderFrame(i), i);
+                    errors.forEach((err) => console.error('Web error', err));
 
                     console.log('waitForFonts');
                     // Wait for fonts (fonts will have been loaded after page start, due to webpack imports from React components)
@@ -337,6 +348,8 @@ function Editor({
     port = 3000,
     userData,
 
+    videoComponentType = 'ffmpeg',
+
     durationFrames: durationFramesIn,
     durationTime,
 
@@ -355,14 +368,17 @@ function Editor({
 
     const bundler = createBundler({ entryPath: reactIndexPath, userEntryPath, outDir: distPath, mode: bundleMode, entryOutName: 'preview.js' });
 
-    console.log('Compiling');
+    console.log('Compiling React');
     const watcher = await startBundler({ bundler, reactHtmlPath, reactHtmlDistName, distPath });
 
-    // TODO security issue? can cd ..?
-    const server = await serve({ ffmpegPath, ffprobePath, serveStaticPath: distPath, port });
+    const secret = await generateSecret();
+
+    const serveRoot = videoComponentType === 'html-proxied';
+    console.warn('Warning: Serving filesystem root');
+    const server = await serve({ ffmpegPath, ffprobePath, serveStaticPath: distPath, serveRoot, port, secret });
     const { stop: stopServer } = server;
 
-    const params = { devMode, width, height, fps, serverPort: port, durationFrames, userData: userData && JSON.stringify(userData) };
+    const params = { devMode, width, height, fps, serverPort: port, durationFrames, userData: userData && JSON.stringify(userData), videoComponentType, secret };
     const qs = Object.entries(params).filter(([, value]) => value).map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`).join('&');
     console.log(`http://localhost:${port}/preview.html?${qs}`);
 
