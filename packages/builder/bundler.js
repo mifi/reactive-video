@@ -28,7 +28,7 @@ function createBundler({ entryPath, userEntryPath, outDir, mode, entryOutName = 
 
           exclude: (modulePath) => !(
             !/node_modules/.test(modulePath)
-            || (/node_modules\/reactive-video/.test(modulePath) && !/node_modules\/reactive-video\/node_modules/.test(modulePath))
+            || (/node_modules\/@reactive-video\/builder/.test(modulePath) && !/node_modules\/@reactive-video\/builder\/node_modules/.test(modulePath))
           ),
 
           use: [{
