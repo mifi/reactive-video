@@ -49,7 +49,7 @@ const cli = meow(`
     userData: { type: 'string' },
     concurrency: { type: 'number' },
 
-    captureType: { type: 'string' },
+    captureMethod: { type: 'string' },
     frameRenderTimeout: { type: 'number' },
 
     durationFrames: { type: 'number', alias: 'f' },

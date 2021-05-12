@@ -112,7 +112,7 @@ function Editor({
     userData,
     concurrency = 2,
 
-    captureType = 'screencast',
+    captureMethod = 'screencast',
 
     frameRenderTimeout = 30000,
 
@@ -135,7 +135,7 @@ function Editor({
 
     debug = false,
   }) {
-    assert(captureType !== 'extension' || !headless, 'Headless is not compatible with this captureType');
+    assert(captureMethod !== 'extension' || !headless, 'Headless is not compatible with this captureMethod');
 
     const {
       durationFrames, tempDir, distPath, userEntryPath,
@@ -171,7 +171,7 @@ function Editor({
 
       browser = await puppeteer.launch({
         args: [
-          ...(captureType === 'extension' ? [
+          ...(captureMethod === 'extension' ? [
             `--load-extension=${extensionPath}`,
             `--disable-extensions-except=${extensionPath}`,
             `--whitelisted-extension-id=${extensionId}`,
@@ -191,7 +191,7 @@ function Editor({
         // defaultViewport: null,
       });
 
-      const extensionFrameCapturer = captureType === 'extension' && await createExtensionFrameCapturer(browser);
+      const extensionFrameCapturer = captureMethod === 'extension' && await createExtensionFrameCapturer(browser);
 
       // eslint-disable-next-line no-inner-declarations
       function renderPart({ partStart, partEnd }) {
@@ -221,7 +221,7 @@ function Editor({
 
             await page.evaluate((params) => window.setupReact(params), { devMode, width, height, fps, serverPort: port, durationFrames, renderId, userData, secret });
 
-            const screencast = captureType === 'screencast' && await startScreencast(page);
+            const screencast = captureMethod === 'screencast' && await startScreencast(page);
 
             let timeoutTimer;
             /* eslint-disable no-await-in-loop */
@@ -257,11 +257,11 @@ function Editor({
 
                     // Implemented three different ways
                     let buf;
-                    switch (captureType) {
+                    switch (captureMethod) {
                       case 'screencast': buf = await screencast.captureFrame(); break;
                       case 'extension': buf = await extensionFrameCapturer.captureFrame(); break;
                       case 'screenshot': buf = await captureFrameScreenshot(page); break;
-                      default: throw new Error('Invalid captureType');
+                      default: throw new Error('Invalid captureMethod');
                     }
 
                     console.log('Capture done');
