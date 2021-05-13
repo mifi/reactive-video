@@ -59,6 +59,8 @@ function createBundler({ entryPath, userEntryPath, outDir, mode, entryOutName = 
     optimization: {
       minimize: false,
     },
+
+    devtool: 'eval',
   };
 
   return webpack(config);
