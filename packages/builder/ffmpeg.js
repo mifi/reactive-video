@@ -30,18 +30,21 @@ async function concatParts({ ffmpegPath, paths, concatFilePath, finalOutPath, re
 }
 
 // https://superuser.com/questions/585798/ffmpeg-slideshow-piping-input-and-output-for-image-stream
-function createOutputFfmpeg({ ffmpegPath, fps, outPath, debug = false }) {
+function createOutputFfmpeg({ ffmpegPath, fps, outPath, log = false }) {
   return execa(ffmpegPath, [
     '-f', 'image2pipe', '-r', fps,
     // '-c:v', 'png',
     '-c:v', 'mjpeg',
     '-i', '-',
 
+    // This can used to trigger the process hanging if stdout/stderr streams are not read (causes EPIPE)
+    // '-loglevel', 'trace',
+
     ...getCodecArgs({ remuxOnly: true }),
 
     '-y', outPath,
   ], {
-    encoding: null, buffer: false, stdin: 'pipe', stdout: debug ? process.stdout : undefined, stderr: debug ? process.stderr : undefined,
+    encoding: null, buffer: false, stdin: 'pipe', stdout: log ? process.stdout : 'ignore', stderr: log ? process.stderr : 'ignore',
   });
 }
 

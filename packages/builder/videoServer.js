@@ -55,7 +55,7 @@ function createRawFfmpeg({ ffmpegPath, fps, uri, width, height, scale, fileFps, 
 
   // console.log(args);
 
-  return execa(ffmpegPath, args, { encoding: null, buffer: false });
+  return execa(ffmpegPath, args, { encoding: null, buffer: false, stderr: 'ignore' });
 }
 
 function cleanupProcess(key) {
