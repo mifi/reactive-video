@@ -166,6 +166,37 @@ const { edit, preview } = Editor({ ffmpegPath, ffprobePath });
 
 See [editor.js edit and preview](packages/builder/index.js) for options.
 
+### `Editor.readVideoMetadata`
+
+Useful to read an input video's parameters and use it for your video, for instance if you want to render something on top of an existing video. Example:
+
+```js
+const fileUrl = require('file-url');
+const inputVideoPath = '/path/to/input-video.mp4';
+
+const { edit, readVideoMetadata } = Editor();
+const { width, height, fps, duration: durationTime } = await readVideoMetadata({ path: inputVideoPath });
+
+await edit({
+  reactVideo: 'MyVideo.js',
+  width,
+  height,
+  fps,
+  durationTime,
+  userData: { videoUri: fileUrl(inputVideoPath) },
+  // videoUri becomes file:///path/to/input-video.mp4
+});
+```
+
+Then in `MyVideo.js`:
+```js
+export default () => {
+  const { userData: { videoUri } } = useVideo();
+
+  return <Video src={videoUri} />;
+}
+```
+
 ## React API
 
 ```js
@@ -184,11 +215,11 @@ impprt {
 Renders video frames synced to time
 
 - `src` - See **src** below.
-- `htmlSrc` - Override `Video` component `src` when reusing the video code in a separate React frontend.
+- `htmlSrc` - Override `Video` component `src` by specifying a different URL to be used when rendering the video code in e.g. a separate React frontend.
 
-For final rendering and preview, it uses ffmpeg to stream to a `canvas`. Efficiently reuses the ffmpeg instance for sequential rendering. Supports virtually all formats that ffmpeg can seek in.
+For final rendering and preview, Reactive Video uses ffmpeg to stream to a `<canvas>`. Efficiently reuses the ffmpeg instance for sequential rendering. Supports virtually all formats that ffmpeg can seek in, even over HTTP (e.g. AWS S3)
 
-Can also use `<video>` for preview. Much faster seeking, but only supports certain codecs. Enabled with the `--preview-html` CLI flag.
+Can also use HTML5 `<video>` for preview. Much faster seeking, but only supports certain codecs. Enabled with the `--preview-html` CLI flag.
 
 ### `<Image>`
 
@@ -204,7 +235,7 @@ Works the same as HTML `<iframe>`. Waits for data to load.
 
 ### `src` attribute
 
-`src` must be a full, absolute `file://` path (e.g. `file:///Users/me/video.webm` or `https://example.com/image.jpeg`). Note the three slashes for local files!
+`src` must be a full, absolute `file://` or `http(s)://` URI (e.g. `file:///Users/me/video.webm` or `https://example.com/image.jpeg`). Note the three slashes for local files! **Tip:** In Node.js you can use [file-url](https://github.com/sindresorhus/file-url) to convert local (also relative) paths to `file://` URIs! See example above.
 
 ### useVideo
 
@@ -234,7 +265,7 @@ const {
     durationTime,
   },
 
-  // Parsed user JSON data passed from CLI (`--user-data`) or Node.js `userData` option
+  // User JSON object passed from CLI (`--user-data`) or Node.js `userData` option
   userData,
 } = useVideo();
 ```
@@ -261,16 +292,16 @@ const MyVideoOrComponent = () => {
 A Segment will, for a specific timespan specified by `start` and `duration` (specified in **frames**), render one of either:
 1. Its provided `children`:
   ```js
-  <Segment><MyComponents /></Segment>
+  <Segment><MyComponent /></Segment>
   ```
 2. or a render prop:
   ```js
-  <Segment render={(props) => <MyComponents />} />
+  <Segment render={(props) => <MyComponent />} />
   ```
 
 #### Segment props
-- `start` - First frame that contents should be shown from (default `0`)
-- `duration` - Number of frames that contents should be visible for (default video `durationFrames`).
+- `start` - First frame that contents should be shown from (default: `0`)
+- `duration` - Number of frames that contents should be visible for (default: video `durationFrames - start`).
 
 Segments will override the following variables in the `useVideo` hook for its `children`:
 - `currentFrame`
@@ -278,9 +309,23 @@ Segments will override the following variables in the `useVideo` hook for its `c
 - `durationFrames`
 - `durationTime`
 
-Theses variables will instead be relative to the start/duration of the `Segment`.
+Theses variables will instead be *relative to the start/duration* of the `Segment`.
 
-If the `render` prop is used, the render function's provided `props` argument will also contain the same variables.
+If the `render` prop is used, the render function's provided `props` argument will also contain the same relative variables.
+
+## Importing resources
+
+Resources are fetched from the local filesystem automatically during `edit` and `preview` with `file://` or remotely using `http(s)://`. You can also import resources from your React components using ES6 `import`. This can be used to import css, images, and even videos, but it is recommended to not import large videos like this, as they will be copied to the `dist` directory during the compile.
+
+```js
+// MyVideo.js
+
+import image from './image.jpeg';
+
+export default () => (
+  <Image src={image} style={{ width: 100 }} />
+);
+```
 
 ## Examples
 
@@ -300,11 +345,11 @@ Submit a PR if you want to share your Reactive Video here.
 - FFmpegVideo fallback to previous frame if missing? (like HTML5Video)
 - puppeteer [intercept request](https://github.com/puppeteer/puppeteer/blob/v9.1.1/docs/api.md#httprequestrespondresponse) instead of starting local express server (if possible and fast to send big binary data), will not work for preview
 - Improve preview (don't use query string) - webpack inject?
-- Retry screencast: Sometimes (very rarely) `Page.screencastFrame` stops getting called
-- Do we need webpack mode `production`? We don't need all the uglifying etc. `development` is much faster
-- Source maps would be great in production too
 - make it easiser to animate (mount/unmount?) provide a react component that clamps animations? something like `<Segment start={} duration={} render=((animation) => 0..1) easing="easeIn" />`
 - render single frame as image
+- allow speed up/down `<segment speed={1.3} />`
+- example reuse with create-react-app
+- custom video component example
 
 ## Ideas
 
@@ -315,6 +360,11 @@ Submit a PR if you want to share your Reactive Video here.
 - create demo video, YouTube video
 - editly features
 - Recreate editly's video in reactive-video
+
+## Troubleshooting
+
+- `React webpage failed to initialize`
+  - Try to run with `headless false` and check puppeteer developer tools
 
 ## Donate 🙈
 
