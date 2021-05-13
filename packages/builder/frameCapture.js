@@ -1,3 +1,5 @@
+const pTimeout = require('p-timeout');
+
 // https://github.com/puppeteer/puppeteer/issues/478
 
 // Alternative recording: MediaRecorder API (but only webm/mp4)
@@ -43,9 +45,28 @@ async function startScreencast(page) {
     }
   });
 
-  async function captureFrame() {
-    await client.send('Page.startScreencast', options);
-    return new Promise((resolve) => { screenCastFrameCb = resolve; });
+  async function captureFrame(frameNum) {
+    const numRetries = 5;
+    const timeoutVal = 5000;
+
+    // Sometimes we never receive the Page.screencastFrame event
+    // This can sometimes be triggered on MacOS by doing Exposé
+    for (let i = 0; i < numRetries; i += 1) {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await client.send('Page.startScreencast', options);
+        // eslint-disable-next-line no-await-in-loop,no-loop-func
+        const frame = await pTimeout(new Promise((resolve) => { screenCastFrameCb = resolve; }), timeoutVal, `Page.screencastFrame Timeout after ${timeoutVal}ms`);
+        if (!frame) throw new Error('Empty frame');
+        return frame;
+      } catch (err) {
+        console.error('captureFrame failed', frameNum, err);
+        console.log('Retrying', i + 1);
+        // eslint-disable-next-line no-await-in-loop
+        await client.send('Page.stopScreencast');
+      }
+    }
+    throw new Error(`No Page.screencastFrame after ${numRetries} retries`);
   }
 
   return { captureFrame };

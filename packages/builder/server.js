@@ -34,7 +34,7 @@ async function serve({ ffmpegPath, ffprobePath, serveStaticPath, serveRoot, port
       if (req.body.type === 'png') res.set({ 'content-type': 'image/png' });
       res.send(frame);
     } catch (err) {
-      console.log(err.message);
+      console.error('Server read frame error', err);
       res.sendStatus(400);
     }
   }));

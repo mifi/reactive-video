@@ -7,6 +7,8 @@ const { mkdirp } = require('fs-extra');
 const assert = require('assert');
 const crypto = require('crypto');
 const { promisify } = require('util');
+const pTimeout = require('p-timeout');
+const log = require('debug')('reactive-video');
 
 const { concatParts, createOutputFfmpeg } = require('./ffmpeg');
 
@@ -68,7 +70,7 @@ async function stopBundleWatcher(bundler, watcher) {
   }
 }
 
-function getParts(durationFrames, concurrency) {
+function splitIntoParts(durationFrames, concurrency) {
   const partLength = Math.floor(durationFrames / concurrency);
   const parts = Array(concurrency).fill().map((v, i) => [i * partLength, (i + 1) * partLength]);
   const remainder = durationFrames % concurrency;
@@ -133,7 +135,8 @@ function Editor({
     // Can be enabled to throw an error if any two sequential frames are the same (note that in some videos this is actually valid)
     enableHashCheck = false,
 
-    debug = false,
+    showProgress = true,
+    enableFfmpegLog = false,
   }) {
     assert(captureMethod !== 'extension' || !headless, 'Headless is not compatible with this captureMethod');
 
@@ -156,11 +159,12 @@ function Editor({
     let watcher;
 
     try {
-      console.log('Compiling');
+      console.log('Compiling Reactive Video Javascript');
       watcher = await startBundler({ bundler, reactHtmlPath, reactHtmlDistName, distPath });
 
       const secret = await generateSecret();
 
+      console.log('Starting server');
       // const server = await serve({ ffmpegPath, ffprobePath, serveStaticPath: distPath });
       const server = await serve({ ffmpegPath, ffprobePath, secret });
       stopServer = server.stop;
@@ -168,6 +172,8 @@ function Editor({
 
       const extensionPath = join(__dirname, 'extension');
       const extensionId = 'jjndjgheafjngoipoacpjgeicjeomjli';
+
+      console.log('Launching puppeteer');
 
       browser = await puppeteer.launch({
         args: [
@@ -194,18 +200,20 @@ function Editor({
       const extensionFrameCapturer = captureMethod === 'extension' && await createExtensionFrameCapturer(browser);
 
       // eslint-disable-next-line no-inner-declarations
-      function renderPart({ partStart, partEnd }) {
+      function renderPart({ partNum, partStart, partEnd, onProgress }) {
         let aborted = false;
 
+        let frameNum = partStart;
+
         const promise = (async () => {
-          const renderId = partStart;
+          const renderId = partStart; // Unique ID per concurrent renderer
 
           let outProcess;
 
           try {
-            const outPath = join(tempDir, `part-${partStart}.mkv`);
+            const outPath = join(tempDir, `part ${partNum}-${partStart}-${partEnd}.mkv`);
 
-            outProcess = createOutputFfmpeg({ ffmpegPath, fps, outPath, debug });
+            outProcess = createOutputFfmpeg({ ffmpegPath, fps, outPath, log: enableFfmpegLog });
 
             outProcess.on('exit', (code) => {
               console.log('Output ffmpeg exited with code', code);
@@ -219,73 +227,82 @@ function Editor({
             // await page.goto(`http://localhost:${port}/index.html`);
             await page.goto(fileUrl(join(distPath, 'index.html')));
 
+            if (await page.evaluate(() => !window.setupReact)) {
+              throw new Error('React webpage failed to initialize');
+            }
+
             await page.evaluate((params) => window.setupReact(params), { devMode, width, height, fps, serverPort: port, durationFrames, renderId, userData, secret });
 
             const screencast = captureMethod === 'screencast' && await startScreencast(page);
 
-            let timeoutTimer;
-            /* eslint-disable no-await-in-loop */
-            for (let i = partStart; i < partEnd; i += 1) {
-              try {
-                await Promise.race([
-                  // eslint-disable-next-line no-loop-func
-                  new Promise((resolve, reject) => {
-                    timeoutTimer = setTimeout(() => reject(new Error(`Frame render timed out for part starting at ${partStart}`)), frameRenderTimeout);
-                  }),
-                  (async () => {
-                    // Clearing the canvas doesn't work well with html5 videos (need to reload the video every frame)
-                    // await page.evaluate(() => renderFrame());
-                    // await page.waitForSelector('#frame-cleared');
+            // eslint-disable-next-line no-inner-declarations
+            async function renderFrame() {
+              // Clearing the canvas doesn't work well with html5 videos (need to reload the video every frame)
+              // await page.evaluate(() => renderFrame());
+              // await page.waitForSelector('#frame-cleared');
 
-                    console.log('renderFrame', i);
-                    // eslint-disable-next-line no-shadow
-                    const errors = await page.evaluate(async (i) => window.renderFrame(i), i);
-                    errors.forEach((err) => console.error('Web error', err));
+              log('renderFrame', frameNum);
+              // eslint-disable-next-line no-shadow
+              const errors = await page.evaluate(async (frameNum) => window.renderFrame(frameNum), frameNum);
+              errors.forEach((err) => console.error('Web error', err));
 
-                    console.log('waitForFonts');
-                    // Wait for fonts (fonts will have been loaded after page start, due to webpack imports from React components)
-                    await page.waitForFunction(async () => window.haveFontsLoaded());
+              log('waitForFonts');
+              // Wait for fonts (fonts will have been loaded after page start, due to webpack imports from React components)
+              await page.waitForFunction(async () => window.haveFontsLoaded());
 
-                    console.log('waitForSelector');
-                    await page.waitForSelector(`#frame-${i}`);
-                    console.log('awaitDomRenderSettled');
-                    await page.evaluate(() => window.awaitDomRenderSettled());
+              log('waitForSelector');
+              await page.waitForSelector(`#frame-${frameNum}`);
+              log('awaitDomRenderSettled');
+              await page.evaluate(() => window.awaitDomRenderSettled());
 
-                    // await new Promise((resolve) => setTimeout(resolve, 2000));
+              // await new Promise((resolve) => setTimeout(resolve, 2000));
 
-                    console.log('Capturing');
+              log('Capturing');
 
-                    // Implemented three different ways
-                    let buf;
-                    switch (captureMethod) {
-                      case 'screencast': buf = await screencast.captureFrame(); break;
-                      case 'extension': buf = await extensionFrameCapturer.captureFrame(); break;
-                      case 'screenshot': buf = await captureFrameScreenshot(page); break;
-                      default: throw new Error('Invalid captureMethod');
-                    }
-
-                    console.log('Capture done');
-
-                    if (enableHashCheck) frameHashes[i] = await hasha(buf);
-
-                    // console.log('data', opts);
-                    // fs.writeFile('lol.jpeg', buf);
-
-                    // If we don't wait, then we get EINVAL when dealing with high resolution files (big writes)
-                    await new Promise((r) => outProcess.stdin.write(buf, r));
-                  })(),
-                ]);
-                if (aborted) throw new Error('Aborted');
-              } finally {
-                if (timeoutTimer) clearTimeout(timeoutTimer);
-                timeoutTimer = undefined;
+              // Implemented three different ways
+              let buf;
+              switch (captureMethod) {
+                case 'screencast': buf = await screencast.captureFrame(frameNum); break;
+                case 'extension': buf = await extensionFrameCapturer.captureFrame(frameNum); break;
+                case 'screenshot': buf = await captureFrameScreenshot(page, frameNum); break;
+                default: throw new Error('Invalid captureMethod');
               }
+
+              log('Capture done');
+
+              if (enableHashCheck) frameHashes[frameNum] = await hasha(buf);
+
+              // console.log('data', opts);
+              // fs.writeFile('lol.jpeg', buf);
+
+              const mustDrain = await new Promise((resolve) => {
+                // If we don't wait for cb, then we get EINVAL when dealing with high resolution files (big writes)
+                // Returns: <boolean> false if the stream wishes for the calling code to wait for the 'drain' event to be emitted before continuing to write additional data; otherwise true.
+                const ret = outProcess.stdin.write(buf, () => {
+                  resolve(!ret);
+                });
+              });
+
+              /* if (mustDrain) {
+                log('Draining output stream');
+                await new Promise((resolve) => outProcess.stdin.once('drain', resolve));
+              } */
+            }
+
+            for (; frameNum < partEnd; frameNum += 1) {
+              // eslint-disable-next-line no-await-in-loop
+              await pTimeout(renderFrame(), frameRenderTimeout, 'Frame render timed out');
+
+              if (aborted) throw new Error('Aborted');
+
+              onProgress({ frameNum });
             }
 
             outProcess.stdin.end();
             return outPath;
           } catch (err) {
             if (outProcess) outProcess.kill();
+            console.error(`Caught error at frame ${frameNum}, part ${partNum} (${partStart})`, err);
             throw err;
           }
         })();
@@ -296,20 +313,45 @@ function Editor({
         return { promise, abort };
       }
 
-      const parts = getParts(durationFrames, concurrency);
+      const parts = splitIntoParts(durationFrames, concurrency);
 
       console.log(`Rendering with concurrency ${concurrency}`);
 
-      const renderers = parts.map((part) => (
-        renderPart({ partStart: part[0], partEnd: part[1] })
-      ));
+      const partProgresses = {};
+      let totalFramesDone = 0;
+      const startTime = new Date();
+
+      const renderers = parts.map((part, partNum) => {
+        const partStart = part[0];
+        const partEnd = part[1];
+
+        function onProgress({ frameNum }) {
+          if (!showProgress) return;
+          partProgresses[partNum] = { frameNum: frameNum - partStart, durationFrames: partEnd - partStart };
+          totalFramesDone = Object.values(partProgresses).reduce((acc, { frameNum: frameNum2 }) => acc + frameNum2, 0);
+          const avgFps = totalFramesDone / ((new Date().getTime() - startTime.getTime()) / 1000);
+          // console.log(partProgresses, totalProgress, avgFps)
+          if (totalFramesDone % fps === 0) {
+            console.log(
+              'Progress', `${((totalFramesDone / durationFrames) * 100).toFixed(2)}%`,
+              'FPS:', avgFps.toFixed(2),
+              'Parts:', Object.entries(partProgresses).map(([n, { frameNum: frameNum2, durationFrames: durationFrames2 }]) => `${n}: ${((frameNum2 / durationFrames2) * 100).toFixed(2)}%`).join(', '),
+            );
+          }
+        }
+
+        return (
+          renderPart({ partNum, partStart, partEnd, onProgress })
+        );
+      });
+
       const promises = renderers.map((r) => r.promise);
       let outPaths;
       try {
         outPaths = await Promise.all(promises);
       } catch (err) {
         if (renderers.length > 1) {
-          console.log('Aborting parts');
+          console.log('Caught error in one part, aborting the rest');
           renderers.forEach((r) => r.abort());
           await Promise.allSettled(promises);
         }
@@ -368,7 +410,7 @@ function Editor({
 
     const bundler = createBundler({ entryPath: reactIndexPath, userEntryPath, outDir: distPath, mode: bundleMode, entryOutName: 'preview.js' });
 
-    console.log('Compiling React');
+    console.log('Compiling Reactive Video Javascript');
     const watcher = await startBundler({ bundler, reactHtmlPath, reactHtmlDistName, distPath });
 
     const secret = await generateSecret();

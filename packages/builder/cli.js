@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 const meow = require('meow');
 const JSON5 = require('json5');
+const debug = require('debug');
+const log = require('debug')('reactive-video');
 
 const Editor = require('.');
 
@@ -78,6 +80,8 @@ const {
 } = cli.flags;
 
 (async () => {
+  if (verbose) debug.enable('reactive-video');
+
   if (cli.input.length !== 1 || (!cli.flags.durationTime && !cli.flags.durationFrames)) cli.showHelp();
 
   const editor = Editor({ ffmpegPath, ffprobePath, devMode });
@@ -87,7 +91,6 @@ const {
     await editor.preview({
       reactVideo,
       userData,
-      debug: verbose,
       videoComponentType: previewHtml ? 'html-proxied' : undefined,
       ...rest,
     });
@@ -95,12 +98,11 @@ const {
     await editor.edit({
       reactVideo,
       userData,
-      debug: verbose,
       ...rest,
     });
   }
 })().catch((err) => {
-  if (verbose) console.error('Caught error', err);
-  else console.error(err.message);
+  console.error('Error:', err.message);
+  log('Error', err);
   process.exitCode = 1;
 });

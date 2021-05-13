@@ -83,7 +83,7 @@ window.setupReact = ({ devMode, width, height, fps, serverPort, durationFrames, 
   async function waitForAsyncRenders() {
     return new Promise((resolve) => {
       setAsyncRenderDoneCb((errors) => {
-        console.log('asyncRenderDoneCb');
+        // console.log('asyncRenderDoneCb');
         resolve(errors);
       });
     });

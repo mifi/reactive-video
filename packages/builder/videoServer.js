@@ -5,6 +5,7 @@ const execa = require('execa');
 const pngSplitStream = require('png-split-stream');
 const assert = require('assert');
 const uri2path = require('file-uri-to-path');
+const log = require('debug')('reactive-video');
 
 const videoProcesses = {};
 
@@ -83,7 +84,7 @@ async function readFrame(props) {
       // console.log('Reusing ffmpeg');
       videoProcesses[key].time = time;
     } else {
-      console.log('createRawFfmpeg', key);
+      log('createRawFfmpeg', key);
       // console.log(videoProcesses[key] && videoProcesses[key].time, time);
 
       // Parameters changed (or time is not next frame). need to restart encoding

@@ -1639,6 +1639,7 @@ __metadata:
     body-parser: ^1.19.0
     cookie-parser: ^1.4.5
     css-loader: ^5.2.4
+    debug: ^4.3.1
     execa: ^5.0.0
     express: ^4.17.1
     express-async-handler: ^1.1.4
@@ -1653,6 +1654,7 @@ __metadata:
     lodash: ^4.17.21
     meow: 9
     p-map: 4
+    p-timeout: 4
     png-split-stream: ^1.0.1
     puppeteer: ^8.0.0
     react: 17
@@ -3369,7 +3371,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:4, debug@npm:^4.0.1, debug@npm:^4.1.0, debug@npm:^4.1.1":
+"debug@npm:4, debug@npm:^4.0.1, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.3.1":
   version: 4.3.2
   resolution: "debug@npm:4.3.2"
   dependencies:
@@ -7135,6 +7137,13 @@ __metadata:
   dependencies:
     aggregate-error: ^3.0.0
   checksum: d51e630d72b7c38bc9e396710e7a068f0b813fe4db6f4a2d1ce2972e7fa11142c763c3aa39bcfd77c0133688c1ebfdd9b38fa3ac4c6ada20b62df26239c5c0e4
+  languageName: node
+  linkType: hard
+
+"p-timeout@npm:4":
+  version: 4.1.0
+  resolution: "p-timeout@npm:4.1.0"
+  checksum: 75363ceaadfd11bf3bd304bbfa6a0244f947f901b6c123533094cd177c1a11615be16dae025e390f4d4e11eac38638d2ca84c191d7a28f6f9ba9399add686f68
   languageName: node
   linkType: hard
 
