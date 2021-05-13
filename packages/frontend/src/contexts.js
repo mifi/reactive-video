@@ -12,6 +12,7 @@ export const VideoContextProvider = memo(({
 }) => {
   const videoContext = useMemo(() => {
     const getFrameTime = (f) => f / fps;
+    const getTimeFrame = (time) => Math.round(time * fps);
     const currentTime = getFrameTime(currentFrame);
     const durationTime = getFrameTime(durationFrames);
 
@@ -34,6 +35,7 @@ export const VideoContextProvider = memo(({
       height,
 
       getFrameTime,
+      getTimeFrame,
 
       userData: userData || {},
 
