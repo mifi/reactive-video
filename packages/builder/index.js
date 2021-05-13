@@ -129,6 +129,8 @@ function Editor({
 
     rawOutput = false,
 
+    failOnWebErrors = true,
+
     // Counts all frames in the final video and throws an error if there's a mismatch
     enableFrameCountCheck = false,
 
@@ -244,7 +246,8 @@ function Editor({
               log('renderFrame', frameNum);
               // eslint-disable-next-line no-shadow
               const errors = await page.evaluate(async (frameNum) => window.renderFrame(frameNum), frameNum);
-              errors.forEach((err) => console.error('Web error', err));
+              if (failOnWebErrors) throw new Error(`Render frame error: ${errors.map((error) => error.message).join(', ')}`);
+              else errors.forEach((error) => console.warn('Web error', error));
 
               log('waitForFonts');
               // Wait for fonts (fonts will have been loaded after page start, due to webpack imports from React components)
