@@ -40,7 +40,8 @@ async function serve({ ffmpegPath, ffprobePath, serveStaticPath, serveRoot, port
   }));
 
   app.post('/api/read-video-metadata', asyncHandler(async (req, res) => {
-    res.send(await readVideoStreamsMetadata({ ffprobePath, path: req.body.path, streamIndex: req.body.streamIndex }));
+    const path = uri2path(req.body.path);
+    res.send(await readVideoStreamsMetadata({ ffprobePath, path, streamIndex: req.body.streamIndex }));
   }));
 
   app.get('/api/proxy-video', async (req, res) => {
