@@ -327,6 +327,65 @@ export default () => (
 );
 ```
 
+## Reusing code in a different React app
+
+```
+npx create-react-app my-app
+cd my-app
+npm i --save reactive-video
+```
+
+Then you can import your Reactive Video code (e.g. `MyVideo.js` and dependencies) from a shared directory using your method of choice:
+- npm/yarn workspaces (you may have to transpile the React code)
+- git submodules
+- ...
+
+See example `App.js`:
+
+```js
+import { VideoContextProvider } from 'reactive-video';
+
+import MyVideo from 'path/to/MyVideo.js';
+
+const App = () => {
+  // You need to provide these parameters:
+  const durationFrames = 1234;
+  const width = 800;
+  const height = 600;
+  const fps = 30;
+
+  const [currentFrame, setCurrentFrame] = useState();
+
+  const canvasStyle = {
+    width,
+    height,
+    overflow: 'hidden',
+    position: 'relative',
+    border: '3px solid black',
+  };
+
+  const userData = useMemo(() => {
+    some: 'data',
+  }, []);
+
+  return (
+    <div style={canvasStyle}>
+      <VideoContextProvider
+        currentFrame={currentFrame}
+        durationFrames={durationFrames}
+        width={width}
+        height={height}
+        fps={fps}
+        userData={userData}
+      >
+        <MyVideo />
+      </VideoContextProvider>
+    </div>
+  );
+};
+```
+See also [previewEntry.js](packages/builder/previewEntry.js)
+
 ## Examples
 
 [See examples](examples/)
