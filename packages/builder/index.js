@@ -275,14 +275,16 @@ function Editor({
               // console.log('data', opts);
               // fs.writeFile('lol.jpeg', buf);
 
-              const mustDrain = await new Promise((resolve) => {
+              // const mustDrain = await new Promise((resolve) => {
+              await new Promise((resolve) => {
                 // If we don't wait for cb, then we get EINVAL when dealing with high resolution files (big writes)
-                // Returns: <boolean> false if the stream wishes for the calling code to wait for the 'drain' event to be emitted before continuing to write additional data; otherwise true.
                 const ret = outProcess.stdin.write(buf, () => {
                   resolve(!ret);
                 });
               });
 
+              // write returns: <boolean> false if the stream wishes for the calling code to wait for the 'drain' event to be emitted before continuing to write additional data; otherwise true.
+              // However it seems like it hangs sometimes if we wait for drain...
               /* if (mustDrain) {
                 log('Draining output stream');
                 await new Promise((resolve) => outProcess.stdin.once('drain', resolve));
