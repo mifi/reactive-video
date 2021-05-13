@@ -246,7 +246,7 @@ function Editor({
               log('renderFrame', frameNum);
               // eslint-disable-next-line no-shadow
               const errors = await page.evaluate(async (frameNum) => window.renderFrame(frameNum), frameNum);
-              if (failOnWebErrors) throw new Error(`Render frame error: ${errors.map((error) => error.message).join(', ')}`);
+              if (failOnWebErrors && errors.length > 0) throw new Error(`Render frame error: ${errors.map((error) => error.message).join(', ')}`);
               else errors.forEach((error) => console.warn('Web error', error));
 
               log('waitForFonts');
