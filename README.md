@@ -120,7 +120,7 @@ const Editor = require('@reactive-video/builder');
   const height = 720;
   const fps = 25;
   const durationFrames = 90;
-  const reactVideo = 'MyVideo.js'
+  const reactVideo = 'MyVideo.js';
   const userData = { some: 'value' };
 
   // Build the video
@@ -168,21 +168,21 @@ See [editor.js edit and preview](packages/builder/index.js) for options.
 
 ### `Editor.readVideoMetadata`
 
-Useful to read an input video's parameters and use it for your video, for instance if you want to render something on top of an existing video. Example:
+Useful to read an input video's parameters and use it for your video, for instance if you want to render something on top of an existing video. Returns `durationTime`. If `countFrames` is `true`, returns also `durationFrames`, which is more accurate, but slower. Example:
 
 ```js
 const fileUrl = require('file-url');
 const inputVideoPath = '/path/to/input-video.mp4';
 
 const { edit, readVideoMetadata } = Editor();
-const { width, height, fps, duration: durationTime } = await readVideoMetadata({ path: inputVideoPath });
+const { width, height, fps, durationTime, durationFrames } = await readVideoMetadata({ path: inputVideoPath, countFrames: true });
 
 await edit({
   reactVideo: 'MyVideo.js',
   width,
   height,
   fps,
-  durationTime,
+  durationFrames,
   userData: { videoUri: fileUrl(inputVideoPath) },
   // videoUri becomes file:///path/to/input-video.mp4
 });

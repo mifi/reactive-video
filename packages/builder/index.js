@@ -439,10 +439,12 @@ function Editor({
     });
   }
 
-  async function readVideoMetadata({ path, streamIndex = 0 }) {
+  async function readVideoMetadata({ path, streamIndex = 0, countFrames = false }) {
     const { width, height, fps } = await readVideoStreamsMetadata({ ffprobePath, path, streamIndex });
-    const { duration } = await readVideoFormatMetadata({ ffprobePath, path });
-    return { width, height, fps, duration };
+    const { duration: durationTime } = await readVideoFormatMetadata({ ffprobePath, path });
+    const durationFrames = countFrames ? await readDurationFrames({ ffprobePath, path, streamIndex }) : undefined;
+
+    return { width, height, fps, durationTime, durationFrames };
   }
 
   return {
