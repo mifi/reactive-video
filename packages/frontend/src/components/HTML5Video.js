@@ -13,9 +13,14 @@ const HTML5Video = (props) => {
   const videoRef = useRef();
 
   useEffect(() => {
+    // It seems that if currentTime just a tiny fraction lower than the desired frame start time, HTML5 video will instead seek to the previous frame. So we add a bit of the frame duration
+    // See also FFmpegVideo backend
+    const frameDuration = 1 / fps;
+    const currentTimeCorrected = currentTime + frameDuration * 0.1;
+
     waitFor(new Promise((resolve, reject) => {
       if (videoRef.current.src === src && videoRef.current.error == null) {
-        if (Math.abs(videoRef.current.currentTime - currentTime) < (1 / fps) * 0.5) {
+        if (Math.abs(videoRef.current.currentTime - currentTime) < frameDuration * 0.5) {
           if (videoRef.current.readyState >= 2) {
             resolve();
             return;
@@ -25,7 +30,7 @@ const HTML5Video = (props) => {
           return;
         }
 
-        videoRef.current.currentTime = currentTime;
+        videoRef.current.currentTime = currentTimeCorrected;
         videoRef.current.addEventListener('canplay', () => resolve(), { once: true });
         return;
       }
@@ -35,7 +40,7 @@ const HTML5Video = (props) => {
       videoRef.current.addEventListener('error', () => reject(videoRef.current.error), { once: true });
 
       videoRef.current.src = src;
-      videoRef.current.currentTime = currentTime;
+      videoRef.current.currentTime = currentTimeCorrected;
     }), 'HTML5Video');
   }, [src, currentFrame, fps, currentTime, waitFor]);
 
