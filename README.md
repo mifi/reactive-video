@@ -257,6 +257,10 @@ const {
   // Video (or Segment) duration in seconds:
   durationTime,
 
+  // Value between 0 to 1 for the currentFrame's progress within the video (or Segment)
+  // Useful for animating things inside segments.
+  progress,
+
   // Global, never altered:
   video: {
     currentFrame,
