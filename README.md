@@ -306,16 +306,16 @@ A Segment will, for a specific timespan specified by `start` and `duration` (spe
 #### Segment props
 - `start` - First frame that contents should be shown from (default: `0`)
 - `duration` - Number of frames that contents should be visible for (default: video `durationFrames - start`).
+- `override` - Whether to override variables in the `useVideo` hook, see below (default: `true`)
+- `cut` = Whether to cut off this component's children from rendering before `start` and after `duration` (default: `true`)
 
-Segments will override the following variables in the `useVideo` hook for its `children`:
+Segments will override the following variables in the `useVideo` hook for its `children` (unless `override` = `false`):
 - `currentFrame`
 - `currentTime`
 - `durationFrames`
 - `durationTime`
 
-Theses variables will instead be *relative to the start/duration* of the `Segment`.
-
-If the `render` prop is used, the render function's provided `props` argument will also contain the same relative variables.
+Theses variables will instead be *relative to the start/duration* of the `Segment`. If the `render` prop is used, the render function's provided `props` argument will also contain the same relative variables.
 
 ## Importing resources
 

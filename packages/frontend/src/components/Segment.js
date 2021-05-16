@@ -4,7 +4,7 @@ import { VideoContext, useVideo, calculateProgress } from '../contexts';
 const Segment = (props) => {
   const videoContext = useVideo();
 
-  const { children, start = 0, duration, render } = props;
+  const { children, start = 0, duration, render, override = true, cut = true } = props;
 
   const { currentFrame, getFrameTime } = videoContext;
 
@@ -28,13 +28,22 @@ const Segment = (props) => {
     progress: segmentProgress,
   }), [currentFrameRelative, currentTimeRelative, segmentDurationFrames, segmentDurationTime, videoContext, segmentProgress]);
 
-  if (currentFrame < start || (duration != null && currentFrame >= start + duration)) return null;
+  if (cut && (currentFrame < start || (duration != null && currentFrame >= start + duration))) return null;
+
+  if (override) {
+    return (
+      <VideoContext.Provider value={videoContextNew}>
+        {render && render(videoContextNew)}
+        {children}
+      </VideoContext.Provider>
+    );
+  }
 
   return (
-    <VideoContext.Provider value={videoContextNew}>
-      {render && render(videoContextNew)}
+    <>
+      {render && render(videoContext)}
       {children}
-    </VideoContext.Provider>
+    </>
   );
 };
 
