@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { VideoContext, useVideo } from '../contexts';
+import { VideoContext, useVideo, calculateProgress } from '../contexts';
 
 const Segment = (props) => {
   const videoContext = useVideo();
@@ -14,6 +14,8 @@ const Segment = (props) => {
   const segmentDurationFrames = duration != null ? duration : videoContext.durationFrames - start;
   const segmentDurationTime = getFrameTime(segmentDurationFrames);
 
+  const segmentProgress = calculateProgress(currentFrameRelative, segmentDurationFrames);
+
   // Override the existing video context
   const videoContextNew = useMemo(() => ({
     ...videoContext,
@@ -23,7 +25,8 @@ const Segment = (props) => {
     currentTime: currentTimeRelative,
     durationFrames: segmentDurationFrames,
     durationTime: segmentDurationTime,
-  }), [currentFrameRelative, currentTimeRelative, segmentDurationFrames, segmentDurationTime, videoContext]);
+    progress: segmentProgress,
+  }), [currentFrameRelative, currentTimeRelative, segmentDurationFrames, segmentDurationTime, videoContext, segmentProgress]);
 
   if (currentFrame < start || (duration != null && currentFrame >= start + duration)) return null;
 

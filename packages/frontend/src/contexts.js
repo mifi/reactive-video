@@ -7,6 +7,8 @@ export const useVideo = () => {
   return videoContext;
 };
 
+export const calculateProgress = (currentFrame, duration) => Math.min(1, currentFrame / Math.max(1, duration - 1));
+
 export const VideoContextProvider = memo(({
   currentFrame = 0, durationFrames, width = 800, height = 600, fps = 30, api, userData, videoComponentType = 'html', isPuppeteer = false, children,
 }) => {
@@ -15,12 +17,14 @@ export const VideoContextProvider = memo(({
     const getTimeFrame = (time) => Math.round(time * fps);
     const currentTime = getFrameTime(currentFrame);
     const durationTime = getFrameTime(durationFrames);
+    const progress = calculateProgress(currentFrame, durationFrames);
 
     return {
       currentFrame,
       currentTime,
       durationFrames,
       durationTime,
+      progress,
 
       // Global, never altered:
       video: {
@@ -28,6 +32,7 @@ export const VideoContextProvider = memo(({
         currentTime,
         durationFrames,
         durationTime,
+        progress,
       },
 
       fps,
