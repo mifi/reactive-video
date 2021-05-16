@@ -413,21 +413,20 @@ function Editor({
     const reactHtmlDistName = 'preview.html';
     const reactHtmlPath = join(__dirname, reactHtmlDistName);
 
-    const bundler = createBundler({ entryPath: reactIndexPath, userEntryPath, outDir: distPath, mode: bundleMode, entryOutName: 'preview.js' });
+    const secret = await generateSecret();
+
+    const initData = { width, height, fps, serverPort: port, durationFrames, userData, videoComponentType, secret };
+    const bundler = createBundler({ entryPath: reactIndexPath, userEntryPath, outDir: distPath, mode: bundleMode, entryOutName: 'preview.js', initData });
 
     console.log('Compiling Reactive Video Javascript');
     const watcher = await startBundler({ bundler, reactHtmlPath, reactHtmlDistName, distPath });
-
-    const secret = await generateSecret();
 
     const serveRoot = videoComponentType === 'html-proxied';
     console.warn('Warning: Serving filesystem root');
     const server = await serve({ ffmpegPath, ffprobePath, serveStaticPath: distPath, serveRoot, port, secret });
     const { stop: stopServer } = server;
 
-    const params = { devMode, width, height, fps, serverPort: port, durationFrames, userData: userData && JSON.stringify(userData), videoComponentType, secret };
-    const qs = Object.entries(params).filter(([, value]) => value).map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`).join('&');
-    console.log(`http://localhost:${port}/preview.html?${qs}`);
+    console.log(`http://localhost:${port}/preview.html?secret=${encodeURIComponent(secret)}`);
 
     let sig = false;
     process.on('SIGINT', () => {

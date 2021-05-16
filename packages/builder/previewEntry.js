@@ -14,15 +14,8 @@ const PreviewRoot = () => {
 
   const [currentFrame, setCurrentFrame] = useState(currentFrameInitial);
 
-  const params = new URLSearchParams(window.location.search);
-  const width = parseInt(params.get('width'), 10);
-  const height = parseInt(params.get('height'), 10);
-  const fps = parseInt(params.get('fps'), 10);
-  const serverPort = parseInt(params.get('serverPort'), 10);
-  const durationFrames = parseInt(params.get('durationFrames'), 10);
-  const userData = params.get('userData') && JSON.parse(params.get('userData'));
-  const videoComponentType = params.get('videoComponentType');
-  const secret = params.get('secret');
+  // eslint-disable-next-line no-undef
+  const { width, height, fps, serverPort, durationFrames, userData, videoComponentType, secret } = reactiveVideo.initData;
 
   function handleCurrentFrameChange(newVal) {
     hash.set('currentFrame', newVal);

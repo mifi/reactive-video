@@ -1,6 +1,6 @@
 const webpack = require('webpack');
 
-function createBundler({ entryPath, userEntryPath, outDir, mode, entryOutName = 'index.js' }) {
+function createBundler({ entryPath, userEntryPath, outDir, mode, entryOutName = 'index.js', initData }) {
   const config = {
     mode,
     entry: [
@@ -61,6 +61,12 @@ function createBundler({ entryPath, userEntryPath, outDir, mode, entryOutName = 
     },
 
     devtool: 'eval',
+
+    plugins: [
+      new webpack.DefinePlugin({
+        'reactiveVideo.initData': JSON.stringify(initData),
+      }),
+    ],
   };
 
   return webpack(config);
