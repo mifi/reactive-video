@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 
 // reactive-video-root-component is a webpack alias
@@ -16,31 +16,30 @@ const PuppeteerRoot = ({
 }) => {
   const [currentFrame, setCurrentFrame] = useState();
 
-  useEffect(() => {
-    window.renderFrame = async (n) => {
-      if (n == null) {
-        setCurrentFrame(); // clear screen
-        return [];
-      }
-      // const promise = tryElement(getId(n));
-      setCurrentFrame(n);
-      // await promise
-
-      const promise = waitForAsyncRenders();
-
-      // Need to wait for all components to register themselves
-      // setTimeout 0 seems to work well (I'm guessing because all react components will get initialized in the same tick)
-      await new Promise((resolve) => setTimeout(resolve, 0));
-      // await new Promise((resolve) => window.requestAnimationFrame(resolve));
-      // await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // If none were registered (e.g. just simple HTML), don't await
-      if (anyAsyncRendersRegistered()) {
-        return promise;
-      }
+  // We need to set this immediately (synchronously) or we risk calling it before it has been set
+  window.renderFrame = async (n) => {
+    if (n == null) {
+      setCurrentFrame(); // clear screen
       return [];
-    };
-  }, [waitForAsyncRenders]);
+    }
+    // const promise = tryElement(getId(n));
+    setCurrentFrame(n);
+    // await promise
+
+    const promise = waitForAsyncRenders();
+
+    // Need to wait for all components to register themselves
+    // setTimeout 0 seems to work well (I'm guessing because all react components will get initialized in the same tick)
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    // await new Promise((resolve) => window.requestAnimationFrame(resolve));
+    // await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    // If none were registered (e.g. just simple HTML), don't await
+    if (anyAsyncRendersRegistered()) {
+      return promise;
+    }
+    return [];
+  };
 
   const api = useMemo(() => Api({ serverPort, renderId, secret }), [renderId, serverPort, secret]);
 
@@ -99,7 +98,8 @@ window.setupReact = ({ devMode, width, height, fps, serverPort, durationFrames, 
 // Alternatively we could try to run requestAnimationFrame twice to skip the first frame
 // Alternative2: callback from ReactDOM.render(element, container[, callback])
 // https://reactjs.org/docs/react-dom.html#render
-// alternatively we could clear the screen between each frame render and detect that screenshot is not white (retry if it is)
+// Alternatively we could clear the screen between each frame render and detect that screenshot is not white (retry if it is)
+// But the problem is that sometimes only parts of the scene will finish rendering (e.g. canvas/video will not yet update, but text etc will)
 window.awaitDomRenderSettled = async () => new Promise((resolve) => {
   window.requestAnimationFrame(() => {
     setTimeout(() => {
