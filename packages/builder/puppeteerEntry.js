@@ -11,6 +11,25 @@ import { VideoContextProvider, setAsyncRenderDoneCb, anyAsyncRendersRegistered, 
 
 const getId = (currentFrame) => `frame-${currentFrame}`;
 
+// This is a bit hacky. trying to make sure we don't get dup frames (previous frame rendered again)
+// So we wait for the browser to completely finish rendering of all DOM updates that react have done
+// https://stackoverflow.com/questions/15875128/is-there-element-rendered-event
+// https://stackoverflow.com/questions/26556436/react-after-render-code
+// Alternatively we could try to run requestAnimationFrame twice to skip the first frame
+// Alternative2: callback from ReactDOM.render(element, container[, callback])
+// https://reactjs.org/docs/react-dom.html#render
+// Alternatively we could clear the screen between each frame render and detect that screenshot is not white (retry if it is)
+// But the problem is that sometimes only parts of the scene will finish rendering (e.g. canvas/video will not yet update, but text etc will)
+const awaitDomRenderSettled = async () => new Promise((resolve) => {
+  window.requestAnimationFrame(() => {
+    setTimeout(() => {
+      resolve();
+    }, 0);
+  });
+});
+
+window.awaitDomRenderSettled = awaitDomRenderSettled;
+
 const PuppeteerRoot = ({
   devMode, width, height, fps, serverPort, durationFrames, waitForAsyncRenders, renderId, userData, secret,
 }) => {
@@ -29,9 +48,7 @@ const PuppeteerRoot = ({
     const promise = waitForAsyncRenders();
 
     // Need to wait for all components to register themselves
-    // setTimeout 0 seems to work well (I'm guessing because all react components will get initialized in the same tick)
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    // await new Promise((resolve) => window.requestAnimationFrame(resolve));
+    await awaitDomRenderSettled();
     // await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // If none were registered (e.g. just simple HTML), don't await
@@ -90,23 +107,6 @@ window.setupReact = ({ devMode, width, height, fps, serverPort, durationFrames, 
 
   ReactDOM.render(<PuppeteerRoot devMode={devMode} width={width} height={height} fps={fps} serverPort={serverPort} durationFrames={durationFrames} waitForAsyncRenders={waitForAsyncRenders} renderId={renderId} userData={userData} secret={secret} />, document.getElementById('root'));
 };
-
-// This is a bit hacky. trying to make sure we don't get dup frames (previous frame rendered again)
-// So we wait for the browser to completely finish rendering of all DOM updates that react have done
-// https://stackoverflow.com/questions/15875128/is-there-element-rendered-event
-// https://stackoverflow.com/questions/26556436/react-after-render-code
-// Alternatively we could try to run requestAnimationFrame twice to skip the first frame
-// Alternative2: callback from ReactDOM.render(element, container[, callback])
-// https://reactjs.org/docs/react-dom.html#render
-// Alternatively we could clear the screen between each frame render and detect that screenshot is not white (retry if it is)
-// But the problem is that sometimes only parts of the scene will finish rendering (e.g. canvas/video will not yet update, but text etc will)
-window.awaitDomRenderSettled = async () => new Promise((resolve) => {
-  window.requestAnimationFrame(() => {
-    setTimeout(() => {
-      resolve();
-    }, 0);
-  });
-});
 
 // https://github.com/puppeteer/puppeteer/issues/422#issuecomment-708142856
 window.haveFontsLoaded = async () => {
