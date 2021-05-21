@@ -223,6 +223,9 @@ function Editor({
 
             const page = await browser.newPage();
 
+            // TODO
+            if (enableFfmpegLog) page.on('console', (msg) => console.log('Page console log:', partNum, partStart, msg.text()));
+
             await page.setViewport({ width, height });
             // await page.setViewport({ width, height, deviceScaleFactor: 1 });
 
@@ -243,24 +246,27 @@ function Editor({
               // await page.evaluate(() => renderFrame());
               // await page.waitForSelector('#frame-cleared');
 
-              log('renderFrame', frameNum);
+              const logFrame = (...args) => log(frameNum, ...args);
+
+              logFrame('renderFrame');
               // eslint-disable-next-line no-shadow
               const errors = await page.evaluate(async (frameNum) => window.renderFrame(frameNum), frameNum);
               if (failOnWebErrors && errors.length > 0) throw new Error(`Render frame error: ${errors.map((error) => error.message).join(', ')}`);
               else errors.forEach((error) => console.warn('Web error', error));
 
-              log('waitForFonts');
+              logFrame('waitForFonts');
               // Wait for fonts (fonts will have been loaded after page start, due to webpack imports from React components)
               await page.waitForFunction(async () => window.haveFontsLoaded());
 
-              log('waitForSelector');
+              logFrame('waitForSelector');
               await page.waitForSelector(`#frame-${frameNum}`);
-              log('awaitDomRenderSettled');
+
+              logFrame('awaitDomRenderSettled');
               await page.evaluate(() => window.awaitDomRenderSettled());
 
               // await new Promise((resolve) => setTimeout(resolve, 2000));
 
-              log('Capturing');
+              logFrame('Capturing');
 
               // Implemented three different ways
               let buf;
@@ -271,7 +277,7 @@ function Editor({
                 default: throw new Error('Invalid captureMethod');
               }
 
-              log('Capture done');
+              logFrame('Capture done');
 
               if (enableHashCheck) frameHashes[frameNum] = await hasha(buf);
 
@@ -286,12 +292,16 @@ function Editor({
                 });
               });
 
+              logFrame('Write frame');
+
               // write returns: <boolean> false if the stream wishes for the calling code to wait for the 'drain' event to be emitted before continuing to write additional data; otherwise true.
               // However it seems like it hangs sometimes if we wait for drain...
               /* if (mustDrain) {
-                log('Draining output stream');
+                logFrame('Draining output stream');
                 await new Promise((resolve) => outProcess.stdin.once('drain', resolve));
               } */
+
+              logFrame('Write frame done');
             }
 
             for (; frameNum < partEnd; frameNum += 1) {
