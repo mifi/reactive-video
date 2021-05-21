@@ -108,16 +108,20 @@ async function readFrame(props) {
         const stream = process.stdout.pipe(pngSplitStream());
         stream.pause();
 
-        readNextFrame = async () => new Promise((resolve) => {
-          const onData = (pngFrame) => {
+        readNextFrame = async () => new Promise((resolve, reject) => {
+          function onError(err) {
+            reject(err);
+          }
+          function onData(pngFrame) {
             // each 'data' event contains one of the frames from the video as a single chunk
             resolve(pngFrame);
-            stream.off('data', onData);
             stream.pause();
-          };
+            stream.off('error', onError);
+          }
 
           stream.resume();
-          stream.on('data', onData);
+          stream.once('data', onData);
+          stream.once('error', onError);
         });
       }
 
