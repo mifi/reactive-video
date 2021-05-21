@@ -108,7 +108,7 @@ const FFmpegVideo = (props) => {
     });
 
     return () => {
-      canceled = true;
+      if (!isPuppeteer) canceled = true;
       if (pngBlobUrl) URL.revokeObjectURL(pngBlobUrl);
     };
   }, [src, currentTime, scaleToWidth, scaleToHeight, fps, api, streamIndex, waitFor, isPuppeteer]);
