@@ -19,7 +19,7 @@ const PreviewRoot = () => {
 
   function handleCurrentFrameChange(newVal) {
     hash.set('currentFrame', newVal);
-    window.history.pushState(undefined, undefined, `#${hash.toString()}`);
+    window.history.replaceState(undefined, undefined, `#${hash.toString()}`);
     setCurrentFrame(newVal);
   }
 

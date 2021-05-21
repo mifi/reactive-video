@@ -413,6 +413,7 @@ Submit a PR if you want to share your Reactive Video here.
 - allow speed up/down `<segment speed={1.3} />`
 - custom video component example
 - getCodecArgs allow custom
+- preview currentFrame flooding browser history https://stackoverflow.com/questions/26793130/history-replacestate-still-adds-entries-to-the-browsing-history
 
 ## Ideas
 
