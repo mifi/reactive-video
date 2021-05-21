@@ -41,11 +41,12 @@ const PuppeteerRoot = ({
       setCurrentFrame(); // clear screen
       return [];
     }
+
+    const promise = waitForAsyncRenders();
+
     // const promise = tryElement(getId(n));
     setCurrentFrame(n);
     // await promise
-
-    const promise = waitForAsyncRenders();
 
     // Need to wait for all components to register themselves
     await awaitDomRenderSettled();
