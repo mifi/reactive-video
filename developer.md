@@ -13,3 +13,7 @@ cd packages/frontend
 npm version ...
 npm publish
 ```
+
+## After release
+
+Commit package.json
