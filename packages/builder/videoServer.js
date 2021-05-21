@@ -23,12 +23,10 @@ function createRawFfmpeg({ ffmpegPath, fps, uri, width, height, scale, fileFps, 
     '-hide_banner',
     // '-loglevel', 'panic',
 
-    '-re',
-
     // Transparency
     // '-vcodec', 'libvpx',
 
-    // It seems that if -ss is just a tiny fraction higher the desired frame start time, ffmpeg will instead cut from the next frame. So we subtract a bit of the duration of the input file's frames
+    // It seems that if -ss is just a tiny fraction higher than the desired frame start time, ffmpeg will instead cut from the next frame. So we subtract a bit of the duration of the input file's frames
     '-ss', Math.max(0, cutFrom - (fileFrameDuration * 0.1)),
 
     '-noautorotate',
