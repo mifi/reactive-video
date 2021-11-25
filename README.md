@@ -323,6 +323,8 @@ Resources are fetched from the local filesystem automatically during `edit` and 
 
 ```js
 // MyVideo.js
+import React from 'react';
+import { Image } from 'reactive-video';
 
 import image from './image.jpeg';
 
