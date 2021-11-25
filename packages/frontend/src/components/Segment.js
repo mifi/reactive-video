@@ -41,7 +41,7 @@ const Segment = (props) => {
 
   return (
     <>
-      {render && render(videoContext)}
+      {render && render(videoContextNew)}
       {children}
     </>
   );
