@@ -38,7 +38,7 @@
     "p-map": "4",
     "p-timeout": "4",
     "png-split-stream": "^1.0.1",
-    "puppeteer": "^8.0.0",
+    "puppeteer": "^11.0.0",
     "react": "17",
     "react-dom": "17",
     "reactive-video": "2",
