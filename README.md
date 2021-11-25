@@ -408,12 +408,14 @@ Submit a PR if you want to share your Reactive Video here.
 - FFmpegVideo fallback to previous frame if missing frame? (like HTML5Video) or make HTML5Video also work like FFmpegVideo
 - puppeteer [intercept request](https://github.com/puppeteer/puppeteer/blob/v9.1.1/docs/api.md#httprequestrespondresponse) instead of starting local express server (if possible and fast to send big binary data). Will not work for preview.
 - make it easiser to animate (mount/unmount?) provide a react component that clamps animations? something like `<Segment start={} duration={} easing="easeIn" />`
+- staggering animations (function helper or Stagger component)
 - easing example code
 - render single frame as image
 - allow speed up/down `<segment speed={1.3} />`
 - custom video component example
 - getCodecArgs allow custom
 - preview currentFrame flooding browser history https://stackoverflow.com/questions/26793130/history-replacestate-still-adds-entries-to-the-browsing-history
+- check that num frames is greater than concurrency
 
 ## Ideas
 
