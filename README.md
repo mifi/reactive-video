@@ -438,6 +438,19 @@ Submit a PR if you want to share your Reactive Video here.
 
 This project is maintained by me alone. The project will always remain free and open source, but if it's useful for you, consider supporting me. :) It will give me extra motivation to improve it. Or even better [donate to ffmpeg](https://www.ffmpeg.org/donations.html) because they are doing the world a big favor 🙏
 
+## Release
+
+```bash
+# Version and publish reactive-video
+(cd packages/frontend && npm version minor && git add package.json && git commit -m 'Release reactive-video' && npm publish)
+# If necessary (replace 2 with new major semver):
+(cd packages/builder && yarn add reactive-video@2 && git add package.json && git commit -m 'Upgrade builder reactive-video')
+# Version and publish builder:
+(cd packages/builder && npm version minor && git add package.json && git commit -m 'Release builder' && npm publish)
+# If all ok
+git push
+```
+
 ## See also
 
 - [editly](https://github.com/mifi/editly) - Declarative video API I also created earlier
