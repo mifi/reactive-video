@@ -357,7 +357,7 @@ function Editor({
           const totalFramesDone = Object.values(partProgresses).reduce((acc, { frameNum: frameNum2 }) => acc + frameNum2, 0);
           const avgFps = totalFramesDone / ((new Date().getTime() - startTime.getTime()) / 1000);
           // console.log(partProgresses, totalFramesDone, avgFps);
-          if (totalFramesDone % fps === 0) {
+          if (totalFramesDone % Math.ceil(fps) === 0) {
             console.log(
               'Progress', `${((totalFramesDone / durationFrames) * 100).toFixed(2)}%`,
               'FPS:', avgFps.toFixed(2),
