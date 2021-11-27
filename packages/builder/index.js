@@ -115,6 +115,7 @@ function Editor({
     concurrency = 2,
 
     captureMethod = 'screencast',
+    sleepTimeBeforeCapture = 0, // See https://github.com/mifi/reactive-video/issues/4
 
     frameRenderTimeout = 30000,
 
@@ -268,7 +269,9 @@ function Editor({
               logFrame('awaitDomRenderSettled');
               await page.evaluate(() => window.awaitDomRenderSettled());
 
-              // await new Promise((resolve) => setTimeout(resolve, 2000));
+              // See https://github.com/mifi/reactive-video/issues/4
+              await page.waitForNetworkIdle({ idleTime: sleepTimeBeforeCapture });
+              // await new Promise((resolve) => setTimeout(resolve, 500));
 
               logFrame('Capturing');
 
