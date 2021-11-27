@@ -6,6 +6,7 @@ import { useAsyncRenderer } from '../asyncRegistry';
 const FFmpegVideo = (props) => {
   const { src, scaleToWidth, scaleToHeight, streamIndex = 0, style, isPuppeteer, ...rest } = props;
 
+  // See https://github.com/mifi/reactive-video/issues/4
   const type = 'raw';
   // const type = 'png';
   // const type = 'jpeg'; // TODO implement and test jpeg, see if it's faster
@@ -30,8 +31,11 @@ const FFmpegVideo = (props) => {
     let pngBlobUrl;
     let canceled = false;
 
-    if (type === 'raw') canvasRef.current.style.visibility = 'hidden';
-    if (type === 'png') imgRef.current.style.visibility = 'hidden';
+    // No need to flash white when preview
+    if (isPuppeteer) {
+      if (type === 'raw') canvasRef.current.style.visibility = 'hidden';
+      if (type === 'png') imgRef.current.src = '';
+    }
 
     waitFor(async () => {
       // Allow optional resizing
@@ -60,31 +64,32 @@ const FFmpegVideo = (props) => {
         return response;
       }
 
-      let fetchResponse;
-      if (isPuppeteer) {
-        fetchResponse = await readVideoFrame();
-      } else {
-        // Throttle requests to server when only previewing
-        if (!ongoingRequestsRef.current) {
-          ongoingRequestsRef.current = (async () => {
-            try {
-              const response = await readVideoFrame();
-              if (!response.ok) throw new Error('HTTP error');
-              return response;
-            } finally {
-              ongoingRequestsRef.current = undefined;
-            }
-          })();
+      if (type === 'raw') {
+        let fetchResponse;
+
+        if (isPuppeteer) {
+          fetchResponse = await readVideoFrame();
+        } else {
+          // Throttle requests to server when only previewing
+          if (!ongoingRequestsRef.current) {
+            ongoingRequestsRef.current = (async () => {
+              try {
+                const response = await readVideoFrame();
+                if (!response.ok) throw new Error('HTTP error');
+                return response;
+              } finally {
+                ongoingRequestsRef.current = undefined;
+              }
+            })();
+          }
+
+          fetchResponse = await ongoingRequestsRef.current;
         }
 
-        fetchResponse = await ongoingRequestsRef.current;
-      }
+        const blob = await fetchResponse.blob();
 
-      const blob = await fetchResponse.blob();
+        if (canceled) return;
 
-      if (canceled) return;
-
-      if (type === 'raw') {
         const canvas = canvasRef.current;
 
         canvas.width = width;
@@ -93,21 +98,17 @@ const FFmpegVideo = (props) => {
         const ctx = canvas.getContext('2d');
 
         drawOnCanvas(ctx, await blob.arrayBuffer(), width, height);
-      } else if (type === 'png') {
-        // See https://github.com/mifi/reactive-video/issues/4
-        pngBlobUrl = URL.createObjectURL(blob);
-        const promise = new Promise((resolve, reject) => {
-          imgRef.current.addEventListener('load', resolve);
-          imgRef.current.addEventListener('error', reject);
-        });
-        imgRef.current.src = pngBlobUrl;
-        await promise;
+        canvasRef.current.style.visibility = null;
+        return;
       }
 
-      if (canceled) return;
-
-      if (type === 'raw') canvasRef.current.style.visibility = null;
-      if (type === 'png') imgRef.current.style.visibility = null;
+      if (type === 'png') {
+        await new Promise((resolve, reject) => {
+          imgRef.current.addEventListener('load', resolve);
+          imgRef.current.addEventListener('error', reject);
+          imgRef.current.src = api.getVideoFrameUrl({ fps, uri: src, width, height, fileFps, scale, time: currentTime, streamIndex, type });
+        });
+      }
     });
 
     return () => {

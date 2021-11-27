@@ -18,8 +18,14 @@ export default ({ serverPort, renderId, secret }) => {
     });
   }
 
+  const getQs = (params) => new URLSearchParams(Object.fromEntries(Object.entries({ ...params, renderId, secret }).filter(([, v]) => v != null))).toString();
+
+  function getVideoFrameUrl(params) {
+    return `${baseUrl}/api/frame?${getQs({ ...params, renderId, secret })}`;
+  }
+
   async function readVideoFrame(params) {
-    return request('/api/read-frame', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...params, renderId }) });
+    return request(`/api/frame?${getQs({ ...params, renderId })}`);
   }
 
   async function readVideoMetadata({ path, streamIndex }) {
@@ -32,6 +38,7 @@ export default ({ serverPort, renderId, secret }) => {
   }
 
   return {
+    getVideoFrameUrl,
     readVideoFrame,
     readVideoMetadata,
     getProxiedHtmlVideoUrl,

@@ -28,10 +28,10 @@ async function serve({ ffmpegPath, ffprobePath, serveStaticPath, serveRoot, port
 
   app.use(bodyParser.json());
 
-  app.post('/api/read-frame', asyncHandler(async (req, res) => {
+  app.get('/api/frame', asyncHandler(async (req, res) => {
     try {
-      const frame = await readFrame({ ...req.body, ffmpegPath });
-      if (req.body.type === 'png') res.set({ 'content-type': 'image/png' });
+      const frame = await readFrame({ ...req.query, ffmpegPath });
+      if (req.query.type === 'png') res.set({ 'content-type': 'image/png' });
       res.send(frame);
     } catch (err) {
       console.error('Server read frame error', err);
