@@ -405,11 +405,12 @@ Submit a PR if you want to share your Reactive Video here.
 - Improve docs
 - Audio
 - ci tests
+- Performance improvement: Save screenshot to file, and prevent main node.js process from being bottleneck
 - Improve logging
 - multiple FFmpegVideos from the same source file (videoServer.js) not supported
 - FFmpegVideo fallback to previous frame if missing frame? (like HTML5Video) or make HTML5Video also work like FFmpegVideo
 - puppeteer [intercept request](https://github.com/puppeteer/puppeteer/blob/v9.1.1/docs/api.md#httprequestrespondresponse) instead of starting local express server (if possible and fast to send big binary data). Will not work for preview.
-- make it easiser to animate (mount/unmount?) provide a react component that clamps animations? something like `<Segment start={} duration={} easing="easeIn" />`
+- make it easier to animate (mount/unmount?) provide a react component that clamps animations? something like `<Segment start={} duration={} easing="easeIn" />`
 - staggering animations (function helper or Stagger component)
 - easing example code
 - render single frame as image
