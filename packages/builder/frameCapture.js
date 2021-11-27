@@ -80,6 +80,7 @@ async function startScreencast(page) {
 async function captureFrameScreenshot(page) {
   // eslint-disable-next-line no-underscore-dangle
   const client = page._client;
+  // https://github.com/puppeteer/puppeteer/blob/4d9dc8c0e613f22d4cdf237e8bd0b0da3c588edb/src/common/Page.ts#L2729
   const { data } = await client.send('Page.captureScreenshot', {
     // format: 'png',
     format: 'jpeg',
