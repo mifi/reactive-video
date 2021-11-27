@@ -126,7 +126,7 @@ function Editor({
     tempDir: tempDirRel = 'reactive-video-tmp',
 
     // Output video path
-    output: finalOutPath = 'reactive-video.mp4',
+    output: desiredOutPath,
 
     rawOutput = false,
 
@@ -142,6 +142,9 @@ function Editor({
     enableFfmpegLog = false,
   }) {
     assert(captureMethod !== 'extension' || !headless, 'Headless is not compatible with this captureMethod');
+
+    const defaultOutPath = rawOutput ? 'reactive-video.mkv' : 'reactive-video.mp4';
+    const finalOutPath = desiredOutPath || defaultOutPath;
 
     const {
       durationFrames, tempDir, distPath, userEntryPath,
