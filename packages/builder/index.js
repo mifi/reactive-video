@@ -442,9 +442,8 @@ function Editor({
     console.log('Compiling Reactive Video Javascript');
     const watcher = await startBundler({ bundler, reactHtmlPath, reactHtmlDistName, distPath });
 
-    const serveRoot = videoComponentType === 'html-proxied';
     console.warn('Warning: Serving filesystem root');
-    const server = await serve({ ffmpegPath, ffprobePath, serveStaticPath: distPath, serveRoot, port, secret });
+    const server = await serve({ ffmpegPath, ffprobePath, serveStaticPath: distPath, serveRoot: true, port, secret });
     const { stop: stopServer } = server;
 
     console.log(`http://localhost:${port}/preview.html?secret=${encodeURIComponent(secret)}`);

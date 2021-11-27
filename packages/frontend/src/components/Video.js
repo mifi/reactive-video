@@ -7,15 +7,14 @@ import { useVideo } from '../contexts';
 const Video = (props) => {
   const { src, htmlSrc, ...rest } = props;
 
-  const { videoComponentType, api } = useVideo();
+  const { videoComponentType, api, isPuppeteer } = useVideo();
 
   if (videoComponentType === 'html') {
     // eslint-disable-next-line react/jsx-props-no-spreading
-    return <HTML5Video {...rest} src={htmlSrc || src} />;
-  }
+    if (htmlSrc) return <HTML5Video {...rest} src={htmlSrc} />;
 
-  if (videoComponentType === 'html-proxied') {
-    const srcProxied = api.getProxiedHtmlVideoUrl(src);
+    // If not puppeteer, proxy file:// URI through server as browser cannot handle file://
+    const srcProxied = isPuppeteer ? src : api.getProxiedHtmlVideoUrl(src);
     // eslint-disable-next-line react/jsx-props-no-spreading
     return <HTML5Video {...rest} src={srcProxied} />;
   }

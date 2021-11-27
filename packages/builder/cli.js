@@ -91,7 +91,7 @@ const {
     await editor.preview({
       reactVideo,
       userData,
-      videoComponentType: previewHtml ? 'html-proxied' : undefined,
+      videoComponentType: previewHtml ? 'html' : undefined,
       ...rest,
     });
   } else {
