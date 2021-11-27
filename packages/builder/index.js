@@ -196,6 +196,7 @@ function Editor({
           // `--window-size=${width},${height}`,
         ],
         headless,
+        // dumpio: true,
         // defaultViewport: null,
       });
 
@@ -222,6 +223,9 @@ function Editor({
             });
 
             const page = await browser.newPage();
+
+            page.on('console', (msg) => console.log(`page ${partNum} log`, msg.text()));
+            page.on('pageerror', (err) => console.error(`pageerror ${partNum}`, err));
 
             // TODO separate log flag
             if (enableFfmpegLog) page.on('console', (msg) => console.log('Page console log:', partNum, partStart, msg.text()));

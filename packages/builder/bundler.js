@@ -65,6 +65,7 @@ function createBundler({ entryPath, userEntryPath, outDir, mode, entryOutName = 
     plugins: [
       new webpack.DefinePlugin({
         'reactiveVideo.initData': JSON.stringify(initData),
+        __REACT_DEVTOOLS_GLOBAL_HOOK__: '({ isDisabled: true })', //https://stackoverflow.com/questions/42196819/disable-hide-download-the-react-devtools
       }),
     ],
   };
