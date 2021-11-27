@@ -10,12 +10,12 @@ const Image = (props) => {
   const loadRef = useRef();
 
   function onLoad() {
-    loadRef.current();
+    if (loadRef.current) loadRef.current();
     if (userOnLoad) userOnLoad();
   }
 
   function onError(err) {
-    errorRef.current(err);
+    if (errorRef.current) errorRef.current(err);
     if (userOnError) userOnError(err);
   }
 
