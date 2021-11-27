@@ -337,8 +337,7 @@ function Editor({
       console.log(`Rendering with concurrency ${concurrency}`);
 
       const partProgresses = {};
-      let totalFramesDone = 0;
-      const startTime = new Date();
+      let startTime;
 
       const renderers = parts.map((part, partNum) => {
         const partStart = part[0];
@@ -347,9 +346,14 @@ function Editor({
         function onProgress({ frameNum }) {
           if (!showProgress) return;
           partProgresses[partNum] = { frameNum: frameNum - partStart, durationFrames: partEnd - partStart };
-          totalFramesDone = Object.values(partProgresses).reduce((acc, { frameNum: frameNum2 }) => acc + frameNum2, 0);
+
+          if (!startTime) {
+            startTime = new Date();
+            return;
+          }
+          const totalFramesDone = Object.values(partProgresses).reduce((acc, { frameNum: frameNum2 }) => acc + frameNum2, 0);
           const avgFps = totalFramesDone / ((new Date().getTime() - startTime.getTime()) / 1000);
-          // console.log(partProgresses, totalProgress, avgFps)
+          // console.log(partProgresses, totalFramesDone, avgFps);
           if (totalFramesDone % fps === 0) {
             console.log(
               'Progress', `${((totalFramesDone / durationFrames) * 100).toFixed(2)}%`,
