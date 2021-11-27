@@ -34,12 +34,13 @@ async function startScreencast(page) {
     // console.log(frameObject.metadata, frameObject.sessionId);
 
     try {
-      onScreencastFrame(Buffer.from(frameObject.data, 'base64'));
+      const buf = Buffer.from(frameObject.data, 'base64');
       await client.send('Page.screencastFrameAck', { sessionId: frameObject.sessionId });
 
       // Sometimes it hangs if we start it only once, so restart for every frame
       // Also we avoid duplicates
       await client.send('Page.stopScreencast');
+      onScreencastFrame(buf);
     } catch (err) {
       console.error('Page.screencastFrame', err);
     }
@@ -53,10 +54,12 @@ async function startScreencast(page) {
     // This can sometimes be triggered on MacOS by doing Exposé
     for (let i = 0; i < numRetries; i += 1) {
       try {
+        // eslint-disable-next-line no-loop-func
+        const promise = new Promise((resolve) => { screenCastFrameCb = resolve; });
         // eslint-disable-next-line no-await-in-loop
         await client.send('Page.startScreencast', options);
-        // eslint-disable-next-line no-await-in-loop,no-loop-func
-        const frame = await pTimeout(new Promise((resolve) => { screenCastFrameCb = resolve; }), timeoutVal, `Page.screencastFrame Timeout after ${timeoutVal}ms`);
+        // eslint-disable-next-line no-await-in-loop
+        const frame = await pTimeout(promise, timeoutVal, `Page.screencastFrame Timeout after ${timeoutVal}ms`);
         if (!frame) throw new Error('Empty frame');
         return frame;
       } catch (err) {
