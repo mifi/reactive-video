@@ -44,12 +44,6 @@ async function serve({ ffmpegPath, ffprobePath, serveStaticPath, serveRoot, port
     res.send(await readVideoStreamsMetadata({ ffprobePath, path, streamIndex: req.body.streamIndex }));
   }));
 
-  app.get('/api/proxy-video', async (req, res) => {
-    const { uri } = req.query;
-    const path = uri2path(uri);
-    res.type(path).sendFile(path);
-  });
-
   if (serveStaticPath) app.use(express.static(serveStaticPath));
 
   if (serveRoot) app.use('/root', express.static('/'));
