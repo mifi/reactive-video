@@ -9,12 +9,12 @@ const pTimeout = require('p-timeout');
 // https://github.com/shaynet10/puppeteer-mass-screenshots/blob/main/index.js
 // Very fast but needs synchronization
 // Captures whole browser window
-async function startScreencast(page) {
+async function startScreencast({ format, page, jpegQuality }) {
   const client = await page.target().createCDPSession();
 
   const options = {
-    format: 'jpeg',
-    quality: 100,
+    format,
+    quality: jpegQuality || undefined,
     // maxWidth: width,
     // maxHeight: height,
     everyNthFrame: 1,
@@ -77,14 +77,13 @@ async function startScreencast(page) {
 
 // Works most reliably but it's slow
 // Captures viewport only
-async function captureFrameScreenshot(page) {
+async function captureFrameScreenshot({ format, page, jpegQuality }) {
   // eslint-disable-next-line no-underscore-dangle
   const client = page._client;
   // https://github.com/puppeteer/puppeteer/blob/4d9dc8c0e613f22d4cdf237e8bd0b0da3c588edb/src/common/Page.ts#L2729
   const { data } = await client.send('Page.captureScreenshot', {
-    // format: 'png',
-    format: 'jpeg',
-    // quality: 0,
+    format,
+    quality: jpegQuality || undefined,
     // clip: undefined,
     // captureBeyondViewport: true,
   });

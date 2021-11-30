@@ -24,7 +24,7 @@ const Video = (props) => {
     return <FFmpegVideo {...rest} src={src} />;
   }
 
-  throw new Error('Invalid videoComponentType');
+  throw new Error(`Invalid videoComponentType ${videoComponentType}`);
 };
 
 export default Video;

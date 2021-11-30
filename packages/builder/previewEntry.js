@@ -15,7 +15,7 @@ const PreviewRoot = () => {
   const [currentFrame, setCurrentFrame] = useState(currentFrameInitial);
 
   // eslint-disable-next-line no-undef
-  const { width, height, fps, serverPort, durationFrames, userData, videoComponentType, secret } = reactiveVideo.initData;
+  const { width, height, fps, serverPort, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret } = reactiveVideo.initData;
 
   function handleCurrentFrameChange(newVal) {
     hash.set('currentFrame', newVal);
@@ -48,6 +48,8 @@ const PreviewRoot = () => {
           api={api}
           userData={userData}
           videoComponentType={videoComponentType}
+          ffmpegStreamFormat={ffmpegStreamFormat}
+          jpegQuality={jpegQuality}
         >
           <RootComponent />
         </VideoContextProvider>

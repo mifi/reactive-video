@@ -112,8 +112,12 @@ function Editor({
     height = 600,
     fps = 30,
     userData,
+    videoComponentType,
     concurrency = 2,
 
+    puppeteerCaptureFormat = 'jpeg',
+    ffmpegStreamFormat = 'jpeg',
+    jpegQuality = 90,
     captureMethod = 'screencast',
     sleepTimeBeforeCapture = 0, // See https://github.com/mifi/reactive-video/issues/4
 
@@ -128,7 +132,7 @@ function Editor({
     // Output video path
     output: desiredOutPath,
 
-    rawOutput = false,
+    rawOutput = true,
 
     failOnWebErrors = true,
 
@@ -143,7 +147,13 @@ function Editor({
   }) {
     assert(captureMethod !== 'extension' || !headless, 'Headless is not compatible with this captureMethod');
 
-    const defaultOutPath = rawOutput ? 'reactive-video.mkv' : 'reactive-video.mp4';
+    let defaultOutPath;
+    if (rawOutput) {
+      if (puppeteerCaptureFormat === 'jpeg') defaultOutPath = 'reactive-video.mov'; // MJPEG
+      else defaultOutPath = 'reactive-video.mkv'; // MPNG
+    } else {
+      defaultOutPath = 'reactive-video.mp4'; // h264
+    }
     const finalOutPath = desiredOutPath || defaultOutPath;
 
     const {
@@ -220,7 +230,7 @@ function Editor({
           try {
             const outPath = join(tempDir, `part ${partNum}-${partStart}-${partEnd}.mkv`);
 
-            outProcess = createOutputFfmpeg({ ffmpegPath, fps, outPath, log: enableFfmpegLog });
+            outProcess = createOutputFfmpeg({ outFormat: puppeteerCaptureFormat, ffmpegPath, fps, outPath, log: enableFfmpegLog });
 
             outProcess.on('exit', (code) => {
               console.log('Output ffmpeg exited with code', code);
@@ -244,9 +254,9 @@ function Editor({
               throw new Error('React webpage failed to initialize');
             }
 
-            await page.evaluate((params) => window.setupReact(params), { devMode, width, height, fps, serverPort: port, durationFrames, renderId, userData, secret });
+            await page.evaluate((params) => window.setupReact(params), { devMode, width, height, fps, serverPort: port, durationFrames, renderId, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret });
 
-            const screencast = captureMethod === 'screencast' && await startScreencast(page);
+            const screencast = captureMethod === 'screencast' && await startScreencast({ format: puppeteerCaptureFormat, page, jpegQuality });
 
             // eslint-disable-next-line no-inner-declarations
             async function renderFrame() {
@@ -282,8 +292,8 @@ function Editor({
               let buf;
               switch (captureMethod) {
                 case 'screencast': buf = await screencast.captureFrame(frameNum); break;
-                case 'extension': buf = await extensionFrameCapturer.captureFrame(frameNum); break;
-                case 'screenshot': buf = await captureFrameScreenshot(page, frameNum); break;
+                case 'extension': buf = await extensionFrameCapturer.captureFrame(); break;
+                case 'screenshot': buf = await captureFrameScreenshot({ format: puppeteerCaptureFormat, page, jpegQuality }); break;
                 default: throw new Error('Invalid captureMethod');
               }
 
@@ -423,6 +433,8 @@ function Editor({
     userData,
 
     videoComponentType = 'ffmpeg',
+    ffmpegStreamFormat = 'jpeg',
+    jpegQuality = 70,
 
     durationFrames: durationFramesIn,
     durationTime,
@@ -442,7 +454,7 @@ function Editor({
 
     const secret = await generateSecret();
 
-    const initData = { width, height, fps, serverPort: port, durationFrames, userData, videoComponentType, secret };
+    const initData = { width, height, fps, serverPort: port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret };
     const bundler = createBundler({ entryPath: reactIndexPath, userEntryPath, outDir: distPath, mode: bundleMode, entryOutName: 'preview.js', initData });
 
     console.log('Compiling Reactive Video Javascript');

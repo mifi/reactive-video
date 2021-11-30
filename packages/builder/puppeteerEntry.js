@@ -16,16 +16,16 @@ const getId = (currentFrame) => `frame-${currentFrame}`;
 // So we wait for the browser to completely finish rendering of all DOM updates that react have done
 const awaitDomRenderSettled = async () => new Promise((resolve) => {
   window.requestAnimationFrame(() => {
-  setTimeout(() => {
+    setTimeout(() => {
       resolve();
     }, 0);
-    });
+  });
 });
 
 window.awaitDomRenderSettled = awaitDomRenderSettled;
 
 const PuppeteerRoot = ({
-  devMode, width, height, fps, serverPort, durationFrames, waitForAsyncRenders, renderId, userData, secret,
+  devMode, width, height, fps, serverPort, durationFrames, waitForAsyncRenders, renderId, userData, videoComponentType = 'ffmpeg', ffmpegStreamFormat, jpegQuality, secret,
 }) => {
   const [currentFrame, setCurrentFrame] = useState();
 
@@ -58,9 +58,6 @@ const PuppeteerRoot = ({
   // if (currentFrame == null) return <div id="frame-cleared" />;
   if (currentFrame == null) return null;
 
-  // Allow the user to override?
-  const videoComponentType = 'ffmpeg';
-
   const frameCanvasStyle = {
     width,
     height,
@@ -80,6 +77,8 @@ const PuppeteerRoot = ({
         api={api}
         userData={userData}
         videoComponentType={videoComponentType}
+        ffmpegStreamFormat={ffmpegStreamFormat}
+        jpegQuality={jpegQuality}
         isPuppeteer
       >
         {devMode && <div id="currentFrame" style={{ fontSize: 18, position: 'absolute', zIndex: 100, background: 'white' }}>{currentFrame} ID{renderId}</div>}
@@ -90,7 +89,7 @@ const PuppeteerRoot = ({
   );
 };
 
-window.setupReact = ({ devMode, width, height, fps, serverPort, durationFrames, renderId, userData, secret }) => {
+window.setupReact = ({ devMode, width, height, fps, serverPort, durationFrames, renderId, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret }) => {
   async function waitForAsyncRenders() {
     return new Promise((resolve) => {
       setAsyncRenderDoneCb((errors) => {
@@ -100,7 +99,7 @@ window.setupReact = ({ devMode, width, height, fps, serverPort, durationFrames, 
     });
   }
 
-  ReactDOM.render(<PuppeteerRoot devMode={devMode} width={width} height={height} fps={fps} serverPort={serverPort} durationFrames={durationFrames} waitForAsyncRenders={waitForAsyncRenders} renderId={renderId} userData={userData} secret={secret} />, document.getElementById('root'));
+  ReactDOM.render(<PuppeteerRoot devMode={devMode} width={width} height={height} fps={fps} serverPort={serverPort} durationFrames={durationFrames} waitForAsyncRenders={waitForAsyncRenders} renderId={renderId} userData={userData} videoComponentType={videoComponentType} ffmpegStreamFormat={ffmpegStreamFormat} jpegQuality={jpegQuality} secret={secret} />, document.getElementById('root'));
 };
 
 // https://github.com/puppeteer/puppeteer/issues/422#issuecomment-708142856

@@ -10,7 +10,7 @@ export const useVideo = () => {
 export const calculateProgress = (currentFrame, duration) => Math.max(0, Math.min(1, currentFrame / Math.max(1, duration - 1)));
 
 export const VideoContextProvider = memo(({
-  currentFrame = 0, durationFrames, width = 800, height = 600, fps = 30, api, userData, videoComponentType = 'html', isPuppeteer = false, children,
+  currentFrame = 0, durationFrames, width = 800, height = 600, fps = 30, api, userData, videoComponentType = 'html', ffmpegStreamFormat, jpegQuality, isPuppeteer = false, children,
 }) => {
   const videoContext = useMemo(() => {
     const getFrameTime = (f) => f / fps;
@@ -48,8 +48,10 @@ export const VideoContextProvider = memo(({
 
       isPuppeteer,
       videoComponentType,
+      ffmpegStreamFormat,
+      jpegQuality,
     };
-  }, [currentFrame, durationFrames, fps, height, width, api, userData, isPuppeteer, videoComponentType]);
+  }, [currentFrame, durationFrames, fps, height, width, api, userData, isPuppeteer, videoComponentType, ffmpegStreamFormat, jpegQuality]);
 
   return (
     <VideoContext.Provider value={videoContext}>

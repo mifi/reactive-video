@@ -30,9 +30,24 @@ async function serve({ ffmpegPath, ffprobePath, serveStaticPath, serveRoot, port
 
   app.get('/api/frame', asyncHandler(async (req, res) => {
     try {
-      const frame = await readFrame({ ...req.query, ffmpegPath });
-      if (req.query.type === 'png') res.set({ 'content-type': 'image/png' });
-      res.send(frame);
+      const params = Object.fromEntries(Object.entries(req.query).map(([key, val]) => {
+        if (['fps', 'width', 'height', 'scale', 'fileFps', 'time', 'streamIndex', 'renderId', 'jpegQuality'].includes(key)) return [key, val != null ? parseFloat(val) : undefined];
+        return [key, val];
+      }));
+      const { ffmpegStreamFormat } = params;
+      // console.log(params);
+      const { stream, buffer } = await readFrame({ ...params, ffmpegPath });
+      if (ffmpegStreamFormat === 'png') {
+        res.set({ 'content-type': 'image/png' });
+        res.send(buffer);
+      } else if (ffmpegStreamFormat === 'raw') {
+        stream.pipe(res);
+      } else if (ffmpegStreamFormat === 'jpeg') {
+        res.set({ 'content-type': 'image/jpeg' });
+        stream.pipe(res);
+      } else {
+        throw new Error('Invalid type');
+      }
     } catch (err) {
       console.error('Server read frame error', err);
       res.sendStatus(400);

@@ -1897,7 +1897,6 @@ __metadata:
     "@babel/preset-env": ^7.14.1
     "@babel/preset-react": ^7.13.13
     babel-loader: ^8.2.2
-    binary-split: ^1.0.5
     body-parser: ^1.19.0
     cookie-parser: ^1.4.5
     css-loader: ^5.2.4
@@ -1915,7 +1914,6 @@ __metadata:
     json5: ^2.2.0
     lodash: ^4.17.21
     meow: 9
-    mjpeg-consumer: ^2.0.0
     p-map: 4
     p-timeout: 4
     png-split-stream: ^1.0.1
@@ -1923,7 +1921,6 @@ __metadata:
     react: 17
     react-dom: 17
     reactive-video: 2
-    split2: ^4.1.0
     style-loader: ^2.0.0
     webpack: ^5.36.2
   bin:
@@ -2949,15 +2946,6 @@ __metadata:
   version: 2.2.0
   resolution: "binary-extensions@npm:2.2.0"
   checksum: 0f5f5685f344b035c4f98d06fa288962d262294a1441c1481ac99e895037bde971ebe6e09a4bd8aa18ab2525bfc00b1ad4af71dbf9e933a72e0df6919706a728
-  languageName: node
-  linkType: hard
-
-"binary-split@npm:^1.0.5":
-  version: 1.0.5
-  resolution: "binary-split@npm:1.0.5"
-  dependencies:
-    through2: ^2.0.3
-  checksum: b8306bc18702b43c13dc712aa538bf1569c72d5129a772fc1117511d629f42c3df2079424d5e47f11d2f00876c4155bd48d607a350e3df35d6e831bb3f4ff6a5
   languageName: node
   linkType: hard
 
@@ -6807,13 +6795,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mjpeg-consumer@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "mjpeg-consumer@npm:2.0.0"
-  checksum: 7c2d27774928b0b57ffa275496da1e9fe5233c68ae01204c2ad4754e2832f1606a03ce111cafde03d70ed0c3e795d27698246fac0c1d9b11ef1527035ce93042
-  languageName: node
-  linkType: hard
-
 "mkdirp-classic@npm:^0.5.2":
   version: 0.5.3
   resolution: "mkdirp-classic@npm:0.5.3"
@@ -7829,7 +7810,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"readable-stream@npm:^2.0.2, readable-stream@npm:^2.0.6, readable-stream@npm:^2.3.5, readable-stream@npm:~2.3.6":
+"readable-stream@npm:^2.0.2, readable-stream@npm:^2.0.6, readable-stream@npm:^2.3.5":
   version: 2.3.7
   resolution: "readable-stream@npm:2.3.7"
   dependencies:
@@ -8521,13 +8502,6 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"split2@npm:^4.1.0":
-  version: 4.1.0
-  resolution: "split2@npm:4.1.0"
-  checksum: 104d0e72155fa35edd6a13181de221b1e6da12119f0f2d1d1c38b9b58c97cc042a907cb4ce23eb3a7dbaf6358577e05d53cbd5e8d5a36a039f935bd2861409e6
-  languageName: node
-  linkType: hard
-
 "sprintf-js@npm:~1.0.2":
   version: 1.0.3
   resolution: "sprintf-js@npm:1.0.3"
@@ -8906,16 +8880,6 @@ resolve@^2.0.0-next.3:
   version: 6.0.1
   resolution: "throat@npm:6.0.1"
   checksum: c984a40b4725bbd6e8c49d57b2bd36ab36c5534e8a1bed0d278d480171fdf908f16ba343d61c3e9c2e3ed4b327a59c28432cfa44594453b756ec219a772395a8
-  languageName: node
-  linkType: hard
-
-"through2@npm:^2.0.3":
-  version: 2.0.5
-  resolution: "through2@npm:2.0.5"
-  dependencies:
-    readable-stream: ~2.3.6
-    xtend: ~4.0.1
-  checksum: 7427403555ead550d3cbe11f69eb07797e27505fc365cf53572111556a7c08625adb5159cad0fc4b9f57babfd937692e34b3a8a20ba35072f4e85f83d340661c
   languageName: node
   linkType: hard
 
@@ -9557,13 +9521,6 @@ resolve@^2.0.0-next.3:
   version: 2.2.0
   resolution: "xmlchars@npm:2.2.0"
   checksum: 69bbb61e8d939873c8aa7d006d082944de2eb6f12f55e53fdfc670d544e677736b59e498ece303f264bd1dc39b77557eef1c1c9bfb09eb5e1e30ac552420d81e
-  languageName: node
-  linkType: hard
-
-"xtend@npm:~4.0.1":
-  version: 4.0.2
-  resolution: "xtend@npm:4.0.2"
-  checksum: 37ee522a3e9fb9b143a400c30b21dc122aa8c9c9411c6afae1005a4617dc20a21765c114d544e37a6bb60c2733dd8ee0a44ed9e80d884ac78cccd30b5e0ab0da
   languageName: node
   linkType: hard
 

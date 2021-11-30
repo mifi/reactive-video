@@ -30,11 +30,10 @@ async function concatParts({ ffmpegPath, paths, concatFilePath, finalOutPath, re
 }
 
 // https://superuser.com/questions/585798/ffmpeg-slideshow-piping-input-and-output-for-image-stream
-function createOutputFfmpeg({ ffmpegPath, fps, outPath, log = false }) {
+function createOutputFfmpeg({ outFormat, ffmpegPath, fps, outPath, log = false }) {
   return execa(ffmpegPath, [
     '-f', 'image2pipe', '-r', fps,
-    // '-c:v', 'png',
-    '-c:v', 'mjpeg',
+    ...(outFormat === 'jpeg' ? ['-c:v', 'mjpeg'] : ['-c:v', 'png']),
     '-i', '-',
 
     // This can used to trigger the process hanging if stdout/stderr streams are not read (causes EPIPE)

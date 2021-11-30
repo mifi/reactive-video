@@ -42,7 +42,6 @@
     "react": "17",
     "react-dom": "17",
     "reactive-video": "2",
-    "strtok3": "^6.0.8",
     "style-loader": "^2.0.0",
     "webpack": "^5.36.2"
   },
