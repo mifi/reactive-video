@@ -442,6 +442,7 @@ This project is maintained by me alone. The project will always remain free and 
 ## Release
 
 ```bash
+npm run test
 # Version and publish reactive-video
 (cd packages/frontend && npm version minor && git add package.json && git commit -m 'Release reactive-video' && npm publish)
 # If necessary (replace 2 with new major semver):
