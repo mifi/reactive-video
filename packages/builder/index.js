@@ -16,12 +16,12 @@ const { createBundler, startBundler, stopBundleWatcher } = require('./bundler');
 
 const { createExtensionFrameCapturer, captureFrameScreenshot, startScreencast } = require('./frameCapture');
 
-function splitIntoParts(durationFrames, concurrency) {
+function splitIntoParts({ startFrame, durationFrames, concurrency }) {
   const partLength = Math.floor(durationFrames / concurrency);
   const parts = Array(concurrency).fill().map((v, i) => [i * partLength, (i + 1) * partLength]);
   const remainder = durationFrames % concurrency;
   if (remainder > 0) parts[parts.length - 1][1] += remainder;
-  return parts;
+  return parts.map(([partStart, partEnd]) => [startFrame + partStart, startFrame + partEnd]);
 }
 
 async function processOptions({ durationTime, durationFramesIn, reactVideo, fps, width, height, tempDirRel }) {
@@ -69,6 +69,7 @@ function Editor({
 
     frameRenderTimeout = 30000,
 
+    startFrame = 0,
     durationFrames: durationFramesIn,
     durationTime,
 
@@ -93,20 +94,29 @@ function Editor({
   }) {
     assert(captureMethod !== 'extension' || !headless, 'Headless is not compatible with this captureMethod');
 
-    let defaultOutPath;
-    if (rawOutput) {
-      if (puppeteerCaptureFormat === 'jpeg') defaultOutPath = 'reactive-video.mov'; // MJPEG
-      else defaultOutPath = 'reactive-video.mkv'; // MPNG
-    } else {
-      defaultOutPath = 'reactive-video.mp4'; // h264
-    }
-    const finalOutPath = desiredOutPath || defaultOutPath;
-
     const {
       durationFrames, tempDir, distPath, userEntryPath,
     } = await processOptions({
       durationTime, durationFramesIn, reactVideo, fps, width, height, tempDirRel,
     });
+
+    assert(durationFrames > 0);
+
+    const isPhoto = durationFrames === 1;
+    const concurrency = concurrencyIn > durationFrames ? durationFrames : concurrencyIn;
+
+    let defaultOutPath;
+    if (isPhoto) {
+      if (puppeteerCaptureFormat === 'jpeg') defaultOutPath = 'reactive-video.jpg';
+      else defaultOutPath = 'reactive-video.png';
+    } else if (rawOutput) {
+      if (puppeteerCaptureFormat === 'jpeg') defaultOutPath = 'reactive-video.mov'; // MJPEG
+      else defaultOutPath = 'reactive-video.mkv'; // MPNG
+    } else {
+      defaultOutPath = 'reactive-video.mp4'; // h264
+    }
+
+    const finalOutPath = desiredOutPath || defaultOutPath;
 
     const frameHashes = {};
 
@@ -294,7 +304,7 @@ function Editor({
         return { promise, abort };
       }
 
-      const parts = splitIntoParts(durationFrames, concurrency);
+      const parts = splitIntoParts({ startFrame, durationFrames, concurrency });
 
       console.log(`Rendering with concurrency ${concurrency}`);
 
