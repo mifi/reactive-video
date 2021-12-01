@@ -1,4 +1,6 @@
 const webpack = require('webpack');
+const { copyFile } = require('fs').promises;
+const { join } = require('path');
 
 function createBundler({ entryPath, userEntryPath, outDir, mode, entryOutName = 'index.js', initData }) {
   const config = {
@@ -73,4 +75,50 @@ function createBundler({ entryPath, userEntryPath, outDir, mode, entryOutName = 
   return webpack(config);
 }
 
-module.exports = { createBundler };
+async function startBundler({ bundler, reactHtmlPath, reactHtmlDistName, distPath }) {
+  return new Promise((resolve, reject) => {
+    const watcher = bundler.watch({}, (err, stats) => {
+      if (err) {
+        reject(err);
+        watcher.close();
+        return;
+      }
+      if (stats.hasErrors()) {
+        console.error(stats.toString());
+        watcher.close();
+        reject(new Error('Bundle failed'));
+        return;
+      }
+
+      (async () => {
+        try {
+          await copyFile(reactHtmlPath, join(distPath, reactHtmlDistName));
+          resolve(watcher);
+        } catch (err2) {
+          watcher.close();
+          reject(err2);
+        }
+      })();
+    });
+  });
+}
+
+async function stopBundleWatcher(bundler, watcher) {
+  console.log('Stopping bundle watcher');
+  try {
+    await new Promise((resolve, reject) => watcher.close((err) => {
+      if (err) reject(err);
+      else resolve();
+    }));
+
+    await new Promise((resolve, reject) => bundler.close((err) => {
+      if (err) reject(err);
+      else resolve();
+    }));
+    console.log('Bundle watcher stopped');
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+module.exports = { createBundler, startBundler, stopBundleWatcher };

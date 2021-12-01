@@ -2,73 +2,19 @@ const fileUrl = require('file-url');
 const puppeteer = require('puppeteer');
 const { join, resolve: resolvePath } = require('path');
 const hasha = require('hasha');
-const { copyFile } = require('fs').promises;
 const { mkdirp } = require('fs-extra');
 const assert = require('assert');
-const crypto = require('crypto');
-const { promisify } = require('util');
 const pTimeout = require('p-timeout');
 const log = require('debug')('reactive-video');
 
+const { generateSecret } = require('./util');
 const { concatParts, createOutputFfmpeg } = require('./ffmpeg');
 
 const { readVideoFormatMetadata, readVideoStreamsMetadata, readDurationFrames } = require('./videoServer');
 const { serve } = require('./server');
-const { createBundler } = require('./bundler');
+const { createBundler, startBundler, stopBundleWatcher } = require('./bundler');
 
 const { createExtensionFrameCapturer, captureFrameScreenshot, startScreencast } = require('./frameCapture');
-
-const randomBytes = promisify(crypto.randomBytes);
-
-async function generateSecret() {
-  return (await randomBytes(32)).toString('base64');
-}
-
-async function startBundler({ bundler, reactHtmlPath, reactHtmlDistName, distPath }) {
-  return new Promise((resolve, reject) => {
-    const watcher = bundler.watch({}, (err, stats) => {
-      if (err) {
-        reject(err);
-        watcher.close();
-        return;
-      }
-      if (stats.hasErrors()) {
-        console.error(stats.toString());
-        watcher.close();
-        reject(new Error('Bundle failed'));
-        return;
-      }
-
-      (async () => {
-        try {
-          await copyFile(reactHtmlPath, join(distPath, reactHtmlDistName));
-          resolve(watcher);
-        } catch (err2) {
-          watcher.close();
-          reject(err2);
-        }
-      })();
-    });
-  });
-}
-
-async function stopBundleWatcher(bundler, watcher) {
-  console.log('Stopping bundle watcher');
-  try {
-    await new Promise((resolve, reject) => watcher.close((err) => {
-      if (err) reject(err);
-      else resolve();
-    }));
-
-    await new Promise((resolve, reject) => bundler.close((err) => {
-      if (err) reject(err);
-      else resolve();
-    }));
-    console.log('Bundle watcher stopped');
-  } catch (err) {
-    console.error(err);
-  }
-}
 
 function splitIntoParts(durationFrames, concurrency) {
   const partLength = Math.floor(durationFrames / concurrency);
