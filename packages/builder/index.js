@@ -6,6 +6,7 @@ const { mkdirp } = require('fs-extra');
 const assert = require('assert');
 const pTimeout = require('p-timeout');
 const log = require('debug')('reactive-video');
+const os = require('os');
 
 const { generateSecret } = require('./util');
 const { concatParts, createOutputFfmpeg } = require('./ffmpeg');
@@ -59,7 +60,7 @@ function Editor({
     fps = 30,
     userData,
     videoComponentType,
-    concurrency = 2,
+    concurrency: concurrencyIn = os.cpus().length,
 
     puppeteerCaptureFormat = 'jpeg',
     ffmpegStreamFormat = 'jpeg',
