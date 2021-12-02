@@ -32,7 +32,7 @@ export default ({ serverPort, renderId, secret }) => {
     return request('/api/read-video-metadata', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path, streamIndex }) });
   }
 
-  function getProxiedHtmlVideoUrl(uri) {
+  function getProxiedAssetUrl(uri) {
     if (uri.startsWith('file://')) return `${baseUrl}/root/${uri.replace(/^file:\/\//, '')}`;
     return uri;
   }
@@ -41,6 +41,6 @@ export default ({ serverPort, renderId, secret }) => {
     getVideoFrameUrl,
     readVideoFrame,
     readVideoMetadata,
-    getProxiedHtmlVideoUrl,
+    getProxiedAssetUrl,
   };
 };

@@ -45,6 +45,7 @@ export const VideoContextProvider = memo(({
       userData: userData || {},
 
       api: api || {},
+      getProxiedAssetUrl: (src) => (api && api.getProxiedAssetUrl ? api.getProxiedAssetUrl(src) : src),
 
       isPuppeteer,
       videoComponentType,

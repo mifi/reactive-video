@@ -4,7 +4,7 @@ import { useVideo } from '../contexts';
 import ImageInternal from './ImageInternal';
 
 const Image = (props) => {
-  const { isPuppeteer, api } = useVideo();
+  const { isPuppeteer, getProxiedAssetUrl } = useVideo();
   const { src, ...rest } = props;
 
   if (isPuppeteer) {
@@ -12,7 +12,7 @@ const Image = (props) => {
     return <ImageInternal {...props} />;
   }
 
-  const srcProxied = api.getProxiedHtmlVideoUrl(src);
+  const srcProxied = getProxiedAssetUrl(src);
   // eslint-disable-next-line react/jsx-props-no-spreading
   return <ImageInternal {...rest} src={srcProxied} />;
 };
