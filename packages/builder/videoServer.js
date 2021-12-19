@@ -2,17 +2,17 @@ const stringify = require('json-stable-stringify');
 const execa = require('execa');
 const pngSplitStream = require('png-split-stream');
 const assert = require('assert');
-const uri2path = require('file-uri-to-path');
 // const log = require('debug')('reactive-video');
 
 const createSplitter = require('./split-stream');
+const { uriifyPath } = require('./util');
 
 const videoProcesses = {};
 
-function createFfmpeg({ ffmpegPath, fps, uri, width, height, scale, fileFps, cutFrom, streamIndex, ffmpegStreamFormat, jpegQuality }) {
+function createFfmpeg({ ffmpegPath, fps, uri: uriOrPath, width, height, scale, fileFps, cutFrom, streamIndex, ffmpegStreamFormat, jpegQuality }) {
   const fileFrameDuration = 1 / fileFps;
 
-  const path = uri.startsWith('file://') ? uri2path(uri) : uri;
+  const uri = uriifyPath(uriOrPath);
 
   const filters = [
     `fps=${fps}`,
@@ -36,7 +36,7 @@ function createFfmpeg({ ffmpegPath, fps, uri, width, height, scale, fileFps, cut
 
     '-noautorotate',
 
-    '-i', path,
+    '-i', uri,
 
     '-an',
 

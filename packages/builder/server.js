@@ -2,9 +2,10 @@ const express = require('express');
 const getPort = require('get-port');
 const bodyParser = require('body-parser');
 const asyncHandler = require('express-async-handler');
-const uri2path = require('file-uri-to-path');
 const basicAuth = require('express-basic-auth');
 const cookieParser = require('cookie-parser');
+
+const { uriifyPath } = require('./util');
 
 const { readFrame, cleanupAll: cleanupVideoProcessors, readVideoStreamsMetadata } = require('./videoServer');
 
@@ -55,8 +56,8 @@ async function serve({ ffmpegPath, ffprobePath, serveStaticPath, serveRoot, port
   }));
 
   app.post('/api/read-video-metadata', asyncHandler(async (req, res) => {
-    const path = uri2path(req.body.path);
-    res.send(await readVideoStreamsMetadata({ ffprobePath, path, streamIndex: req.body.streamIndex }));
+    const uri = uriifyPath(req.body.path);
+    res.send(await readVideoStreamsMetadata({ ffprobePath, path: uri, streamIndex: req.body.streamIndex }));
   }));
 
   if (serveStaticPath) app.use(express.static(serveStaticPath));
