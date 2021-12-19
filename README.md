@@ -392,6 +392,33 @@ const App = () => {
 ```
 See also [previewEntry.js](packages/builder/previewEntry.js)
 
+## Options
+
+`rawOutput` - `true` means saving the raw MJPEG/MPNG stream, while `false` will encode to `h264`
+
+### Fast processing
+
+Lower quality and/or potential skipped/duplicate frames:
+
+```js
+jpegQuality: 70, // slight speed increase
+captureMethod: 'screencast', // significant speed increase, but may skip/duplicate frames
+ffmpegStreamFormat: 'jpeg', // significant speed increase
+puppeteerCaptureFormat: 'jpeg', // significant speed increase
+rawOutput: true, // slight speed increase
+```
+
+### Slow processing
+
+Lossless processing, very slow and yields large files:
+
+```js
+ffmpegStreamFormat: 'raw'
+// or ffmpegStreamFormat 'png'
+puppeteerCaptureFormat: 'png',
+rawOutput: true,
+```
+
 ## Examples
 
 [See examples](examples/)
@@ -416,6 +443,8 @@ Submit a PR if you want to share your Reactive Video here.
 - allow speed up/down `<segment speed={1.3} />`
 - custom video component example
 - preview currentFrame flooding browser history https://stackoverflow.com/questions/26793130/history-replacestate-still-adds-entries-to-the-browsing-history
+- videoServer need to kill ffmpeg when finished with file? or use -t
+- live video mode
 
 ## Ideas
 
