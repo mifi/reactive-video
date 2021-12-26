@@ -45,7 +45,7 @@ async function serve({ ffmpegPath, ffprobePath, serveStaticPath, serveRoot, port
         stream.pipe(res);
       } else if (ffmpegStreamFormat === 'jpeg') {
         res.set({ 'content-type': 'image/jpeg' });
-        stream.pipe(res);
+        res.send(buffer);
       } else {
         throw new Error('Invalid type');
       }

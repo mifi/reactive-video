@@ -1,6 +1,8 @@
 const stringify = require('json-stable-stringify');
 const execa = require('execa');
 const pngSplitStream = require('png-split-stream');
+const binarySplit = require('binary-split');
+
 const assert = require('assert');
 // const log = require('debug')('reactive-video');
 
@@ -96,10 +98,29 @@ async function readFrame(props) {
 
     if (ffmpegStreamFormat === 'jpeg') {
       const jpegSoi = Buffer.from([0xff, 0xd8]); // JPEG start sequence
-      const { awaitNextSplit } = createSplitter({ readableStream: process.stdout, splitOnDelim: jpegSoi });
+      const splitter = binarySplit(jpegSoi);
+
+      const stream = process.stdout.pipe(splitter);
+      stream.pause();
 
       return {
-        readNextFrame: async () => ({ stream: await awaitNextSplit() }),
+        readNextFrame: async () => new Promise((resolve, reject) => {
+          function onError(err) {
+            reject(err);
+          }
+          function onData(jpegFrameWithoutSoi) {
+            // each 'data' event contains one of the frames from the video as a single chunk
+            // todo improve this
+            const jpegFrame = Buffer.concat([jpegSoi, jpegFrameWithoutSoi]);
+            resolve({ buffer: jpegFrame });
+            stream.pause();
+            stream.off('error', onError);
+          }
+
+          stream.resume();
+          stream.once('data', onData);
+          stream.once('error', onError);
+        }),
       };
     }
 
