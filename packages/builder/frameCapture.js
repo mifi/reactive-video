@@ -75,6 +75,43 @@ async function startScreencast({ format, page, jpegQuality }) {
   return { captureFrame };
 }
 
+// Alternative simpler implementation:
+/*
+async function startScreencast({ format, page, jpegQuality }) {
+  const client = await page.target().createCDPSession();
+
+  const options = {
+    format,
+    quality: jpegQuality || undefined,
+    // maxWidth: width,
+    // maxHeight: height,
+    everyNthFrame: 1,
+  };
+
+  async function captureFrame() {
+    return new Promise((resolve) => {
+      client.once('Page.screencastFrame', async (frameObject) => {
+        // console.log('Page.screencastFrame');
+        // console.log(frameObject.metadata, frameObject.sessionId);
+
+        if (!frameObject.data) throw new Error('No frame captured');
+
+        const buf = Buffer.from(frameObject.data, 'base64');
+
+        // I think acking before stopping will cause a slight slowdown
+        // await client.send('Page.screencastFrameAck', { sessionId: frameObject.sessionId });
+        await client.send('Page.stopScreencast', options);
+
+        resolve(buf);
+      });
+      client.send('Page.startScreencast', options);
+    });
+  }
+
+  return { captureFrame };
+}
+*/
+
 // Works most reliably but it's slow
 // Captures viewport only
 async function captureFrameScreenshot({ format, page, jpegQuality }) {
