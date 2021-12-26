@@ -29,7 +29,7 @@ const PuppeteerRoot = ({
 }) => {
   const [currentFrame, setCurrentFrame] = useState();
 
-  // We need to set this immediately (synchronously) or we risk calling it before it has been set
+  // We need to set this immediately (synchronously) or we risk the callee calling window.renderFrame before it has been set
   window.renderFrame = async (n) => {
     if (n == null) {
       setCurrentFrame(); // clear screen

@@ -195,11 +195,8 @@ function Editor({
 
             const page = await browser.newPage();
 
-            page.on('console', (msg) => console.log(`page ${partNum} log`, msg.text()));
+            page.on('console', (msg) => console.log(`page ${partNum} frame ${frameNum} log`, msg.text()));
             page.on('pageerror', (err) => console.error(`pageerror ${partNum}`, err));
-
-            // TODO separate log flag
-            if (enableFfmpegLog) page.on('console', (msg) => console.log('Page console log:', partNum, partStart, msg.text()));
 
             await page.setViewport({ width, height });
             // await page.setViewport({ width, height, deviceScaleFactor: 1 });
@@ -261,6 +258,8 @@ function Editor({
               // console.log('data', opts);
               // fs.writeFile('lol.jpeg', buf);
 
+              logFrame('Write frame');
+
               // const mustDrain = await new Promise((resolve) => {
               await new Promise((resolve) => {
                 // If we don't wait for cb, then we get EINVAL when dealing with high resolution files (big writes)
@@ -268,9 +267,6 @@ function Editor({
                   resolve(!ret);
                 });
               });
-
-              logFrame('Write frame');
-
               // write returns: <boolean> false if the stream wishes for the calling code to wait for the 'drain' event to be emitted before continuing to write additional data; otherwise true.
               // However it seems like it hangs sometimes if we wait for drain...
               /* if (mustDrain) {
