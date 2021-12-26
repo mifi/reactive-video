@@ -1,10 +1,48 @@
 const { PassThrough } = require('stream');
 const { once } = require('events');
+const log = require('debug')('split-stream');
 
+/*
+TODO improve this code
+
+Create npm module
+https://github.com/sindresorhus/awesome-nodejs/blob/main/readme.md#streams
+https://github.com/thejmazz/awesome-nodejs-streams
+
+transform stream instead that spits out streams? (yo dawg, I heard you like streams)
+
+similar:
+https://github.com/mpotra/split-to-streams (doesn't seem to preserve delim)
+https://github.com/watson/stream-chopper (size/time based)
+https://github.com/maxogden/binary-split
+https://github.com/131/stream-split
+https://github.com/hgranlund/node-binary-split
+https://github.com/mcollina/split2
+
+https://github.com/enobufs/node-mjpeg-reader (file only)
+https://github.com/mmaelzer/mjpeg-consumer
+https://github.com/eugeneware/png-split-stream
+https://github.com/kevinGodell/pipe2jpeg (seems a bit shady due to using internals `_readableState.pipesCount`)
+
+Good tests:
+https://github.com/watson/stream-chopper/blob/master/test.js
+*/
 function createSplitter({ readableStream, splitOnDelim, splitOnLength }) {
   if ((splitOnDelim == null || splitOnDelim.length === 0) && !splitOnLength) {
     throw new TypeError('Specify one of splitOnDelim or splitOnLength');
   }
+
+  let readableEnded = false;
+
+  readableStream.on('end', () => {
+    log('readableStream end');
+    readableEnded = true;
+  });
+
+  readableStream.on('close', () => {
+    log('readableStream close');
+    readableEnded = true;
+  });
 
   let outStream;
   let error;
@@ -20,7 +58,7 @@ function createSplitter({ readableStream, splitOnDelim, splitOnLength }) {
   }
 
   function newStream() {
-    // console.log('newStream');
+    log('newStream');
     if (outStream) outStream.end();
     outStream = new PassThrough();
 
@@ -33,12 +71,10 @@ function createSplitter({ readableStream, splitOnDelim, splitOnLength }) {
   }
 
   async function awaitNextSplit() {
-    // console.log('awaitNextSplit');
+    log('awaitNextSplit');
     if (newStreams.length > 0) return newStreams.shift();
 
     if (error) throw error;
-
-    if (readableStream.readableEnded) throw new Error('Stream has ended');
 
     return new Promise((resolve, reject) => {
       awaitingNewStreams.push({ resolve, reject });
@@ -51,29 +87,42 @@ function createSplitter({ readableStream, splitOnDelim, splitOnLength }) {
       newStreamOnNextWrite = false;
       newStream();
     }
-    // console.log('safeWrite', buf);
+    log('safeWrite', buf);
     if (!outStream.write(buf)) await once(outStream, 'drain');
-    // console.log('safeWrite done');
+    log('safeWrite done');
   }
 
   // I'm not proud of this, but it works
   // https://www.youtube.com/watch?v=2Y1JX6jHoDU
+  // TODO: Hitting an issue "Stream has ended" when running this in EC2 (but not on mac os and not with png/raw), not sure why but something is wrong here
   async function splitStreamOnDelim() {
     let workingBuf = Buffer.alloc(0);
 
     async function readMore() {
-      if (readableStream.readableEnded) return false;
+      log('readMore');
+      if (readableEnded) {
+        log('readableEnded');
+        return false;
+      }
 
       let val = readableStream.read();
       if (val != null) {
+        log('read', val);
         workingBuf = Buffer.concat([workingBuf, val]);
         return true;
       }
+
+      log('waiting for readableStream readable');
       await once(readableStream, 'readable');
+      log('readableStream is now readable');
+
       val = readableStream.read();
       if (val != null) {
+        log('read', val);
         workingBuf = Buffer.concat([workingBuf, val]);
       }
+
+      log('read', !!val);
       return !!val;
     }
 
@@ -82,49 +131,36 @@ function createSplitter({ readableStream, splitOnDelim, splitOnLength }) {
     let hasMoreData = true;
 
     while (workingBuf.length > 0 || hasMoreData) {
-      // eslint-disable-next-line no-await-in-loop
-      hasMoreData = await readMore();
-
-      let delimSearchOffset = 0;
+      const delimSearchOffset = 0;
       let delimIndex = -1;
 
-      // todo improve this mess
-      while (delimIndex < 0 && delimSearchOffset < workingBuf.length) {
-        delimIndex = workingBuf.indexOf(splitOnDelim[0], delimSearchOffset);
-        // console.log({ delimIndex, delimSearchOffset });
-        if (delimIndex < 0) {
-          delimSearchOffset += 1; // search again for more later in the stream!
-        } else {
-          // look for rest of the delim
-          for (let i = 1; i < splitOnDelim.length; i += 1) {
-            const offsetIndex = delimIndex + i;
-            // delim may be divided between chunks?
-            while (workingBuf[offsetIndex] == null) {
-              // console.log('Reading more data - Delim may be split across 2 chunks');
-              // eslint-disable-next-line no-await-in-loop
-              hasMoreData = await readMore();
-              if (!hasMoreData) {
-                delimIndex = offsetIndex; // emulate end of file as a last delim to flush data
-                break;
-              }
-            }
+      while (delimIndex < 0) {
+        // delimSearchOffset = workingBuf.length;
 
-            if (workingBuf[offsetIndex] !== splitOnDelim[i]) {
-              // console.log('nonmatch');
-              delimSearchOffset = offsetIndex; // search again for more later in the stream
-              delimIndex = -1;
-              break;
-            }
-          }
+        // eslint-disable-next-line no-await-in-loop
+        hasMoreData = await readMore();
 
-          if (delimIndex >= 0) break; // if inner for loop finished, we have complete delim
+        delimIndex = workingBuf.indexOf(splitOnDelim, delimSearchOffset);
+
+        if (delimIndex >= 0) break;
+
+        if (!hasMoreData) {
+          log({ hasMoreData });
+          break;
+        }
+
+        // Optimization: flush data to output stream if delim not split across 2 chunks
+        // Delim may be split across 2 (or more) chunks. If not, we can write out data now
+        // console.log(splitOnDelim, workingBuf, splitOnDelim.includes(workingBuf[workingBuf.length - 1]))
+        if (!splitOnDelim.includes(workingBuf[workingBuf.length - 1])) {
+          // eslint-disable-next-line no-await-in-loop
+          await safeWrite(workingBuf);
+          workingBuf = Buffer.alloc(0);
         }
       }
 
-      delimSearchOffset = 0;
-
       if (delimIndex >= 0) {
-        // console.log('split', delimIndex);
+        log('delimIndex', delimIndex);
         const partBefore = workingBuf.slice(0, delimIndex);
         const partAfter = workingBuf.slice(delimIndex + splitOnDelim.length);
 
