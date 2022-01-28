@@ -67,6 +67,7 @@ function Editor({
     jpegQuality = 90,
     captureMethod = 'screencast',
     sleepTimeBeforeCapture = 0, // See https://github.com/mifi/reactive-video/issues/4
+    extraPuppeteerArgs = [],
 
     frameRenderTimeout = 30000,
 
@@ -165,6 +166,7 @@ function Editor({
           '--force-device-scale-factor=1',
           // '--start-maximized',
           // `--window-size=${width},${height}`,
+          ...extraPuppeteerArgs
         ],
         headless,
         // dumpio: true,
