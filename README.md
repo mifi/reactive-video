@@ -134,6 +134,7 @@ const Editor = require('@reactive-video/builder');
     output: 'my-video.mp4',
     concurrency: 3,
     // headless: false,
+    // extraPuppeteerArgs: ['--no-sandbox', '--disable-setuid-sandbox']
   });
 
   // Or start a live preview:
