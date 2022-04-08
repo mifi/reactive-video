@@ -84,9 +84,8 @@ async function startBundler({ bundler, reactHtmlPath, reactHtmlDistName, distPat
         return;
       }
       if (stats.hasErrors()) {
-        console.error(stats.toString());
         watcher.close();
-        reject(new Error('Bundle failed'));
+        reject(new Error(`Bundle failed: ${stats.toString()}`));
         return;
       }
 
@@ -104,21 +103,15 @@ async function startBundler({ bundler, reactHtmlPath, reactHtmlDistName, distPat
 }
 
 async function stopBundleWatcher(bundler, watcher) {
-  console.log('Stopping bundle watcher');
-  try {
-    await new Promise((resolve, reject) => watcher.close((err) => {
-      if (err) reject(err);
-      else resolve();
-    }));
+  await new Promise((resolve, reject) => watcher.close((err) => {
+    if (err) reject(err);
+    else resolve();
+  }));
 
-    await new Promise((resolve, reject) => bundler.close((err) => {
-      if (err) reject(err);
-      else resolve();
-    }));
-    console.log('Bundle watcher stopped');
-  } catch (err) {
-    console.error(err);
-  }
+  await new Promise((resolve, reject) => bundler.close((err) => {
+    if (err) reject(err);
+    else resolve();
+  }));
 }
 
 module.exports = { createBundler, startBundler, stopBundleWatcher };

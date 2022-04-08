@@ -9,7 +9,7 @@ const pTimeout = require('p-timeout');
 // https://github.com/shaynet10/puppeteer-mass-screenshots/blob/main/index.js
 // Very fast but needs synchronization
 // Captures whole browser window
-async function startScreencast({ format, page, jpegQuality }) {
+async function startScreencast({ logger, format, page, jpegQuality }) {
   const client = await page.target().createCDPSession();
 
   const options = {
@@ -31,7 +31,7 @@ async function startScreencast({ format, page, jpegQuality }) {
   }
 
   client.on('Page.screencastFrame', async (frameObject) => {
-    // console.log(frameObject.metadata, frameObject.sessionId);
+    // logger.log(frameObject.metadata, frameObject.sessionId);
 
     try {
       const buf = Buffer.from(frameObject.data, 'base64');
@@ -42,7 +42,7 @@ async function startScreencast({ format, page, jpegQuality }) {
       await client.send('Page.stopScreencast');
       onScreencastFrame(buf);
     } catch (err) {
-      console.error('Page.screencastFrame', err);
+      logger.error('Page.screencastFrame', err);
     }
   });
 
@@ -63,8 +63,8 @@ async function startScreencast({ format, page, jpegQuality }) {
         if (!frame) throw new Error('Empty frame');
         return frame;
       } catch (err) {
-        console.error('captureFrame failed', frameNum, err);
-        console.log('Retrying', i + 1);
+        logger.error('captureFrame failed', frameNum, err);
+        logger.log('Retrying', i + 1);
         // eslint-disable-next-line no-await-in-loop
         await client.send('Page.stopScreencast');
       }
@@ -91,8 +91,8 @@ async function startScreencast({ format, page, jpegQuality }) {
   async function captureFrame() {
     return new Promise((resolve) => {
       client.once('Page.screencastFrame', async (frameObject) => {
-        // console.log('Page.screencastFrame');
-        // console.log(frameObject.metadata, frameObject.sessionId);
+        // logger.log('Page.screencastFrame');
+        // logger.log(frameObject.metadata, frameObject.sessionId);
 
         if (!frameObject.data) throw new Error('No frame captured');
 

@@ -9,7 +9,7 @@ const { uriifyPath } = require('./util');
 
 const { readFrame, cleanupAll: cleanupVideoProcessors, readVideoStreamsMetadata } = require('./videoServer');
 
-async function serve({ ffmpegPath, ffprobePath, serveStaticPath, serveRoot, port: requestedPort, secret }) {
+async function serve({ logger, ffmpegPath, ffprobePath, serveStaticPath, serveRoot, port: requestedPort, secret }) {
   const app = express();
 
   app.use(cookieParser());
@@ -37,7 +37,7 @@ async function serve({ ffmpegPath, ffprobePath, serveStaticPath, serveRoot, port
       }));
       const { ffmpegStreamFormat } = params;
       // console.log(params);
-      const { stream, buffer } = await readFrame({ ...params, ffmpegPath });
+      const { stream, buffer } = await readFrame({ params, ffmpegPath, logger });
       if (ffmpegStreamFormat === 'png') {
         res.set({ 'content-type': 'image/png' });
         res.send(buffer);
@@ -50,7 +50,7 @@ async function serve({ ffmpegPath, ffprobePath, serveStaticPath, serveRoot, port
         throw new Error('Invalid type');
       }
     } catch (err) {
-      console.error('Server read frame error', err);
+      logger.error('Server read frame error', err);
       res.sendStatus(400);
     }
   }));

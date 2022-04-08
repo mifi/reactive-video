@@ -49,8 +49,19 @@ function Editor({
   ffmpegPath = 'ffmpeg',
   ffprobePath = 'ffprobe',
   devMode = false,
+  logger = console,
 } = {}) {
   const bundleMode = devMode ? 'development' : 'production';
+
+  async function tryStopBundleWatcher(bundler, watcher) {
+    logger.log('Stopping bundle watcher');
+    try {
+      await stopBundleWatcher(bundler, watcher);
+      logger.log('Bundle watcher stopped');
+    } catch (err) {
+      logger.error('Failed to stop bundle watcher', err);
+    }
+  }
 
   async function edit({
     headless = true,
@@ -133,21 +144,21 @@ function Editor({
     let watcher;
 
     try {
-      console.log('Compiling Reactive Video Javascript');
+      logger.log('Compiling Reactive Video Javascript');
       watcher = await startBundler({ bundler, reactHtmlPath, reactHtmlDistName, distPath });
 
       const secret = await generateSecret();
 
-      console.log('Starting server');
-      // const server = await serve({ ffmpegPath, ffprobePath, serveStaticPath: distPath });
-      const server = await serve({ ffmpegPath, ffprobePath, secret });
+      logger.log('Starting server');
+      // const server = await serve({ logger, ffmpegPath, ffprobePath, serveStaticPath: distPath });
+      const server = await serve({ logger, ffmpegPath, ffprobePath, secret });
       stopServer = server.stop;
       const { port } = server;
 
       const extensionPath = join(__dirname, 'extension');
       const extensionId = 'jjndjgheafjngoipoacpjgeicjeomjli';
 
-      console.log('Launching puppeteer');
+      logger.log('Launching puppeteer');
 
       browser = await puppeteer.launch({
         args: [
@@ -166,7 +177,7 @@ function Editor({
           '--force-device-scale-factor=1',
           // '--start-maximized',
           // `--window-size=${width},${height}`,
-          ...extraPuppeteerArgs
+          ...extraPuppeteerArgs,
         ],
         headless,
         // dumpio: true,
@@ -192,13 +203,13 @@ function Editor({
             outProcess = createOutputFfmpeg({ outFormat: puppeteerCaptureFormat, ffmpegPath, fps, outPath, log: enableFfmpegLog });
 
             outProcess.on('exit', (code) => {
-              console.log('Output ffmpeg exited with code', code);
+              logger.log('Output ffmpeg exited with code', code);
             });
 
             const page = await browser.newPage();
 
-            page.on('console', (msg) => console.log(`page ${partNum} frame ${frameNum} log`, msg.text()));
-            page.on('pageerror', (err) => console.error(`pageerror ${partNum}`, err));
+            page.on('console', (msg) => logger.log(`page ${partNum} frame ${frameNum} log`, msg.text()));
+            page.on('pageerror', (err) => logger.error(`pageerror ${partNum}`, err));
 
             await page.setViewport({ width, height });
             // await page.setViewport({ width, height, deviceScaleFactor: 1 });
@@ -212,7 +223,7 @@ function Editor({
 
             await page.evaluate((params) => window.setupReact(params), { devMode, width, height, fps, serverPort: port, durationFrames, renderId, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret });
 
-            const screencast = captureMethod === 'screencast' && await startScreencast({ format: puppeteerCaptureFormat, page, jpegQuality });
+            const screencast = captureMethod === 'screencast' && await startScreencast({ logger, format: puppeteerCaptureFormat, page, jpegQuality });
 
             // eslint-disable-next-line no-inner-declarations
             async function renderFrame() {
@@ -226,7 +237,7 @@ function Editor({
               // eslint-disable-next-line no-shadow
               const errors = await page.evaluate(async (frameNum) => window.renderFrame(frameNum), frameNum);
               if (failOnWebErrors && errors.length > 0) throw new Error(`Render frame error: ${errors.map((error) => error.message).join(', ')}`);
-              else errors.forEach((error) => console.warn('Web error', error));
+              else errors.forEach((error) => logger.warn('Web error', error));
 
               logFrame('waitForFonts');
               // Wait for fonts (fonts will have been loaded after page start, due to webpack imports from React components)
@@ -257,7 +268,7 @@ function Editor({
 
               if (enableHashCheck) frameHashes[frameNum] = await hasha(buf);
 
-              // console.log('data', opts);
+              // logger.log('data', opts);
               // fs.writeFile('lol.jpeg', buf);
 
               logFrame('Write frame');
@@ -292,7 +303,7 @@ function Editor({
             return outPath;
           } catch (err) {
             if (outProcess) outProcess.kill();
-            console.error(`Caught error at frame ${frameNum}, part ${partNum} (${partStart})`, err);
+            logger.error(`Caught error at frame ${frameNum}, part ${partNum} (${partStart})`, err);
             throw err;
           }
         })();
@@ -305,7 +316,7 @@ function Editor({
 
       const parts = splitIntoParts({ startFrame, durationFrames, concurrency });
 
-      console.log(`Rendering with concurrency ${concurrency}`);
+      logger.log(`Rendering with concurrency ${concurrency}`);
 
       const partProgresses = {};
       let startTime;
@@ -326,10 +337,10 @@ function Editor({
           const secondsSinceStart = ((new Date().getTime() - startTime.getTime()) / 1000);
 
           const totalFramesDone = Object.values(partProgresses).reduce((acc, { frameNum: frameNum2 }) => acc + frameNum2, 0);
-          // console.log(partProgresses, totalFramesDone, avgFps);
+          // logger.log(partProgresses, totalFramesDone, avgFps);
           if (secondsSinceStart > 0 && totalFramesDone % Math.ceil(fps) === 0) {
             const avgFps = totalFramesDone / secondsSinceStart;
-            console.log(
+            logger.log(
               'Progress', `${((totalFramesDone / durationFrames) * 100).toFixed(2)}%`,
               'FPS:', avgFps.toFixed(2),
               'Parts:', Object.entries(partProgresses).map(([n, { frameNum: frameNum2, durationFrames: durationFrames2 }]) => `${n}: ${((frameNum2 / durationFrames2) * 100).toFixed(2)}%`).join(', '),
@@ -348,7 +359,7 @@ function Editor({
         outPaths = await Promise.all(promises);
       } catch (err) {
         if (renderers.length > 1) {
-          console.log('Caught error in one part, aborting the rest');
+          logger.log('Caught error in one part, aborting the rest');
           renderers.forEach((r) => r.abort());
           await Promise.allSettled(promises);
         }
@@ -363,7 +374,7 @@ function Editor({
         }
       }
 
-      console.log('Merging parts');
+      logger.log('Merging parts');
       const concatFilePath = join(tempDir, 'concat.txt');
       await concatParts({ ffmpegPath, paths: outPaths, concatFilePath, finalOutPath, remuxOnly: rawOutput });
 
@@ -374,10 +385,10 @@ function Editor({
     } finally {
       if (browser && autoCloseBrowser) await browser.close();
       if (stopServer) stopServer();
-      if (watcher) stopBundleWatcher(bundler, watcher);
+      if (watcher) await tryStopBundleWatcher(bundler, watcher);
     }
 
-    console.log('Edit finished:', finalOutPath);
+    logger.log('Edit finished:', finalOutPath);
   }
 
   async function preview({
@@ -412,22 +423,22 @@ function Editor({
     const initData = { width, height, fps, serverPort: port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret };
     const bundler = createBundler({ entryPath: reactIndexPath, userEntryPath, outDir: distPath, mode: bundleMode, entryOutName: 'preview.js', initData });
 
-    console.log('Compiling Reactive Video Javascript');
+    logger.log('Compiling Reactive Video Javascript');
     const watcher = await startBundler({ bundler, reactHtmlPath, reactHtmlDistName, distPath });
 
-    console.warn('Warning: Serving filesystem root');
-    const server = await serve({ ffmpegPath, ffprobePath, serveStaticPath: distPath, serveRoot: true, port, secret });
+    logger.warn('Warning: Serving filesystem root');
+    const server = await serve({ logger, ffmpegPath, ffprobePath, serveStaticPath: distPath, serveRoot: true, port, secret });
     const { stop: stopServer } = server;
 
-    console.log(`http://localhost:${port}/preview.html?secret=${encodeURIComponent(secret)}`);
+    logger.log(`http://localhost:${port}/preview.html?secret=${encodeURIComponent(secret)}`);
 
     let sig = false;
     process.on('SIGINT', () => {
       if (sig) process.exit(1);
-      console.log('Caught SIGINT, shutting down');
+      logger.log('Caught SIGINT, shutting down');
       sig = true;
       stopServer();
-      stopBundleWatcher(bundler, watcher);
+      tryStopBundleWatcher(bundler, watcher);
     });
   }
 

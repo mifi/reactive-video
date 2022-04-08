@@ -79,10 +79,10 @@ function cleanupProcess(key) {
   delete videoProcesses[key];
 }
 
-async function readFrame(props) {
+async function readFrame({ params, ffmpegPath, logger }) {
   let process;
 
-  const { ffmpegPath, fps, uri, width, height, scale, fileFps, time = 0, streamIndex, ffmpegStreamFormat, jpegQuality } = props;
+  const { fps, uri, width, height, scale, fileFps, time = 0, streamIndex, ffmpegStreamFormat, jpegQuality } = params;
 
   function createFrameReader() {
     if (ffmpegStreamFormat === 'raw') {
@@ -150,9 +150,9 @@ async function readFrame(props) {
     throw new Error('Invalid ffmpegStreamFormat');
   }
 
-  const { time: ignored, ...allExceptTime } = props;
+  const { time: ignored, ...allExceptTime } = params;
   const key = stringify(allExceptTime);
-  const allPropsKey = stringify(props); // includes time
+  const allPropsKey = stringify(params); // includes time
 
   try {
     const frameDuration = 1 / fps;
@@ -168,7 +168,7 @@ async function readFrame(props) {
       videoProcesses[key].time = time;
       videoProcesses[key].alreadyProcessedFrames[allPropsKey] = true;
     } else {
-      console.log('createFfmpeg', key);
+      logger.log('createFfmpeg', key);
       // console.log({ processTime: videoProcesses[key] ? videoProcesses[key].time : undefined, time, frameDuration });
 
       // Parameters changed (or time is not next frame). need to restart encoding
@@ -199,7 +199,7 @@ async function readFrame(props) {
         await process;
       } catch (err2) {
         if (!err2.killed) {
-          console.error('ffmpeg error', err2.message);
+          logger.error('ffmpeg error', err2.message);
           cleanupProcess(key);
         }
       }
