@@ -104,7 +104,7 @@ const FFmpegVideo = (props) => {
       if (['png', 'jpeg'].includes(ffmpegStreamFormat)) {
         await new Promise((resolve, reject) => {
           imgRef.current.addEventListener('load', resolve);
-          imgRef.current.addEventListener('error', reject);
+          imgRef.current.addEventListener('error', () => reject(new Error(`FFmpegVideo frame image at time ${currentTime} failed to load`)));
           imgRef.current.src = getVideoFrameUrl(ffmpegParams);
         });
       }

@@ -9,12 +9,12 @@ const Image = (props) => {
 
   if (isPuppeteer) {
     // eslint-disable-next-line react/jsx-props-no-spreading
-    return <ImageInternal {...props} />;
+    return <ImageInternal {...props} _originalSrc={src} />;
   }
 
   const srcProxied = getProxiedAssetUrl(src);
   // eslint-disable-next-line react/jsx-props-no-spreading
-  return <ImageInternal {...rest} src={srcProxied} />;
+  return <ImageInternal {...rest} src={srcProxied} _originalSrc={src} />;
 };
 
 export default Image;

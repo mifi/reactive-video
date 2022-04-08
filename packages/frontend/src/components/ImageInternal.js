@@ -4,19 +4,19 @@ import { useAsyncRenderer } from '../asyncRegistry';
 
 const ImageInternal = (props) => {
   const { waitFor } = useAsyncRenderer();
-  const { src, onError: userOnError, onLoad: userOnLoad } = props;
+  const { src, _originalSrc, onError, onLoad, ...rest } = props;
 
   const errorRef = useRef();
   const loadRef = useRef();
 
-  function onLoad() {
+  function handleLoad() {
     if (loadRef.current) loadRef.current();
-    if (userOnLoad) userOnLoad();
+    if (onLoad) onLoad();
   }
 
-  function onError(err) {
-    if (errorRef.current) errorRef.current(err);
-    if (userOnError) userOnError(err);
+  function handleError(err) {
+    if (errorRef.current) errorRef.current(new Error(`Image failed to load ${_originalSrc}`));
+    if (onError) onError(err);
   }
 
   useEffect(() => {
@@ -27,7 +27,7 @@ const ImageInternal = (props) => {
   }, [src, waitFor]);
 
   // eslint-disable-next-line jsx-a11y/iframe-has-title,jsx-a11y/alt-text,react/jsx-props-no-spreading
-  return <img {...props} onError={onError} onLoad={onLoad} />;
+  return <img {...rest} src={src} onError={handleError} onLoad={handleLoad} />;
 };
 
 export default ImageInternal;
