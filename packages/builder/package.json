@@ -31,7 +31,6 @@
     "file-url": "^3.0.0",
     "fs-extra": "^10.0.0",
     "get-port": "^5.1.1",
-    "hasha": "^5.2.2",
     "json-stable-stringify": "^1.0.1",
     "json5": "^2.2.0",
     "lodash": "^4.17.21",
@@ -44,7 +43,8 @@
     "react-dom": "17",
     "reactive-video": "2",
     "style-loader": "^2.0.0",
-    "webpack": "^5.36.2"
+    "webpack": "^5.36.2",
+    "workerpool": "^6.2.0"
   },
   "bugs": {
     "url": "https://github.com/mifi/reactive-video/issues"

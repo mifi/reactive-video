@@ -1910,7 +1910,6 @@ __metadata:
     file-url: ^3.0.0
     fs-extra: ^10.0.0
     get-port: ^5.1.1
-    hasha: ^5.2.2
     json-stable-stringify: ^1.0.1
     json5: ^2.2.0
     lodash: ^4.17.21
@@ -1924,6 +1923,7 @@ __metadata:
     reactive-video: 2
     style-loader: ^2.0.0
     webpack: ^5.36.2
+    workerpool: ^6.2.0
   bin:
     reactive-video: cli.js
   languageName: unknown
@@ -4979,16 +4979,6 @@ __metadata:
   dependencies:
     function-bind: ^1.1.1
   checksum: c686e15300d41364486c099a9259d9c418022c294244843dcd712c4c286ff839d4f23a25413baa28c4d2c1e828afc2aaab70f685400b391533980223c71fa1ca
-  languageName: node
-  linkType: hard
-
-"hasha@npm:^5.2.2":
-  version: 5.2.2
-  resolution: "hasha@npm:5.2.2"
-  dependencies:
-    is-stream: ^2.0.0
-    type-fest: ^0.8.0
-  checksum: 50adf6a312f802a3fac6858eb5835b0465931c46608e0719178033008153c4aef85cb682d82df6c02f069024bd588d918fd8cea30ca0584a8fbe7914b36962af
   languageName: node
   linkType: hard
 
@@ -9070,7 +9060,7 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"type-fest@npm:^0.8.0, type-fest@npm:^0.8.1":
+"type-fest@npm:^0.8.1":
   version: 0.8.1
   resolution: "type-fest@npm:0.8.1"
   checksum: f8c4b4249f52e8bea7a4fc55b3653c96c2d547240e4c772e001d02b7cc38b8c3eb493ab9fbe985a76a203cd1aa7044776b728a71ba12bf36e7131f989597885b
@@ -9467,6 +9457,13 @@ resolve@^2.0.0-next.3:
   version: 1.2.3
   resolution: "word-wrap@npm:1.2.3"
   checksum: 6526abd75d4409c76d1989cf2fbf6080b903db29824be3d17d0a0b8f6221486c76a021174eda2616cf311199787983c34bae3c5e7b51d2ad7476f2066cddb75a
+  languageName: node
+  linkType: hard
+
+"workerpool@npm:^6.2.0":
+  version: 6.2.0
+  resolution: "workerpool@npm:6.2.0"
+  checksum: b0590cd8359001226ac9578ec6188c8fb7776359232e9a3ca9e413332b07afbf3a4f5ad023668c1bd477ed590c21b70ae75d366baa3b595a62be76ae06b84af3
   languageName: node
   linkType: hard
 

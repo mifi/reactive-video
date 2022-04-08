@@ -450,6 +450,14 @@ Submit a PR if you want to share your Reactive Video here.
 - videoServer need to kill ffmpeg when finished with file? or use -t
 - live video mode
 
+## Commands for testing
+
+```bash
+md5 myvideo2.mov myvideo2-prev.mov
+ffmpeg -i myvideo2.mov -i myvideo2-prev.mov -filter_complex blend=all_mode=difference -c:v libx264 -crf 18 -c:a copy -y diff.mp4
+while [ 1 ]; do node myedit2.js; md5 myvideo2-prev.mov myvideo2.mov; done
+```
+
 ## Ideas
 
 - subtitle rendering (programmatically create Segments)

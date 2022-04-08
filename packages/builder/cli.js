@@ -44,7 +44,6 @@ const cli = meow(`
     previewHtml: { type: 'boolean' },
 
     headless: { type: 'boolean', default: true },
-    autoCloseBrowser: { type: 'boolean', default: true },
     width: { type: 'number' },
     height: { type: 'number' },
     fps: { type: 'number' },
@@ -102,6 +101,7 @@ const {
     });
   }
 })().catch((err) => {
+  // eslint-disable-next-line no-console
   console.error('Error:', err.message);
   log('Error', err);
   process.exitCode = 1;
