@@ -29,6 +29,9 @@ async function serve({ logger, ffmpegPath, ffprobePath, serveStaticPath, serveRo
 
   app.use(bodyParser.json());
 
+  // less cpu when disabled?
+  app.set('etag', false);
+
   app.get('/api/frame', asyncHandler(async (req, res) => {
     try {
       const params = Object.fromEntries(Object.entries(req.query).map(([key, val]) => {
