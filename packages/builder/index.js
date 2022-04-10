@@ -73,8 +73,6 @@ function Editor({
     sleepTimeBeforeCapture = 0, // See https://github.com/mifi/reactive-video/issues/4
     extraPuppeteerArgs = [],
 
-    frameRenderTimeout = 30000,
-
     startFrame = 0,
     durationFrames: durationFramesIn,
     durationTime,
@@ -87,7 +85,9 @@ function Editor({
 
     rawOutput = true,
 
+    frameRenderTimeout = 30000,
     failOnWebErrors = true,
+    numRetries = 3,
 
     // Counts all frames in the final video and throws an error if there's a mismatch
     enableFrameCountCheck = false,
@@ -145,7 +145,7 @@ function Editor({
       logger.log('Launching puppeteer, concurrency:', concurrency);
 
       const extensionPath = join(__dirname, 'extension');
-      const { renderPart, terminateRenderers } = await createRenderer({ concurrency, captureMethod, headless, extraPuppeteerArgs, logger, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout });
+      const { renderPart, terminateRenderers } = await createRenderer({ concurrency, captureMethod, headless, extraPuppeteerArgs, numRetries, logger, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout });
 
       const parts = splitIntoParts({ startFrame, durationFrames, concurrency });
 
@@ -190,7 +190,7 @@ function Editor({
         outPaths = await Promise.all(promises);
       } catch (err) {
         if (renderers.length > 1) {
-          logger.log('Caught error in one part, aborting the rest');
+          logger.error('Caught error in one part, aborting the rest');
           renderers.forEach(({ abort }) => abort());
           await Promise.allSettled(promises); // wait for all renderers to close first
         }

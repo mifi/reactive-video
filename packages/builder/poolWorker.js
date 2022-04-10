@@ -8,6 +8,8 @@ const workerpool = require('workerpool');
 const { createExtensionFrameCapturer, captureFrameScreenshot, startScreencast } = require('./frameCapture');
 const { createOutputFfmpeg } = require('./ffmpeg');
 
+class PageBrokenError extends Error {}
+
 function onProgress(progress) {
   workerpool.workerEmit({
     event: 'progress',
@@ -39,6 +41,14 @@ async function createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs,
       '--force-device-scale-factor=1',
       // '--start-maximized',
       // `--window-size=${width},${height}`,
+
+      // These flags are not strictly needed:
+      '--no-sandbox', // sandbox can sometimes cause issues on linux
+      '--disable-setuid-sandbox',
+      // '--single-process', // we are running one browser per page, so one would think there is no need for processes. however when running tight on resources (e.g. inside withCrashRecovery), it will cause the wholee browser creation to fail due to errors like Target closed
+      '--disable-dev-shm-usage', // for docker (that doesn't have a large /dev/shm)
+      '--disable-background-media-suspend',
+
       ...extraPuppeteerArgs,
     ],
     headless,
@@ -46,33 +56,51 @@ async function createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs,
     // defaultViewport: null,
   });
 
+  const context = await browser.createIncognitoBrowserContext();
+
   return {
     browser,
+    context,
     extensionFrameCapturer: captureMethod === 'extension' && await createExtensionFrameCapturer(browser),
   };
 }
 
-async function renderPart({ captureMethod, headless, extraPuppeteerArgs, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout, partNum, partStart, partEnd }) {
-  let frameNum = partStart;
-
-  const { browser, extensionFrameCapturer } = await createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs, headless });
+async function renderPart({ captureMethod, headless, extraPuppeteerArgs, numRetries = 0, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout, partNum, partStart, partEnd }) {
   const renderId = partStart; // Unique ID per concurrent renderer
 
-  let outProcess;
+  let frameNum = partStart;
 
-  try {
-    const outPath = join(tempDir, `part ${partNum}-${partStart}-${partEnd}.mkv`);
+  let browser;
+  let context;
+  let page;
+  let extensionFrameCapturer;
+  let screencast;
+  let onPageError;
 
-    outProcess = createOutputFfmpeg({ outFormat: puppeteerCaptureFormat, ffmpegPath, fps, outPath, log: enableFfmpegLog });
+  async function tryCreateBrowserAndPage() {
+    onPageError = undefined;
 
-    outProcess.on('exit', (code) => {
-      logger.log('Output ffmpeg exited with code', code);
+    ({ browser, context, extensionFrameCapturer } = await createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs, headless }));
+
+    page = await context.newPage();
+
+    page.on('console', (msg) => logger.log(`Part ${partNum},${frameNum} log`, msg.text()));
+    page.on('pageerror', (err) => {
+      if (onPageError) onPageError(new PageBrokenError(err.message));
+      logger.warn(`Part ${partNum},${frameNum} page pageerror`, err);
     });
-
-    const page = await browser.newPage();
-
-    page.on('console', (msg) => logger.log(`page ${partNum} frame ${frameNum} log`, msg.text()));
-    page.on('pageerror', (err) => logger.error(`pageerror ${partNum}`, err));
+    page.on('error', (error) => {
+      if (onPageError) onPageError(new PageBrokenError(error.toString()));
+      logger.warn(`Part ${partNum},${frameNum} page error`, error && error.toString());
+    });
+    page.on('requestfailed', (request) => {
+      // requestFailedError examples:
+      // net::ERR_INSUFFICIENT_RESOURCES error can be reproduced on ubuntu (not mac) with a high concurrency (10)
+      // net::ERR_FAILED is hard to reproduce, but it happened if an (inline?) svg failed to load
+      const requestFailedErrorText = request.failure().errorText;
+      if (onPageError) onPageError(new PageBrokenError(requestFailedErrorText));
+      logger.warn(`Part ${partNum},${frameNum} page requestfailed`, requestFailedErrorText);
+    });
 
     await page.setViewport({ width, height });
     // await page.setViewport({ width, height, deviceScaleFactor: 1 });
@@ -86,48 +114,105 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, tempDir
 
     await page.evaluate((params) => window.setupReact(params), { devMode, width, height, fps, serverPort: port, durationFrames, renderId, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret });
 
-    const screencast = captureMethod === 'screencast' && await startScreencast({ logger, format: puppeteerCaptureFormat, page, jpegQuality });
+    screencast = captureMethod === 'screencast' && await startScreencast({ logger, format: puppeteerCaptureFormat, page, jpegQuality });
+  }
+
+  const awaitFatalError = () => new Promise((resolve, reject) => {
+    onPageError = reject;
+  });
+
+  // Puppeteer/chromium is quite unreliable, and will crash for various reasons, but most importantly due to
+  // net::ERR_INSUFFICIENT_RESOURCES or the page itself crashing.
+  // https://stackoverflow.com/questions/57956697/unhandledpromiserejectionwarning-error-page-crashed-while-using-puppeteer
+  async function withCrashRecovery(operation) {
+    let lastErr;
+
+    /* eslint-disable no-await-in-loop */
+    for (let i = 0; i <= numRetries; i += 1) {
+      try {
+        const promise = Promise.race([operation(), awaitFatalError()]);
+        return await pTimeout(promise, frameRenderTimeout, 'Frame render timed out');
+      } catch (err) {
+        lastErr = err;
+        // name=ProtocolError, message=Protocol error (Page.captureScreenshot): Unable to capture screenshot, originalMessage=Unable to capture screenshot
+        if (numRetries < 1 || !(
+          err instanceof PageBrokenError
+          || err instanceof pTimeout.TimeoutError
+          || (err && err.name === 'ProtocolError' && err.originalMessage === 'Unable to capture screenshot')
+        )) throw err;
+
+        logger.warn(`Part ${partNum},${frameNum} browser is broken, restarting`, err);
+
+        try {
+          await browser.close();
+        } catch (err2) {
+          logger.warn('Failed to close browser', err2);
+        }
+        await tryCreateBrowserAndPage();
+      }
+    }
+    /* eslint-enable no-await-in-loop */
+
+    logger.error(`Failed to restart browser after ${numRetries} attempts`);
+    throw lastErr;
+  }
+
+  let outProcess;
+
+  try {
+    const outPath = join(tempDir, `part ${partNum}-${partStart}-${partEnd}.mkv`);
+
+    outProcess = createOutputFfmpeg({ outFormat: puppeteerCaptureFormat, ffmpegPath, fps, outPath, log: enableFfmpegLog });
+
+    outProcess.on('exit', (code) => {
+      logger.log('Output ffmpeg exited with code', code);
+    });
 
     // eslint-disable-next-line no-inner-declarations
     async function renderFrame() {
-      // Clearing the canvas doesn't work well with html5 videos (need to reload the video every frame)
-      // await page.evaluate(() => renderFrame());
-      // await page.waitForSelector('#frame-cleared');
-
       const logFrame = (...args) => log(frameNum, ...args);
 
-      logFrame('renderFrame');
-      // eslint-disable-next-line no-shadow
-      const errors = await page.evaluate(async (frameNum) => window.renderFrame(frameNum), frameNum);
-      if (failOnWebErrors && errors.length > 0) throw new Error(`Render frame error: ${errors.map((error) => error.message).join(', ')}`);
-      else errors.forEach((error) => logger.warn('Web error', error));
-
-      logFrame('waitForFonts');
-      // Wait for fonts (fonts will have been loaded after page start, due to webpack imports from React components)
-      await page.waitForFunction(async () => window.haveFontsLoaded());
-
-      logFrame('waitForSelector');
-      await page.waitForSelector(`#frame-${frameNum}`);
-
-      logFrame('awaitDomRenderSettled');
-      await page.evaluate(() => window.awaitDomRenderSettled());
-
-      // See https://github.com/mifi/reactive-video/issues/4
-      await page.waitForNetworkIdle({ idleTime: sleepTimeBeforeCapture });
-      // await new Promise((resolve) => setTimeout(resolve, 500));
-
-      logFrame('Capturing');
-
-      // Implemented three different ways
       let buf;
-      switch (captureMethod) {
-        case 'screencast': buf = await screencast.captureFrame(frameNum); break;
-        case 'extension': buf = await extensionFrameCapturer.captureFrame(); break;
-        case 'screenshot': buf = await captureFrameScreenshot({ format: puppeteerCaptureFormat, page, jpegQuality }); break;
-        default: throw new Error('Invalid captureMethod');
-      }
 
-      logFrame('Capture done');
+      if (!browser) await tryCreateBrowserAndPage();
+
+      await withCrashRecovery(async () => {
+        // Clearing the canvas doesn't work well with html5 videos (need to reload the video every frame)
+        // await page.evaluate(() => renderFrame());
+        // await page.waitForSelector('#frame-cleared');
+
+        logFrame('renderFrame');
+        // eslint-disable-next-line no-shadow
+        const errors = await page.evaluate(async (frameNum) => window.renderFrame(frameNum), frameNum);
+        if (failOnWebErrors && errors.length > 0) throw new PageBrokenError(`Render frame error: ${errors.map((error) => error.message).join(', ')}`);
+        else errors.forEach((error) => logger.warn('Web error', error));
+
+        logFrame('waitForFonts');
+        // Wait for fonts (fonts will have been loaded after page start, due to webpack imports from React components)
+        await page.waitForFunction(async () => window.haveFontsLoaded());
+
+        logFrame('waitForSelector');
+        await page.waitForSelector(`#frame-${frameNum}`);
+
+        logFrame('awaitDomRenderSettled');
+        await page.evaluate(() => window.awaitDomRenderSettled());
+
+        // See https://github.com/mifi/reactive-video/issues/4
+        await page.waitForNetworkIdle({ idleTime: sleepTimeBeforeCapture });
+        // await new Promise((resolve) => setTimeout(resolve, 500));
+
+        logFrame('Capturing');
+
+        // Implemented three different ways
+        switch (captureMethod) {
+          case 'screencast': buf = await screencast.captureFrame(frameNum); break;
+          case 'extension': buf = await extensionFrameCapturer.captureFrame(); break;
+          case 'screenshot': buf = await captureFrameScreenshot({ format: puppeteerCaptureFormat, page, jpegQuality }); break;
+          default: throw new Error('Invalid captureMethod');
+        }
+
+        logFrame('Capture done');
+      });
 
       // logger.log('data', opts);
       // fs.writeFile('lol.jpeg', buf);
@@ -161,8 +246,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, tempDir
 
     for (; frameNum < partEnd; frameNum += 1) {
       // eslint-disable-next-line no-await-in-loop
-      await pTimeout(renderFrame(), frameRenderTimeout, 'Frame render timed out');
-
+      await renderFrame();
       onProgress({ frameNum });
     }
 
