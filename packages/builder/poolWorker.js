@@ -46,7 +46,6 @@ async function createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs,
       '--no-sandbox', // sandbox can sometimes cause issues on linux
       '--disable-setuid-sandbox',
       // '--single-process', // we are running one browser per page, so one would think there is no need for processes. however when running tight on resources (e.g. inside withCrashRecovery), it will cause the wholee browser creation to fail due to errors like Target closed
-      '--disable-dev-shm-usage', // for docker (that doesn't have a large /dev/shm)
       '--disable-background-media-suspend',
 
       ...extraPuppeteerArgs,
