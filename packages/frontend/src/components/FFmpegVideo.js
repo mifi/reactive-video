@@ -3,6 +3,10 @@ import React, { useEffect, useRef } from 'react';
 import { useVideo } from '../contexts';
 import { useAsyncRenderer } from '../asyncRegistry';
 
+// fetch seems to be faster than letting the <image> fetch the src itself
+// but it seems to be causing sporadic blank (white) image
+const useFetch = false;
+
 const FFmpegVideo = (props) => {
   const { src, scaleToWidth, scaleToHeight, streamIndex = 0, style, isPuppeteer, ...rest } = props;
 
@@ -23,7 +27,7 @@ const FFmpegVideo = (props) => {
       ctx.putImageData(new ImageData(new Uint8ClampedArray(rgbaImage), w, h), 0, 0);
     }
 
-    let pngBlobUrl;
+    let objectUrl;
     let canceled = false;
 
     // No need to flash white when preview
@@ -102,17 +106,29 @@ const FFmpegVideo = (props) => {
       }
 
       if (['png', 'jpeg'].includes(ffmpegStreamFormat)) {
-        await new Promise((resolve, reject) => {
+        const loadPromise = new Promise((resolve, reject) => {
           imgRef.current.addEventListener('load', resolve);
-          imgRef.current.addEventListener('error', () => reject(new Error(`FFmpegVideo frame image at time ${currentTime} failed to load`)));
-          imgRef.current.src = getVideoFrameUrl(ffmpegParams);
+          imgRef.current.addEventListener('error', reject(new Error(`FFmpegVideo frame image at time ${currentTime} failed to load`)));
         });
+
+        await Promise.all([
+          loadPromise,
+          (async () => {
+            if (useFetch) {
+              const response = await fetch(new Request(getVideoFrameUrl(ffmpegParams)));
+              objectUrl = URL.createObjectURL(await response.blob());
+              imgRef.current.src = objectUrl;
+            } else {
+              imgRef.current.src = getVideoFrameUrl(ffmpegParams);
+            }
+          })(),
+        ]);
       }
     });
 
     return () => {
       if (!isPuppeteer) canceled = true;
-      if (pngBlobUrl) URL.revokeObjectURL(pngBlobUrl);
+      if (useFetch && objectUrl) URL.revokeObjectURL(objectUrl);
     };
   }, [src, currentTime, scaleToWidth, scaleToHeight, fps, api, streamIndex, waitFor, isPuppeteer, ffmpegStreamFormat, jpegQuality]);
 
