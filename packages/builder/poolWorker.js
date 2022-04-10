@@ -173,8 +173,6 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, numRetr
 
       let buf;
 
-      if (!browser) await tryCreateBrowserAndPage();
-
       await withCrashRecovery(async () => {
         // Clearing the canvas doesn't work well with html5 videos (need to reload the video every frame)
         // await page.evaluate(() => renderFrame());
@@ -242,6 +240,8 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, numRetr
 
       logFrame('Write frame done');
     }
+
+    await tryCreateBrowserAndPage();
 
     for (; frameNum < partEnd; frameNum += 1) {
       // eslint-disable-next-line no-await-in-loop
