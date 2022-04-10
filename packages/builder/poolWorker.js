@@ -18,7 +18,7 @@ function onProgress(progress) {
 }
 
 // creating a logging bridge over the worker channel
-const logWithLevel = (level, ...args) => workerpool.workerEmit({ event: 'log', data: { level, args } });
+const logWithLevel = (level, ...args) => workerpool.workerEmit({ event: 'log', data: { level, args: args.map((arg) => (arg instanceof Error ? arg.message : arg)) } });
 const logger = Object.fromEntries(['log', 'info', 'debug', 'error', 'trace', 'warn'].map((fn) => [fn, (...args) => logWithLevel(fn, ...args)]));
 
 async function createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs, headless }) {
