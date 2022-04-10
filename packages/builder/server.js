@@ -9,10 +9,17 @@ const { uriifyPath } = require('./util');
 
 const { readFrame, cleanupAll: cleanupVideoProcessors, readVideoStreamsMetadata } = require('./videoServer');
 
-async function serve({ logger, ffmpegPath, ffprobePath, serveStaticPath, serveRoot, port: requestedPort, secret }) {
+async function serve({ logger, ffmpegPath, ffprobePath, serveStaticPath, serveRoot, port: requestedPort, secret, enableRequestLogging = false }) {
   const app = express();
 
   app.use(cookieParser());
+
+  if (enableRequestLogging) {
+    app.use((req, res, next) => {
+      logger.info('request', req.method, req.url);
+      next();
+    });
+  }
 
   app.use((req, res, next) => {
     if (req.cookies['reactive-video-secret'] === secret) {
