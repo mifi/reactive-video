@@ -64,8 +64,6 @@ const cli = meow(`
 
     enableFrameCountCheck: { type: 'boolean' },
 
-    enableHashCheck: { type: 'boolean' },
-
     verbose: { type: 'boolean', alias: 'v' },
 
     port: { type: 'number' },
