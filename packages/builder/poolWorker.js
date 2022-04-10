@@ -216,27 +216,16 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, numRetr
 
       logFrame('Write frame');
 
-      let mustDrain;
-      const writePromise = new Promise((resolve, reject) => {
-        // If we don't wait for cb, then we get EINVAL when dealing with high resolution files (big writes)
-
         // write returns: <boolean> false if the stream wishes for the calling code to wait for the 'drain' event to be emitted before continuing to write additional data; otherwise true.
-        mustDrain = outProcess.stdin.write(buf, (err) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-
-          resolve();
-        });
-      });
-
-      let drainPromise;
-      if (mustDrain) {
+      // If we don't wait for cb, then we get EINVAL when dealing with high resolution files (big writes)
+      await new Promise((resolve) => {
+        if (!outProcess.stdin.write(buf)) {
         logFrame('Draining output stream');
-        drainPromise = new Promise((resolve) => outProcess.stdin.once('drain', resolve));
+          outProcess.stdin.once('drain', resolve);
+        } else {
+          resolve();
       }
-      await Promise.all([writePromise, drainPromise]);
+      });
 
       logFrame('Write frame done');
     }
