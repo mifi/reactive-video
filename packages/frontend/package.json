@@ -1,6 +1,6 @@
 {
   "name": "reactive-video",
-  "version": "2.4.2",
+  "version": "2.5.0",
   "main": "dist/index.js",
   "files": [
     "dist/**"
