@@ -18,7 +18,7 @@ Reactive Video fires up one or more Puppeteer/Chromium tabs to render the React 
 
 - Edit videos with code! 🤓
 - Full power of the web
-- Parallel rendering 🔥 Super fast (compared to [editly](https://github.com/mifi/editly))
+- Parallel rendering with [multiple browsers](https://docs.browserless.io/blog/2018/06/04/puppeteer-best-practices.html#4-parallelize-with-browsers-not-pages) 🔥 Super fast (compared to [editly](https://github.com/mifi/editly))
 - Supports all video formats/codecs that FFmpeg supports
 - Headless mode (runs in the cloud)
 - Output to any dimensions and aspect ratio, e.g. Instagram post (1:1), Instagram story (9:16), YouTube (16:9), or any other dimensions you like.
