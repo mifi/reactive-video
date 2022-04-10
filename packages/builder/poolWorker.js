@@ -4,6 +4,7 @@ const { join } = require('path');
 const pTimeout = require('p-timeout');
 const log = require('debug')('reactive-video');
 const workerpool = require('workerpool');
+const { mkdir } = require('fs/promises');
 
 const { createExtensionFrameCapturer, captureFrameScreenshot, startScreencast } = require('./frameCapture');
 const { createOutputFfmpeg } = require('./ffmpeg');
@@ -21,10 +22,18 @@ function onProgress(progress) {
 const logWithLevel = (level, ...args) => workerpool.workerEmit({ event: 'log', data: { level, args: args.map((arg) => (arg instanceof Error ? arg.message : arg)) } });
 const logger = Object.fromEntries(['log', 'info', 'debug', 'error', 'trace', 'warn'].map((fn) => [fn, (...args) => logWithLevel(fn, ...args)]));
 
-async function createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs, headless }) {
+async function createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs, headless, tempDir }) {
   const extensionId = 'jjndjgheafjngoipoacpjgeicjeomjli';
 
+  const userDataDir = join(tempDir, 'puppeteer_dev_chrome_profile-');
+  await mkdir(userDataDir, { recursive: true });
+
   const browser = await puppeteer.launch({
+    userDataDir,
+
+    // this is important, see https://github.com/mifi/reactive-video/issues/11
+    ignoreDefaultArgs: ['--disable-dev-shm-usage'],
+
     args: [
       ...(captureMethod === 'extension' ? [
         `--load-extension=${extensionPath}`,
@@ -79,7 +88,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, numRetr
   async function tryCreateBrowserAndPage() {
     onPageError = undefined;
 
-    ({ browser, context, extensionFrameCapturer } = await createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs, headless }));
+    ({ browser, context, extensionFrameCapturer } = await createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs, headless, tempDir }));
 
     page = await context.newPage();
 
@@ -140,7 +149,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, numRetr
           || (err && err.name === 'ProtocolError' && err.originalMessage === 'Unable to capture screenshot')
         )) throw err;
 
-        logger.warn(`Part ${partNum},${frameNum} browser is broken, restarting`, err);
+        logger.warn(`Part ${partNum},${frameNum} browser is broken, restarting:`, err);
 
         try {
           await browser.close();
