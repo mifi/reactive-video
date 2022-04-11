@@ -92,7 +92,9 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, numRetr
 
     page = await context.newPage();
 
-    page.on('console', (msg) => logger.log(`Part ${partNum},${frameNum} log`, msg.text()));
+    // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#consolemessagetype
+    // log all in-page console logs as warn, for easier identification of any issues
+    page.on('console', (msg) => logger.warn(`Part ${partNum},${frameNum} log`, msg.text()));
     page.on('pageerror', (err) => {
       if (onPageError) onPageError(new PageBrokenError(err.message));
       logger.warn(`Part ${partNum},${frameNum} page pageerror`, err);
@@ -176,6 +178,8 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, numRetr
       logger.log('Output ffmpeg exited with code', code);
     });
 
+    // todo log stdout/stderr if outProcess crashes
+
     // eslint-disable-next-line no-inner-declarations
     async function renderFrame() {
       const logFrame = (...args) => log(frameNum, ...args);
@@ -225,15 +229,15 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, numRetr
 
       logFrame('Write frame');
 
-        // write returns: <boolean> false if the stream wishes for the calling code to wait for the 'drain' event to be emitted before continuing to write additional data; otherwise true.
+      // write returns: <boolean> false if the stream wishes for the calling code to wait for the 'drain' event to be emitted before continuing to write additional data; otherwise true.
       // If we don't wait for cb, then we get EINVAL when dealing with high resolution files (big writes)
       await new Promise((resolve) => {
         if (!outProcess.stdin.write(buf)) {
-        logFrame('Draining output stream');
+          logFrame('Draining output stream');
           outProcess.stdin.once('drain', resolve);
         } else {
           resolve();
-      }
+        }
       });
 
       logFrame('Write frame done');
