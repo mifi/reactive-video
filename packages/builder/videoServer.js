@@ -73,10 +73,76 @@ function createFfmpeg({ ffmpegPath, fps, uri: uriOrPath, width, height, scale, f
 function cleanupProcess(key) {
   if (!key) return;
   const videoProcess = videoProcesses[key];
-  if (videoProcess) {
+  if (videoProcess && videoProcess.process) {
     videoProcess.process.kill();
   }
-  delete videoProcesses[key];
+  delete videoProcesses[key].process;
+}
+
+function createFrameReader({ process, ffmpegStreamFormat, width, height }) {
+  if (ffmpegStreamFormat === 'raw') {
+    const channels = 4;
+    const frameByteSize = width * height * channels;
+
+    const { awaitNextSplit } = createSplitter({ readableStream: process.stdout, splitOnLength: frameByteSize });
+
+    return {
+      readNextFrame: async () => ({ stream: await awaitNextSplit() }),
+    };
+  }
+
+  if (ffmpegStreamFormat === 'jpeg') {
+    const jpegSoi = Buffer.from([0xff, 0xd8]); // JPEG start sequence
+    const splitter = binarySplit(jpegSoi);
+
+    const stream = process.stdout.pipe(splitter);
+    stream.pause();
+
+    return {
+      readNextFrame: async () => new Promise((resolve, reject) => {
+        function onError(err) {
+          reject(err);
+        }
+        function onData(jpegFrameWithoutSoi) {
+          // each 'data' event contains one of the frames from the video as a single chunk
+          // todo improve this
+          const jpegFrame = Buffer.concat([jpegSoi, jpegFrameWithoutSoi]);
+          resolve({ buffer: jpegFrame });
+          stream.pause();
+          stream.off('error', onError);
+        }
+
+        stream.resume();
+        stream.once('data', onData);
+        stream.once('error', onError);
+      }),
+    };
+  }
+
+  if (ffmpegStreamFormat === 'png') {
+    const stream = process.stdout.pipe(pngSplitStream());
+    stream.pause();
+
+    return {
+      readNextFrame: async () => new Promise((resolve, reject) => {
+        function onError(err) {
+          reject(err);
+        }
+        function onData(pngFrame) {
+          // each 'data' event contains one of the frames from the video as a single chunk
+          resolve({ buffer: pngFrame });
+          stream.pause();
+          stream.off('error', onError);
+        }
+
+        stream.resume();
+        stream.once('data', onData);
+        stream.once('error', onError);
+      }),
+    };
+  }
+
+  throw new Error('Invalid ffmpegStreamFormat');
 }
 
 async function readFrame({ params, ffmpegPath, logger }) {
@@ -84,91 +150,29 @@ async function readFrame({ params, ffmpegPath, logger }) {
 
   const { fps, uri, width, height, scale, fileFps, time = 0, streamIndex, ffmpegStreamFormat, jpegQuality } = params;
 
-  function createFrameReader() {
-    if (ffmpegStreamFormat === 'raw') {
-      const channels = 4;
-      const frameByteSize = width * height * channels;
-
-      const { awaitNextSplit } = createSplitter({ readableStream: process.stdout, splitOnLength: frameByteSize });
-
-      return {
-        readNextFrame: async () => ({ stream: await awaitNextSplit() }),
-      };
-    }
-
-    if (ffmpegStreamFormat === 'jpeg') {
-      const jpegSoi = Buffer.from([0xff, 0xd8]); // JPEG start sequence
-      const splitter = binarySplit(jpegSoi);
-
-      const stream = process.stdout.pipe(splitter);
-      stream.pause();
-
-      return {
-        readNextFrame: async () => new Promise((resolve, reject) => {
-          function onError(err) {
-            reject(err);
-          }
-          function onData(jpegFrameWithoutSoi) {
-            // each 'data' event contains one of the frames from the video as a single chunk
-            // todo improve this
-            const jpegFrame = Buffer.concat([jpegSoi, jpegFrameWithoutSoi]);
-            resolve({ buffer: jpegFrame });
-            stream.pause();
-            stream.off('error', onError);
-          }
-
-          stream.resume();
-          stream.once('data', onData);
-          stream.once('error', onError);
-        }),
-      };
-    }
-
-    if (ffmpegStreamFormat === 'png') {
-      const stream = process.stdout.pipe(pngSplitStream());
-      stream.pause();
-
-      return {
-        readNextFrame: async () => new Promise((resolve, reject) => {
-          function onError(err) {
-            reject(err);
-          }
-          function onData(pngFrame) {
-            // each 'data' event contains one of the frames from the video as a single chunk
-            resolve({ buffer: pngFrame });
-            stream.pause();
-            stream.off('error', onError);
-          }
-
-          stream.resume();
-          stream.once('data', onData);
-          stream.once('error', onError);
-        }),
-      };
-    }
-
-    throw new Error('Invalid ffmpegStreamFormat');
-  }
-
   const { time: ignored, ...allExceptTime } = params;
   const key = stringify(allExceptTime);
-  const allPropsKey = stringify(params); // includes time
+
+  // console.log(videoProcesses[key] && videoProcesses[key].time, time);
+
+  if (!videoProcesses[key]) videoProcesses[key] = {};
+
+  // without this check, it could lead to bugs if concurrent reads lead to overlapping readNextFrame calls
+  // https://github.com/mifi/reactive-video/issues/12
+  if (videoProcesses[key].busy) throw new Error(`Busy processing previous frame: ${key} ${time}`);
+  videoProcesses[key].busy = true;
 
   try {
     const frameDuration = 1 / fps;
 
-    // console.log(videoProcesses[key] && videoProcesses[key].time, time);
+    // Assume up to half a frame off is the same frame
+    const isSameFrame = (time1, time2) => Math.abs(time1 - time2) < frameDuration * 0.5;
 
-    // Assume half a frame off is the same frame
-    if (videoProcesses[key] && Math.abs(videoProcesses[key].time - time) < frameDuration * 0.5) {
+    if (videoProcesses[key].time != null && isSameFrame(videoProcesses[key].time, time)) {
       // console.log('Reusing ffmpeg');
-
-      if (videoProcesses[key].alreadyProcessedFrames[allPropsKey]) throw new Error('Cannot request the same frame twice, this will lead to desynchronization');
-
-      videoProcesses[key].time = time;
-      videoProcesses[key].alreadyProcessedFrames[allPropsKey] = true;
+      videoProcesses[key].time = time; // prevent the times from drifting apart
     } else {
-      logger.log('createFfmpeg', key);
+      logger.log('createFfmpeg', key, time);
       // console.log({ processTime: videoProcesses[key] ? videoProcesses[key].time : undefined, time, frameDuration });
 
       // Parameters changed (or time is not next frame). need to restart encoding
@@ -176,21 +180,21 @@ async function readFrame({ params, ffmpegPath, logger }) {
 
       process = createFfmpeg({ ffmpegPath, fps, uri, width, height, scale, fileFps, cutFrom: time, streamIndex, ffmpegStreamFormat, jpegQuality });
 
-      const { readNextFrame } = createFrameReader();
+      const { readNextFrame } = createFrameReader({ process, ffmpegStreamFormat, width, height });
 
       videoProcesses[key] = {
+        ...videoProcesses[key],
         process,
         time,
         readNextFrame: async () => Promise.race([readNextFrame(), process]),
-        alreadyProcessedFrames: {},
       };
     }
 
     const videoProcess = videoProcesses[key];
 
-    const frame = await videoProcess.readNextFrame();
-
     videoProcess.time += frameDuration;
+
+    const frame = await videoProcess.readNextFrame();
 
     return frame;
   } catch (err) {
@@ -205,6 +209,8 @@ async function readFrame({ params, ffmpegPath, logger }) {
       }
     }
     throw err;
+  } finally {
+    videoProcesses[key].busy = false;
   }
 }
 
