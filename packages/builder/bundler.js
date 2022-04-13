@@ -48,7 +48,7 @@ function createBundler({ entryPath, userEntryPath, outDir, mode, entryOutName = 
           }],
         },
         {
-          test: /\.png|jpg|jpeg|svg|bmp|webp|gif|webm|mp4|woff|woff2/,
+          test: /\.png|jpg|jpeg|svg|bmp|webp|gif|webm|mp4|woff|woff2|ttf|otf/,
           type: 'asset/resource',
         },
         {
