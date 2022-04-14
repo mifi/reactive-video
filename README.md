@@ -449,6 +449,7 @@ Submit a PR if you want to share your Reactive Video here.
 - preview currentFrame flooding browser history https://stackoverflow.com/questions/26793130/history-replacestate-still-adds-entries-to-the-browsing-history
 - videoServer need to kill ffmpeg when finished with file? or use -t
 - live video mode
+- maybe not supporting different framerates. FFmpegVideo `-vf fps` in videoServer.js?
 
 ## Commands for testing
 
@@ -472,6 +473,18 @@ while [ 1 ]; do node myedit2.js; md5 myvideo2-prev.mov myvideo2.mov; done
 
 - `React webpage failed to initialize`
   - Try to run with `headless false` and check puppeteer developer tools
+
+### Useful commands for debugging videos
+
+#### Compare hash of video content of two videos
+```
+ffmpeg -loglevel error -i vid1.mp4 -map 0:v -f md5 - && ffmpeg -loglevel error -i vid2.mp4 -map 0:v -f md5 -
+```
+#### Generate a visual diff
+```
+ffmpeg -i vid1.mp4 -i vid2.mp4 -filter_complex blend=all_mode=difference -c:v libx264 -crf 18 -c:a copy -y diff.mp4
+```
+
 
 ## Donate 🙈
 
