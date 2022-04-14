@@ -9,6 +9,7 @@ const { uriifyPath } = require('./util');
 
 const { readFrame, cleanupAll: cleanupVideoProcessors, readVideoStreamsMetadata } = require('./videoServer');
 
+// In the future we may need to start multiple express servers if that becomes a bottleneck
 async function serve({ logger, ffmpegPath, ffprobePath, serveStaticPath, serveRoot, port: requestedPort, secret, enableRequestLogging = false }) {
   const app = express();
 
