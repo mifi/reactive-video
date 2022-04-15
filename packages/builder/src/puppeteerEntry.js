@@ -90,14 +90,12 @@ const PuppeteerRoot = ({
 };
 
 window.setupReact = ({ devMode, width, height, fps, serverPort, durationFrames, renderId, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret }) => {
-  async function waitForAsyncRenders() {
-    return new Promise((resolve) => {
-      setAsyncRenderDoneCb((errors) => {
-        // console.log('asyncRenderDoneCb');
-        resolve(errors);
-      });
+  const waitForAsyncRenders = async () => new Promise((resolve) => {
+    setAsyncRenderDoneCb((errors) => {
+      // console.log('asyncRenderDoneCb');
+      resolve(errors);
     });
-  }
+  });
 
   ReactDOM.render(<PuppeteerRoot devMode={devMode} width={width} height={height} fps={fps} serverPort={serverPort} durationFrames={durationFrames} waitForAsyncRenders={waitForAsyncRenders} renderId={renderId} userData={userData} videoComponentType={videoComponentType} ffmpegStreamFormat={ffmpegStreamFormat} jpegQuality={jpegQuality} secret={secret} />, document.getElementById('root'));
 };
