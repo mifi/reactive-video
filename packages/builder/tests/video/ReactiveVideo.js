@@ -3,7 +3,7 @@ import { Video, useVideo, Image } from 'reactive-video';
 
 import './fonts.css';
 
-import logo from '../../../../reactive-video-assets/logo.svg';
+import flag from '../../../../reactive-video-assets/Flag_of_Thailand.svg';
 
 export default () => {
   const { width, height, userData: { videoUri, title, description }, currentTime } = useVideo();
@@ -23,9 +23,9 @@ export default () => {
           <div>{description}</div>
         </div>
 
-        <div style={{ marginLeft: '-1.8em', display: 'flex', justifyContent: 'center', fontSize: '1.5em', fontFamily: 'Oswald bold', marginTop: '.5em', textShadow: '1px 1px 0px #000' }}>
-          <Image src={logo} style={{ width: '1.7em', marginRight: '.3em' }} />
-          Play Now
+        <div style={{ marginLeft: '-1.8em', display: 'flex', justifyContent: 'center', alignItems: 'baseline', fontSize: '1.5em', fontFamily: 'Oswald bold', marginTop: '.5em', textShadow: '1px 1px 0px #000' }}>
+          <Image src={flag} style={{ height: '0.75em', marginRight: '.3em' }} />
+          Visit Now
         </div>
       </div>
     </>

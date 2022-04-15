@@ -90,6 +90,8 @@ const getFileNameForTest = () => `${expect.getState().currentTestName.replace(/[
 const getOutputPath = () => join(outputDir, getFileNameForTest());
 const getVideoSnapshotPath = () => join(videoSnapshotsDir, getFileNameForTest());
 
+const customOutputFfmpegArgs = ['-c:v', 'libx264', '-crf', '30'];
+
 test('render video with overlay', async () => {
   const editor = getEditor({ logger: null });
 
@@ -112,6 +114,7 @@ test('render video with overlay', async () => {
     fps,
     durationTime,
     userData,
+    customOutputFfmpegArgs,
     output,
   });
 
@@ -136,6 +139,7 @@ test('render segments', async () => {
     height,
     fps: 25,
     durationFrames,
+    customOutputFfmpegArgs,
     output,
   });
 

@@ -73,7 +73,7 @@ async function createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs,
   };
 }
 
-async function renderPart({ captureMethod, headless, extraPuppeteerArgs, numRetries = 0, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout, partNum, partStart, partEnd }) {
+async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customOutputFfmpegArgs, numRetries = 0, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout, partNum, partStart, partEnd }) {
   const renderId = partStart; // Unique ID per concurrent renderer
 
   let frameNum = partStart;
@@ -172,7 +172,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, numRetr
   try {
     const outPath = join(tempDir, `part ${partNum}-${partStart}-${partEnd}.mkv`);
 
-    outProcess = createOutputFfmpeg({ outFormat: puppeteerCaptureFormat, ffmpegPath, fps, outPath, log: enableFfmpegLog });
+    outProcess = createOutputFfmpeg({ puppeteerCaptureFormat, customOutputFfmpegArgs, ffmpegPath, fps, outPath, log: enableFfmpegLog });
 
     outProcess.on('exit', (code) => {
       logger.log('Output ffmpeg exited with code', code);

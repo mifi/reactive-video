@@ -26,7 +26,7 @@ async function edit(editor, opts) {
     tempDir,
     numRetries: 0,
     enableFrameCountCheck: true,
-    jpegQuality: 30,
+    jpegQuality: 70,
     ...opts,
   });
 }

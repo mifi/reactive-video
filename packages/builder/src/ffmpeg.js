@@ -5,8 +5,7 @@ const getCodecArgs = ({ remuxOnly }) => (remuxOnly ? [
   '-c', 'copy',
 ] : [
   '-c:v', 'libx264',
-  '-crf', '17', // Virtually lossless
-  '-threads', '0',
+  '-crf', '17', // Visually "lossless"
   '-preset:v', 'ultrafast', // We don't care about file size here, but speed 🔥
 ]);
 
@@ -20,6 +19,8 @@ async function concatParts({ ffmpegPath, paths, concatFilePath, finalOutPath, re
     '-f', 'concat', '-safe', '0', '-protocol_whitelist', 'file,pipe',
     '-i', concatFilePath,
 
+    '-threads', '0',
+
     ...getCodecArgs({ remuxOnly }),
 
     // '-vf', 'scale=1920:-2',
@@ -30,16 +31,16 @@ async function concatParts({ ffmpegPath, paths, concatFilePath, finalOutPath, re
 }
 
 // https://superuser.com/questions/585798/ffmpeg-slideshow-piping-input-and-output-for-image-stream
-function createOutputFfmpeg({ outFormat, ffmpegPath, fps, outPath, log = false }) {
+function createOutputFfmpeg({ puppeteerCaptureFormat, customOutputFfmpegArgs, ffmpegPath, fps, outPath, log = false }) {
   return execa(ffmpegPath, [
     '-f', 'image2pipe', '-r', fps,
-    ...(outFormat === 'jpeg' ? ['-c:v', 'mjpeg'] : ['-c:v', 'png']),
+    ...(puppeteerCaptureFormat === 'jpeg' ? ['-c:v', 'mjpeg'] : ['-c:v', 'png']),
     '-i', '-',
 
-    // This can used to trigger the process hanging if stdout/stderr streams are not read (causes EPIPE)
+    // This can used to test/trigger the process hanging if stdout/stderr streams are not read (causes EPIPE)
     // '-loglevel', 'trace',
 
-    ...getCodecArgs({ remuxOnly: true }),
+    ...(customOutputFfmpegArgs || getCodecArgs({ remuxOnly: true })),
 
     '-y', outPath,
   ], {

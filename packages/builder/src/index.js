@@ -75,6 +75,7 @@ function Editor({
     captureMethod = 'screenshot',
     sleepTimeBeforeCapture = 0, // See https://github.com/mifi/reactive-video/issues/4
     extraPuppeteerArgs = [],
+    customOutputFfmpegArgs,
 
     startFrame = 0,
     durationFrames: durationFramesIn,
@@ -156,7 +157,7 @@ function Editor({
         logger.log('Launching puppeteer, concurrency:', concurrency);
 
         const extensionPath = join(__dirname, 'extension');
-        return createRenderer({ concurrency, captureMethod, headless, extraPuppeteerArgs, numRetries, logger, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout });
+        return createRenderer({ concurrency, captureMethod, headless, extraPuppeteerArgs, customOutputFfmpegArgs, numRetries, logger, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout });
       })();
 
       const [{ renderPart, terminateRenderers }] = await Promise.all([createRendererPromise, serverPromise, startBundlerPromise]);
