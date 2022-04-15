@@ -34,14 +34,14 @@ async function edit(editor, opts) {
 // override logger: null to get log output
 const getEditor = (opts) => Editor({ ffmpegPath: 'ffmpeg', ffprobePath: 'ffprobe', logger: null, ...opts });
 
-async function getVideoHash(path) {
-  const { stdout } = await execa('ffmpeg', ['-loglevel', 'error', '-i', path, '-map', '0:v', '-f', 'md5', '-']);
-  return stdout.replace(/^MD5=/, '');
-}
 async function checkVideosMatch(path1, path2) {
-  const hash1 = await getVideoHash(path1);
-  const hash2 = await getVideoHash(path2);
-  return hash1 === hash2;
+  const { stdout } = await execa('ffmpeg', ['-loglevel', 'error', '-i', path1, '-i', path2, '-lavfi', 'ssim=stats_file=-', '-f', 'null', '-']);
+  const minSimilarity = 0.99;
+  return stdout.split('\n').every((line) => {
+    const match = line.match(/^n:\d+ Y:[\d.]+ U:[\d.]+ V:[\d.]+ All:([\d.]+)/);
+    if (!match) return false;
+    return parseFloat(match[1]) > minSimilarity;
+  });
 }
 
 module.exports = {
