@@ -2,6 +2,7 @@ const { join, resolve: resolvePath } = require('path');
 const { mkdirp } = require('fs-extra');
 const assert = require('assert');
 const os = require('os');
+const getPort = require('get-port');
 
 const { generateSecret } = require('./util');
 const { concatParts } = require('./ffmpeg');
@@ -43,9 +44,11 @@ function Editor({
   ffmpegPath = 'ffmpeg',
   ffprobePath = 'ffprobe',
   devMode = false,
-  logger = console,
+  logger: loggerIn = console,
 } = {}) {
   const bundleMode = devMode ? 'development' : 'production';
+
+  const logger = loggerIn !== null ? loggerIn : { error: () => {}, warn: () => {}, info: () => {}, log: () => {}, debug: () => {}, trace: () => {} };
 
   async function tryStopBundleWatcher(bundler, watcher) {
     logger.log('Stopping bundle watcher');
@@ -69,7 +72,7 @@ function Editor({
     puppeteerCaptureFormat = 'jpeg',
     ffmpegStreamFormat = 'jpeg',
     jpegQuality = 90,
-    captureMethod = 'screencast',
+    captureMethod = 'screenshot',
     sleepTimeBeforeCapture = 0, // See https://github.com/mifi/reactive-video/issues/4
     extraPuppeteerArgs = [],
 
@@ -94,6 +97,7 @@ function Editor({
 
     showProgress = true,
     enableFfmpegLog = false,
+    enableRequestLog = false,
   }) {
     assert(captureMethod !== 'extension' || !headless, 'Headless is not compatible with this captureMethod');
 
@@ -119,6 +123,8 @@ function Editor({
       defaultOutPath = 'reactive-video.mp4'; // h264
     }
 
+    const parts = splitIntoParts({ startFrame, durationFrames, concurrency });
+
     const finalOutPath = desiredOutPath || defaultOutPath;
 
     const reactIndexPath = join(__dirname, 'puppeteerEntry.js');
@@ -130,27 +136,32 @@ function Editor({
     let stopServer;
     let watcher;
 
+    const port = await getPort();
+    const secret = await generateSecret();
+
     try {
-      logger.log('Compiling Reactive Video Javascript');
-      watcher = await startBundler({ bundler, reactHtmlPath, reactHtmlDistName, distPath });
+      const startBundlerPromise = (async () => {
+        logger.log('Compiling Reactive Video Javascript');
+        watcher = await startBundler({ bundler, reactHtmlPath, reactHtmlDistName, distPath });
+      })();
 
-      const secret = await generateSecret();
+      const serverPromise = (async () => {
+        logger.log('Starting server');
+        const server = await serve({ logger, ffmpegPath, ffprobePath, secret, port, enableRequestLog });
+        stopServer = server.stop;
+        return server;
+      })();
 
-      logger.log('Starting server');
-      // const server = await serve({ logger, ffmpegPath, ffprobePath, serveStaticPath: distPath });
-      const server = await serve({ logger, ffmpegPath, ffprobePath, secret });
-      stopServer = server.stop;
-      const { port } = server;
+      const createRendererPromise = (async () => {
+        logger.log('Launching puppeteer, concurrency:', concurrency);
 
-      logger.log('Launching puppeteer, concurrency:', concurrency);
+        const extensionPath = join(__dirname, 'extension');
+        return createRenderer({ concurrency, captureMethod, headless, extraPuppeteerArgs, numRetries, logger, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout });
+      })();
 
-      const extensionPath = join(__dirname, 'extension');
-      const { renderPart, terminateRenderers } = await createRenderer({ concurrency, captureMethod, headless, extraPuppeteerArgs, numRetries, logger, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout });
-
-      const parts = splitIntoParts({ startFrame, durationFrames, concurrency });
+      const [{ renderPart, terminateRenderers }] = await Promise.all([createRendererPromise, serverPromise, startBundlerPromise]);
 
       logger.log('Rendering frames');
-
       const partProgresses = {};
       let startTime;
 

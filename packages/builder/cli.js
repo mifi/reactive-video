@@ -4,7 +4,7 @@ const JSON5 = require('json5');
 const debug = require('debug');
 const log = require('debug')('reactive-video');
 
-const Editor = require('.');
+const Editor = require('./src');
 
 // See also readme
 const cli = meow(`

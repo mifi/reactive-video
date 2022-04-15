@@ -1,0 +1,3 @@
+[submodule "reactive-video-assets"]
+	path = reactive-video-assets
+	url = git@github.com:mifi/reactive-video-assets.git

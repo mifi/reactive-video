@@ -1,5 +1,4 @@
 const express = require('express');
-const getPort = require('get-port');
 const bodyParser = require('body-parser');
 const asyncHandler = require('express-async-handler');
 const basicAuth = require('express-basic-auth');
@@ -10,12 +9,12 @@ const { uriifyPath } = require('./util');
 const { readFrame, cleanupAll: cleanupVideoProcessors, readVideoStreamsMetadata } = require('./videoServer');
 
 // In the future we may need to start multiple express servers if that becomes a bottleneck
-async function serve({ logger, ffmpegPath, ffprobePath, serveStaticPath, serveRoot, port: requestedPort, secret, enableRequestLogging = false }) {
+async function serve({ logger, ffmpegPath, ffprobePath, serveStaticPath, serveRoot, port, secret, enableRequestLog = false }) {
   const app = express();
 
   app.use(cookieParser());
 
-  if (enableRequestLogging) {
+  if (enableRequestLog) {
     app.use((req, res, next) => {
       logger.info('request', req.method, req.url);
       next();
@@ -43,7 +42,8 @@ async function serve({ logger, ffmpegPath, ffprobePath, serveStaticPath, serveRo
   app.get('/api/frame', asyncHandler(async (req, res) => {
     try {
       const params = Object.fromEntries(Object.entries(req.query).map(([key, val]) => {
-        if (['fps', 'width', 'height', 'scale', 'fileFps', 'time', 'streamIndex', 'renderId', 'jpegQuality'].includes(key)) return [key, val != null ? parseFloat(val) : undefined];
+        if (['fps', 'width', 'height', 'fileFps', 'time', 'streamIndex', 'renderId', 'jpegQuality'].includes(key)) return [key, val != null ? parseFloat(val) : undefined];
+        if (key === 'scale') return [key, val === 'true'];
         return [key, val];
       }));
       const { ffmpegStreamFormat } = params;
@@ -75,13 +75,12 @@ async function serve({ logger, ffmpegPath, ffprobePath, serveStaticPath, serveRo
 
   if (serveRoot) app.use('/root', express.static('/'));
 
-  const port = requestedPort || await getPort();
   let server;
   await new Promise((resolve) => {
     server = app.listen(port, resolve);
   });
 
-  if (enableRequestLogging) logger.info('Listening on port', port);
+  if (enableRequestLog) logger.info('Listening on port', port);
 
   const stop = () => {
     server.close();
