@@ -436,12 +436,9 @@ Submit a PR if you want to share your Reactive Video here.
 
 - Improve docs
 - Audio
-- ci tests
-- Improve logging
 - multiple FFmpegVideos from the same source file (videoServer.js) not supported
 - FFmpegVideo fallback to previous frame if missing frame? (like HTML5Video) or make HTML5Video also work like FFmpegVideo
 - puppeteer [intercept request](https://github.com/puppeteer/puppeteer/blob/v9.1.1/docs/api.md#httprequestrespondresponse) instead of starting local express server (if possible and fast to send big binary data). Will not work for preview.
-  - alternatively: Save screenshot to file and GET local file, might also be performance improvement, (prevent main node.js process from being bottleneck)
 - make it easier to animate (mount/unmount?) provide a react component that clamps animations? something like `<Segment start={} duration={} easing="easeIn" />`
 - staggering animations (function helper or Stagger component)
 - easing example code
@@ -450,15 +447,7 @@ Submit a PR if you want to share your Reactive Video here.
 - preview currentFrame flooding browser history https://stackoverflow.com/questions/26793130/history-replacestate-still-adds-entries-to-the-browsing-history
 - videoServer need to kill ffmpeg when finished with file? or use -t
 - live video mode
-- maybe not supporting different framerates. FFmpegVideo `-vf fps` in videoServer.js?
-
-## Commands for testing
-
-```bash
-md5 myvideo2.mov myvideo2-prev.mov
-ffmpeg -i myvideo2.mov -i myvideo2-prev.mov -filter_complex blend=all_mode=difference -c:v libx264 -crf 18 -c:a copy -y diff.mp4
-while [ 1 ]; do node myedit2.js; md5 myvideo2-prev.mov myvideo2.mov; done
-```
+- maybe not currently properly supporting different framerates. FFmpegVideo `-vf fps` in videoServer.js?
 
 ## Ideas
 
@@ -485,7 +474,6 @@ ffmpeg -loglevel error -i vid1.mp4 -map 0:v -f md5 - && ffmpeg -loglevel error -
 ```
 ffmpeg -i vid1.mp4 -i vid2.mp4 -filter_complex blend=all_mode=difference -c:v libx264 -crf 18 -c:a copy -y diff.mp4
 ```
-
 
 ## Donate 🙈
 
