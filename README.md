@@ -175,7 +175,7 @@ See [editor.js edit and preview](packages/builder/index.js) for options.
 Useful to read an input video's parameters and use it for your video, for instance if you want to render something on top of an existing video. Returns `durationTime`. If `countFrames` is `true`, returns also `durationFrames`, which is more accurate, but slower. Example:
 
 ```js
-const fileUrl = require('file-url');
+const { pathToFileURL } = require('url');
 const inputVideoPath = '/path/to/input-video.mp4';
 
 const { edit, readVideoMetadata } = Editor();
@@ -187,7 +187,7 @@ await edit({
   height,
   fps,
   durationFrames,
-  userData: { videoUri: fileUrl(inputVideoPath) },
+  userData: { videoUri: pathToFileURL(inputVideoPath) },
   // videoUri becomes file:///path/to/input-video.mp4
 });
 ```
@@ -220,8 +220,9 @@ Renders video frames synced to time
 
 - `src` - See **src** below.
 - `htmlSrc` - Override `Video` component `src` by specifying a different URL to be used when rendering the video code in e.g. a separate React frontend.
+- `scaleToWidth` / `scaleToHeight` - Will cause ffmpeg to scale down the video before sending it to the page. Can give a great speed increase if scaling down a large source video.
 
-For final rendering and preview, Reactive Video uses ffmpeg to stream to a `<canvas>`. Efficiently reuses the ffmpeg instance for sequential rendering. Supports virtually all formats that ffmpeg can seek in, even over HTTP (e.g. AWS S3)
+For final rendering and preview, Reactive Video uses ffmpeg to stream individual frams to an `<img>` tag. Efficiently reuses the ffmpeg instance for sequential rendering. Supports virtually all formats that ffmpeg can seek in, even over HTTP (e.g. AWS S3)
 
 Can also use HTML5 `<video>` for preview. Much faster seeking, but only supports certain codecs. Enabled with the `--preview-html` CLI flag.
 
@@ -239,7 +240,7 @@ Works the same as HTML `<iframe>`. Waits for data to load.
 
 ### `src` attribute
 
-`src` must be a full, absolute `file://` or `http(s)://` URI (e.g. `file:///Users/me/video.webm` or `https://example.com/image.jpeg`). Note the three slashes for local files! **Tip:** In Node.js you can use [file-url](https://github.com/sindresorhus/file-url) to convert local (also relative) paths to `file://` URIs! See example above.
+`src` must be a full, absolute `file://` or `http(s)://` URI (e.g. `file:///Users/me/video.webm` or `https://example.com/image.jpeg`). Note the three slashes for local files! **Tip:** In Node.js you can use `require('url').pathToFileURL` to convert local (also relative) paths to `file://` URIs. See example above.
 
 ### useVideo
 
