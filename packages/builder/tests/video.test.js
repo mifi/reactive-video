@@ -83,7 +83,7 @@ test('render single frame', async () => {
   const outPathPng2 = join(workDir, 'jpeg-converted.png');
   await sharp(outPathJpeg).toFile(outPathPng2);
 
-  expect(await readFile(outPathPng2)).toMatchImageSnapshot();
+  expect(await readFile(outPathPng2)).toMatchImageSnapshot({ comparisonMethod: 'ssim', failureThresholdType: 'percent', failureThreshold: 0.0001 });
 });
 
 const getFileNameForTest = () => `${expect.getState().currentTestName.replace(/[^A-Za-z0-9]/g, '')}.mov`;

@@ -36,11 +36,16 @@ const getEditor = (opts) => Editor({ ffmpegPath: 'ffmpeg', ffprobePath: 'ffprobe
 
 async function checkVideosMatch(path1, path2) {
   const { stdout } = await execa('ffmpeg', ['-loglevel', 'error', '-i', path1, '-i', path2, '-lavfi', 'ssim=stats_file=-', '-f', 'null', '-']);
-  const minSimilarity = 0.99;
+  const minSimilarity = 0.98;
   return stdout.split('\n').every((line) => {
     const match = line.match(/^n:\d+ Y:[\d.]+ U:[\d.]+ V:[\d.]+ All:([\d.]+)/);
     if (!match) return false;
-    return parseFloat(match[1]) > minSimilarity;
+    const similarity = parseFloat(match[1]);
+    if (similarity < minSimilarity) {
+      console.warn('Similarity off', stdout);
+      return false;
+    }
+    return true;
   });
 }
 
