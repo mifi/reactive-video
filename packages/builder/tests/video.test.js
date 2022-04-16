@@ -143,7 +143,7 @@ test('render segments', async () => {
     output,
   });
 
-  expect(await checkVideosMatch(output, getVideoSnapshotPath())).toBeTruthy();
+  expect(await checkVideosMatch(output, getVideoSnapshotPath(), 0.96)).toBeTruthy();
 });
 
 afterEach(async () => {
