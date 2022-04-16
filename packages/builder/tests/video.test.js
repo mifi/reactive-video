@@ -34,7 +34,6 @@ test('render, throws error on missing video', async () => {
     reactVideo,
     ffmpegStreamFormat: 'png',
     puppeteerCaptureFormat: 'png',
-    captureMethod: 'screenshot',
     width: 1920,
     height: 1080,
     durationFrames: 1,
@@ -45,7 +44,7 @@ test('render, throws error on missing video', async () => {
   await expect(promise).rejects.toThrow('Render frame error: HTTP error');
 });
 
-test('render single frame', async () => {
+test('render single frame from video', async () => {
   const editor = getEditor();
 
   const reactVideo = join(__dirname, 'video', 'ReactiveVideo.js');
@@ -53,32 +52,55 @@ test('render single frame', async () => {
   const inputVideoPath = join(testAssetsDir, 'Koh Kood.mp4');
   const userData = { videoUri: pathToFileURL(inputVideoPath), title: 'Koh Kood', description: 'Paradise in Thailand' };
 
-  const run = async (opts) => edit(editor, {
+  const outPathPng = join(workDir, 'frame.png');
+  await edit(editor, {
     reactVideo,
     ffmpegStreamFormat: 'png',
     puppeteerCaptureFormat: 'png',
-    captureMethod: 'screenshot',
     width: 1920,
     height: 1080,
     durationFrames: 1,
     startFrame: 30,
     userData,
-    ...opts,
+    output: outPathPng,
   });
 
-  const outPathPng = join(workDir, 'frame.png');
-  await run({ output: outPathPng });
+  expect(await readFile(outPathPng)).toMatchImageSnapshot({ failureThreshold: 0.0001 }); // font rendering is slightly different on macos/linux
+});
+
+// Test a simple page without any resources, to see that it works even with an empty asyncRegistry
+test('render single frame, simple', async () => {
+  const editor = getEditor();
+
+  const reactVideo = join(__dirname, 'simple', 'ReactiveVideo.js');
+
+  const outPathPng = join(workDir, 'simple.png');
+
+  await edit(editor, {
+    reactVideo,
+    ffmpegStreamFormat: 'png',
+    puppeteerCaptureFormat: 'png',
+    durationFrames: 1,
+    width: 1920,
+    height: 1080,
+    output: outPathPng,
+  });
 
   expect(await readFile(outPathPng)).toMatchImageSnapshot({ failureThreshold: 0.0001 }); // font rendering is slightly different on macos/linux
 
   // try also jpeg because it's faster, so commonly used
-  const outPathJpeg = join(workDir, 'frame.jpeg');
-  await run({
-    output: outPathJpeg,
+  const outPathJpeg = join(workDir, 'simple.jpeg');
+
+  await edit(editor, {
+    reactVideo,
     ffmpegStreamFormat: 'jpeg',
     puppeteerCaptureFormat: 'jpeg',
-    jpegQuality: 75,
+    durationFrames: 1,
+    width: 1920,
+    height: 1080,
+    output: outPathJpeg,
   });
+
   // convert the jpeg to png for snapshot comparison
   const outPathPng2 = join(workDir, 'jpeg-converted.png');
   await sharp(outPathJpeg).toFile(outPathPng2);

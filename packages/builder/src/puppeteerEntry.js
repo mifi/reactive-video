@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useLayoutEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 
 // reactive-video-root-component is a webpack alias
@@ -25,33 +25,55 @@ const awaitDomRenderSettled = async () => new Promise((resolve) => {
 window.awaitDomRenderSettled = awaitDomRenderSettled;
 
 const PuppeteerRoot = ({
-  devMode, width, height, fps, serverPort, durationFrames, waitForAsyncRenders, renderId, userData, videoComponentType = 'ffmpeg', ffmpegStreamFormat, jpegQuality, secret,
+  devMode, width, height, fps, serverPort, durationFrames, renderId, userData, videoComponentType = 'ffmpeg', ffmpegStreamFormat, jpegQuality, secret,
 }) => {
   const [currentFrame, setCurrentFrame] = useState();
 
+  const waitingForLayoutEffectRef = useRef();
+
   // We need to set this immediately (synchronously) or we risk the callee calling window.renderFrame before it has been set
   window.renderFrame = async (n) => {
+    const waitForAsyncRenders = async () => new Promise((resolve) => {
+      setAsyncRenderDoneCb((errors) => {
+        // console.log('asyncRenderDoneCb');
+        resolve(errors);
+      });
+    });
+
+    const awaitLayoutEffect = async () => new Promise((resolve) => {
+      waitingForLayoutEffectRef.current = () => {
+        waitingForLayoutEffectRef.current = undefined;
+        resolve();
+      };
+    });
+
     if (n == null) {
       setCurrentFrame(); // clear screen
+      await awaitLayoutEffect();
       return [];
     }
 
-    const promise = waitForAsyncRenders();
+    const asyncRendersPromise = waitForAsyncRenders();
+    const layoutEffectPromise = awaitLayoutEffect();
 
     // const promise = tryElement(getId(n));
     setCurrentFrame(n);
-    // await promise
 
     // Need to wait for all components to register themselves
+    await layoutEffectPromise;
+
     await awaitDomRenderSettled();
     // await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // If none were registered (e.g. just simple HTML), don't await
-    if (anyAsyncRendersRegistered()) {
-      return promise;
-    }
-    return [];
+    if (!anyAsyncRendersRegistered()) return [];
+
+    return asyncRendersPromise;
   };
+
+  useLayoutEffect(() => {
+    if (waitingForLayoutEffectRef.current) waitingForLayoutEffectRef.current();
+  }, [currentFrame]);
 
   const api = useMemo(() => Api({ serverPort, renderId, secret }), [renderId, serverPort, secret]);
 
@@ -89,15 +111,25 @@ const PuppeteerRoot = ({
   );
 };
 
-window.setupReact = ({ devMode, width, height, fps, serverPort, durationFrames, renderId, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret }) => {
-  const waitForAsyncRenders = async () => new Promise((resolve) => {
-    setAsyncRenderDoneCb((errors) => {
-      // console.log('asyncRenderDoneCb');
-      resolve(errors);
-    });
+window.setupReact = async ({ devMode, width, height, fps, serverPort, durationFrames, renderId, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret }) => {
+  await new Promise((resolve) => {
+    ReactDOM.render((
+      <PuppeteerRoot
+        devMode={devMode}
+        width={width}
+        height={height}
+        fps={fps}
+        serverPort={serverPort}
+        durationFrames={durationFrames}
+        renderId={renderId}
+        userData={userData}
+        videoComponentType={videoComponentType}
+        ffmpegStreamFormat={ffmpegStreamFormat}
+        jpegQuality={jpegQuality}
+        secret={secret}
+      />
+    ), document.getElementById('root'), resolve);
   });
-
-  ReactDOM.render(<PuppeteerRoot devMode={devMode} width={width} height={height} fps={fps} serverPort={serverPort} durationFrames={durationFrames} waitForAsyncRenders={waitForAsyncRenders} renderId={renderId} userData={userData} videoComponentType={videoComponentType} ffmpegStreamFormat={ffmpegStreamFormat} jpegQuality={jpegQuality} secret={secret} />, document.getElementById('root'));
 };
 
 // https://github.com/puppeteer/puppeteer/issues/422#issuecomment-708142856

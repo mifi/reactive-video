@@ -1,0 +1,14 @@
+body {
+  line-height: 1.2;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+}
+
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  font-weight: 400;
+  src: url(../../../../reactive-video-assets/Oswald-Regular.ttf) format('truetype');
+}
