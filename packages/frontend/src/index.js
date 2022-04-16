@@ -10,7 +10,7 @@ import Api from './api';
 export { useVideo, VideoContextProvider } from './contexts';
 export { useAsyncRenderer } from './asyncRegistry';
 
-export { anyAsyncRendersRegistered, setAsyncRenderDoneCb } from './asyncRegistry';
+export { checkForEmptyAsyncRenderers, setAsyncRenderDoneCb } from './asyncRegistry';
 
 export {
   FFmpegVideo,

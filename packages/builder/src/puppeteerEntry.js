@@ -5,9 +5,7 @@ import ReactDOM from 'react-dom';
 // eslint-disable-next-line import/no-unresolved
 import RootComponent from 'reactive-video-root-component';
 
-import { VideoContextProvider, setAsyncRenderDoneCb, anyAsyncRendersRegistered, Api } from 'reactive-video';
-// import { setAsyncRenderDoneCb, anyAsyncRendersRegistered } from 'reactive-video/dist/asyncRegistry';
-// import Api from 'reactive-video/dist/api';
+import { VideoContextProvider, setAsyncRenderDoneCb, checkForEmptyAsyncRenderers, Api } from 'reactive-video';
 
 const getId = (currentFrame) => `frame-${currentFrame}`;
 
@@ -34,10 +32,7 @@ const PuppeteerRoot = ({
   // We need to set this immediately (synchronously) or we risk the callee calling window.renderFrame before it has been set
   window.renderFrame = async (n) => {
     const waitForAsyncRenders = async () => new Promise((resolve) => {
-      setAsyncRenderDoneCb((errors) => {
-        // console.log('asyncRenderDoneCb');
-        resolve(errors);
-      });
+      setAsyncRenderDoneCb(resolve);
     });
 
     const awaitLayoutEffect = async () => new Promise((resolve) => {
@@ -65,8 +60,8 @@ const PuppeteerRoot = ({
     await awaitDomRenderSettled();
     // await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    // If none were registered (e.g. just simple HTML), don't await
-    if (!anyAsyncRendersRegistered()) return [];
+    // if none were registered by now, we need to trigger the finish event to resolve the asyncRendersPromise
+    checkForEmptyAsyncRenderers();
 
     return asyncRendersPromise;
   };

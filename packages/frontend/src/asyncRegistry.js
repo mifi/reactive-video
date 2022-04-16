@@ -14,10 +14,24 @@ function createAsyncRenderId() {
 }
 
 let asyncRenders = [];
+let unfinishedAsyncRenders = [];
 let errors = [];
 
-export function anyAsyncRendersRegistered() {
-  return asyncRenders.length > 0;
+function finishRender() {
+  const allErrors = errors;
+  const allAsyncRenders = asyncRenders;
+  errors = [];
+  asyncRenders = [];
+
+  if (!asyncRenderDoneCb) throw new Error('asyncRenderDoneCb was not registered - this is most likely a bug');
+  const cb = asyncRenderDoneCb;
+  setAsyncRenderDoneCb(undefined);
+  cb({ asyncRenders: allAsyncRenders, errors: allErrors });
+}
+
+export function checkForEmptyAsyncRenderers() {
+  // If none were registered by now, (e.g. just simple HTML), there's nothing to wait for
+  if (asyncRenders.length === 0 && asyncRenderDoneCb) finishRender();
 }
 
 export const useAsyncRenderer = () => {
@@ -26,20 +40,9 @@ export const useAsyncRenderer = () => {
   const ret = useMemo(() => {
     const id = createAsyncRenderId();
 
-    function finishRenderOperation() {
-      if (!anyAsyncRendersRegistered()) {
-        const allErrors = errors;
-        errors = [];
-        if (asyncRenderDoneCb) {
-          const cb = asyncRenderDoneCb;
-          setAsyncRenderDoneCb(undefined);
-          cb(allErrors);
-        }
-      }
-    }
-
     function waitFor(fnOrPromise, component) {
-      asyncRenders.push(fnOrPromise);
+      asyncRenders.push({ component, id });
+      unfinishedAsyncRenders.push(fnOrPromise);
       (async () => {
         try {
           await (typeof fnOrPromise === 'function' ? fnOrPromise() : fnOrPromise);
@@ -48,8 +51,8 @@ export const useAsyncRenderer = () => {
           errors.push({ component, id, message: err.message });
         } finally {
           // console.log('finishRender', id);
-          asyncRenders = asyncRenders.filter((r) => r !== fnOrPromise);
-          finishRenderOperation();
+          unfinishedAsyncRenders = unfinishedAsyncRenders.filter((r) => r !== fnOrPromise);
+          if (unfinishedAsyncRenders.length === 0) finishRender();
         }
       })();
     }

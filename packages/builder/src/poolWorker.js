@@ -199,9 +199,11 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
 
         logFrame('renderFrame');
         // eslint-disable-next-line no-shadow
-        const errors = await page.evaluate(async (frameNum) => window.renderFrame(frameNum), frameNum);
+        const { asyncRenders, errors } = await page.evaluate(async (frameNum) => window.renderFrame(frameNum), frameNum);
         if (failOnWebErrors && errors.length > 0) throw new PageBrokenError(`Render frame error: ${errors.map((error) => error.message).join(', ')}`);
         else errors.forEach((error) => logger.warn('Web error', error));
+
+        logFrame(asyncRenders.length, 'asyncRenders', asyncRenders);
 
         logFrame('waitForFonts');
         // Wait for fonts (fonts will have been loaded after page start, due to webpack imports from React components)
