@@ -13,11 +13,11 @@ export default () => {
   const videoStyle = { width, height, position: 'absolute', filter: `blur(${blurAmount.toFixed(5)}px) brightness(${brightnessAmount})` };
 
   return (
-    <>
+    <div style={{ fontFamily: 'Oswald regular' }}>
       {/* scaleToWidth makes the test much faster */}
       <Video src={videoUri} style={videoStyle} scaleToWidth={width} scaleToHeight={height} />
 
-      <div style={{ position: 'absolute', color: 'white', left: 0, right: 0, top: 0, bottom: 0, fontSize: width / 15, fontFamily: 'Oswald regular', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+      <div style={{ position: 'absolute', color: 'white', left: 0, right: 0, top: 0, bottom: 0, fontSize: width / 15, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <div style={{ background: 'rgba(0,0,0,0.4)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '.1em 0', lineHeight: '130%', boxShadow: 'rgba(0,0,0,0.4) 0px 0px 1em 1em' }}>
           <div style={{ textShadow: '1px 1px 0px #000', marginBottom: '.4em', fontSize: '1.3em', textTransform: 'uppercase' }}>{title}</div>
           <div>{description}</div>
@@ -28,6 +28,6 @@ export default () => {
           Visit Now
         </div>
       </div>
-    </>
+    </div>
   );
 };

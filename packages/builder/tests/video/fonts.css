@@ -1,3 +1,7 @@
+* {
+  -webkit-font-smoothing: antialiased;
+}
+
 @font-face {
   font-family: 'Oswald bold';
   src: url('../../../../reactive-video-assets/Oswald-Bold.ttf') format('truetype');
