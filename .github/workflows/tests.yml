@@ -27,4 +27,6 @@ jobs:
         if: failure()
         with:
           name: artifact
-          path: reactive-video-assets/test-output/
+          path: |
+            reactive-video-assets/test-output/
+            reactive-video-assets/test-image-snapshots/__diff_output__/
