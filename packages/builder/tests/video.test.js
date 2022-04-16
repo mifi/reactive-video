@@ -118,7 +118,7 @@ test('render video with overlay', async () => {
     output,
   });
 
-  expect(await checkVideosMatch(output, getVideoSnapshotPath())).toBeTruthy();
+  expect(await checkVideosMatch(output, getVideoSnapshotPath()), 0.97).toBeTruthy();
 });
 
 test('render segments', async () => {

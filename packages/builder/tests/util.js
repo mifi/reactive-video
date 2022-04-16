@@ -33,15 +33,14 @@ async function edit(editor, opts) {
 // override logger: null to get log output
 const getEditor = (opts) => Editor({ ffmpegPath: 'ffmpeg', ffprobePath: 'ffprobe', logger: null, ...opts });
 
-async function checkVideosMatch(path1, path2) {
+async function checkVideosMatch(path1, path2, threshold = 0.98) {
   const { stdout } = await execa('ffmpeg', ['-loglevel', 'error', '-i', path1, '-i', path2, '-lavfi', 'ssim=stats_file=-', '-f', 'null', '-']);
-  const minSimilarity = 0.98;
   return stdout.split('\n').every((line) => {
     const match = line.match(/^n:\d+ Y:[\d.]+ U:[\d.]+ V:[\d.]+ All:([\d.]+)/);
     if (!match) return false;
     const similarity = parseFloat(match[1]);
-    if (similarity < minSimilarity) {
-      console.warn('Similarity off', stdout);
+    if (similarity < threshold) {
+      console.warn('Similarity was off', stdout);
       return false;
     }
     return true;
