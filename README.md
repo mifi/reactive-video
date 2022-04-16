@@ -18,7 +18,7 @@ Reactive Video fires up one or more Puppeteer/Chromium tabs to render the React 
 
 - Edit videos with code! 🤓
 - Full power of the web
-- Parallel rendering with [multiple browsers](https://docs.browserless.io/blog/2018/06/04/puppeteer-best-practices.html#4-parallelize-with-browsers-not-pages) 🔥 Super fast (compared to [editly](https://github.com/mifi/editly))
+- Parallel rendering with [multiple Chromium browser instances](https://docs.browserless.io/blog/2018/06/04/puppeteer-best-practices.html#4-parallelize-with-browsers-not-pages) 🔥 Super fast (compared to [editly](https://github.com/mifi/editly))
 - Supports all video formats/codecs that FFmpeg supports
 - Headless mode (runs in the cloud)
 - Output to any dimensions and aspect ratio, e.g. Instagram post (1:1), Instagram story (9:16), YouTube (16:9), or any other dimensions you like.
@@ -96,7 +96,7 @@ reactive-video --duration-frames 90 MyVideo.js --preview-html
 
 ### Programmatic API
 
-Or you can use the programmatic Node API. Create a new Node.js project, then add `@reactive-video/builder`:
+Or you can use the programmatic Node API. Create a new Node.js project, then add `@reactive-video/builder` (not that reactive-video does not currently strictly follow semver):
 
 ```bash
 mkdir awesome-reactive-video
@@ -401,21 +401,9 @@ See also [previewEntry.js](packages/builder/previewEntry.js)
 
 `rawOutput` - `true` means saving the raw MJPEG/MPNG stream, while `false` will encode to `h264`
 
-### Fast processing
+### Lossless processing
 
-Lower quality and/or potential skipped/duplicate frames:
-
-```js
-jpegQuality: 70, // slight speed increase
-captureMethod: 'screencast', // significant speed increase, but may skip/duplicate frames
-ffmpegStreamFormat: 'jpeg', // significant speed increase
-puppeteerCaptureFormat: 'jpeg', // significant speed increase
-rawOutput: true, // slight speed increase
-```
-
-### Slow processing
-
-Lossless processing, very slow and yields large files:
+If you want lossless processing, use these options. Note: very slow and yields large files:
 
 ```js
 ffmpegStreamFormat: 'raw'
