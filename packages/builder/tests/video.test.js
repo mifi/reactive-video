@@ -12,7 +12,7 @@ const { initTests, cleanupTests, imageSnapshotsDir, videoSnapshotsDir, testAsset
 // todo need to --runInBand ?
 
 beforeAll(async () => {
-  const toMatchImageSnapshot = configureToMatchImageSnapshot({ customSnapshotsDir: imageSnapshotsDir });
+  const toMatchImageSnapshot = configureToMatchImageSnapshot({ customSnapshotsDir: imageSnapshotsDir, comparisonMethod: 'ssim', failureThresholdType: 'percent' });
   expect.extend({ toMatchImageSnapshot });
 
   await initTests();
@@ -69,7 +69,7 @@ test('render single frame', async () => {
   const outPathPng = join(workDir, 'frame.png');
   await run({ output: outPathPng });
 
-  expect(await readFile(outPathPng)).toMatchImageSnapshot();
+  expect(await readFile(outPathPng)).toMatchImageSnapshot({ failureThreshold: 0.0001 }); // font rendering is slightly different on macos/linux
 
   // try also jpeg because it's faster, so commonly used
   const outPathJpeg = join(workDir, 'frame.jpeg');
@@ -83,7 +83,7 @@ test('render single frame', async () => {
   const outPathPng2 = join(workDir, 'jpeg-converted.png');
   await sharp(outPathJpeg).toFile(outPathPng2);
 
-  expect(await readFile(outPathPng2)).toMatchImageSnapshot({ comparisonMethod: 'ssim', failureThresholdType: 'percent', failureThreshold: 0.0001 });
+  expect(await readFile(outPathPng2)).toMatchImageSnapshot({ failureThreshold: 0.0001 });
 });
 
 const getFileNameForTest = () => `${expect.getState().currentTestName.replace(/[^A-Za-z0-9]/g, '')}.mov`;
@@ -118,7 +118,7 @@ test('render video with overlay', async () => {
     output,
   });
 
-  expect(await checkVideosMatch(output, getVideoSnapshotPath()), 0.97).toBeTruthy();
+  expect(await checkVideosMatch(output, getVideoSnapshotPath(), 0.97)).toBeTruthy();
 });
 
 test('render segments', async () => {
