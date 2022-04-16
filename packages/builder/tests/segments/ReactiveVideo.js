@@ -20,13 +20,12 @@ const Counter = () => {
   );
 
   return (
-    <div style={{ fontFamily: 'sans-serif', width: '100%', height: '100%', backgroundColor: `hsl(${(currentFrame * 10) % 360}deg 78% 37%)`, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-      <div style={{ fontFamily: 'Girassol' }}>Segment:</div>
+    <div style={{ width: '100%', height: '100%', backgroundColor: `hsl(${(currentFrame * 10) % 360}deg 78% 37%)`, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+      <div>Segment:</div>
       {renderTimes(seg)}
 
-      <div style={{ fontFamily: 'sans-serif', marginTop: '5%' }}>Video:</div>
+      <div style={{ marginTop: '6vh' }}>Video:</div>
       {renderTimes(video)}
-
     </div>
   );
 };
@@ -35,7 +34,7 @@ export default () => {
   const { currentTime } = useVideo();
 
   return (
-    <>
+    <div style={{ fontFamily: 'Girassol' }}>
       <div style={{ position: 'absolute', width: '100%', height: '100%' }}>
         <Segment duration={30}>
           <Counter />
@@ -49,11 +48,11 @@ export default () => {
       </div>
 
       <Image
-        style={{ position: 'absolute', top: '50vh', right: '4vw', marginLeft: -50, width: 100, transform: `scale(${1 + 0.4 * Math.sin(currentTime)})` }}
+        style={{ position: 'absolute', top: '50vh', right: '10vw', width: 100, transform: `scale(${1 + 0.4 * Math.sin(currentTime)})` }}
         src={pumpkin}
       />
 
-      <Segment cut={false} start={40} duration={20} render={({ progress }) => (<div style={{ position: 'absolute', borderRadius: '.7vw', left: '1vw', top: '1vw', padding: '1vw', background: 'white', fontFamily: 'Girassol', height: `${(0.1 + progress * 0.3) * 100}%` }}>{progress.toFixed(2)}</div>)} />
-    </>
+      <Segment cut={false} start={40} duration={20} render={({ progress }) => (<div style={{ position: 'absolute', borderRadius: '.7vw', left: '1vw', top: '1vw', padding: '1vw', background: 'white', height: `${(0.1 + progress * 0.3) * 100}%` }}>{progress.toFixed(2)}</div>)} />
+    </div>
   );
 };

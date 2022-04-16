@@ -57,6 +57,12 @@ async function createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs,
       // '--single-process', // we are running one browser per page, so one would think there is no need for processes. however when running tight on resources (e.g. inside withCrashRecovery), it will cause the wholee browser creation to fail due to errors like Target closed
       '--disable-background-media-suspend',
 
+      // inconsistent font rendering between macos and ubuntu
+      // https://github.com/puppeteer/puppeteer/issues/661
+      // https://github.com/puppeteer/puppeteer/issues/2410
+      '--font-render-hinting=medium',
+      '--force-color-profile=srgb',
+
       ...extraPuppeteerArgs,
     ],
     headless,
