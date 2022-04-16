@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   test:
-      strategy:
+    strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
 #        os: [ubuntu-latest]
