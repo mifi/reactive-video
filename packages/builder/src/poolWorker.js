@@ -159,7 +159,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
         logger.warn(`Part ${partNum},${frameNum} browser is broken, restarting:`, err);
 
         try {
-          await browser.close();
+          if (browser) await browser.close();
         } catch (err2) {
           logger.warn('Failed to close browser', err2);
         }
@@ -264,7 +264,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
     logger.error(`Caught error at frame ${frameNum}, part ${partNum} (${partStart})`, err);
     throw err;
   } finally {
-    await browser.close();
+    if (browser) await browser.close();
   }
 }
 
