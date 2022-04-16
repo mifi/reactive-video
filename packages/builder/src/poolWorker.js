@@ -60,8 +60,7 @@ async function createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs,
       // inconsistent font rendering between macos and ubuntu
       // https://github.com/puppeteer/puppeteer/issues/661
       // https://github.com/puppeteer/puppeteer/issues/2410
-      '--font-render-hinting=medium',
-      '--force-color-profile=srgb',
+      '--font-render-hinting=none',
 
       ...extraPuppeteerArgs,
     ],
