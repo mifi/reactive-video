@@ -2,7 +2,6 @@ const fileUrl = require('file-url');
 const puppeteer = require('puppeteer');
 const { join } = require('path');
 const pTimeout = require('p-timeout');
-const log = require('debug')('reactive-video');
 const workerpool = require('workerpool');
 const { mkdir } = require('fs/promises');
 
@@ -78,7 +77,7 @@ async function createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs,
   };
 }
 
-async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customOutputFfmpegArgs, numRetries = 0, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout, partNum, partStart, partEnd }) {
+async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customOutputFfmpegArgs, numRetries = 0, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, enablePerFrameLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout, partNum, partStart, partEnd }) {
   const renderId = partStart; // Unique ID per concurrent renderer
 
   let frameNum = partStart;
@@ -101,20 +100,20 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
     // log all in-page console logs as warn, for easier identification of any issues
     page.on('console', (msg) => logger.warn(`Part ${partNum},${frameNum} log`, msg.text()));
     page.on('pageerror', (err) => {
-      if (onPageError) onPageError(new PageBrokenError(err.message));
       logger.warn(`Part ${partNum},${frameNum} page pageerror`, err);
+      if (onPageError) onPageError(new PageBrokenError(err.message));
     });
     page.on('error', (error) => {
-      if (onPageError) onPageError(new PageBrokenError(error.toString()));
       logger.warn(`Part ${partNum},${frameNum} page error`, error && error.toString());
+      if (onPageError) onPageError(new PageBrokenError(error.toString()));
     });
     page.on('requestfailed', (request) => {
       // requestFailedError examples:
       // net::ERR_INSUFFICIENT_RESOURCES error can be reproduced on ubuntu (not mac) with a high concurrency (10)
       // net::ERR_FAILED is hard to reproduce, but it happened if an (inline?) svg failed to load
       const requestFailedErrorText = request.failure().errorText;
-      if (onPageError) onPageError(new PageBrokenError(requestFailedErrorText));
       logger.warn(`Part ${partNum},${frameNum} page requestfailed`, requestFailedErrorText);
+      if (onPageError) onPageError(new PageBrokenError(requestFailedErrorText));
     });
 
     await page.setViewport({ width, height });
@@ -187,7 +186,9 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
 
     // eslint-disable-next-line no-inner-declarations
     async function renderFrame() {
-      const logFrame = (...args) => log(frameNum, ...args);
+      function logFrame(...args) {
+        if (enablePerFrameLog) logger.debug(frameNum, ...args);
+      }
 
       let buf;
 

@@ -21,7 +21,7 @@ beforeAll(async () => {
 jest.setTimeout(60000);
 
 test('render, throws error on missing video', async () => {
-  const editor = getEditor({ logger: console, enableRequestLog: true });
+  const editor = getEditor({ logger: console });
 
   const reactVideo = join(__dirname, 'video', 'ReactiveVideo.js');
 
@@ -39,6 +39,9 @@ test('render, throws error on missing video', async () => {
     durationFrames: 1,
     userData,
     output: outPathPng,
+
+    enableRequestLog: true,
+    enablePerFrameLog: true,
   });
 
   await expect(promise).rejects.toThrow('Render frame error: HTTP error');

@@ -98,6 +98,7 @@ function Editor({
 
     showProgress = true,
     enableFfmpegLog = false,
+    enablePerFrameLog = false,
     enableRequestLog = false,
   }) {
     assert(captureMethod !== 'extension' || !headless, 'Headless is not compatible with this captureMethod');
@@ -157,7 +158,7 @@ function Editor({
         logger.log('Launching puppeteer, concurrency:', concurrency);
 
         const extensionPath = join(__dirname, 'extension');
-        return createRenderer({ concurrency, captureMethod, headless, extraPuppeteerArgs, customOutputFfmpegArgs, numRetries, logger, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout });
+        return createRenderer({ concurrency, captureMethod, headless, extraPuppeteerArgs, customOutputFfmpegArgs, numRetries, logger, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, enablePerFrameLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout });
       })();
 
       const [{ renderPart, terminateRenderers }] = await Promise.all([createRendererPromise, serverPromise, startBundlerPromise]);
