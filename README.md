@@ -464,6 +464,24 @@ Submit a PR if you want to share your Reactive Video here.
 - `React webpage failed to initialize`
   - Try to run with `headless false` and check puppeteer developer tools
 
+### Normalize rendering across operating systems
+
+Because MacOS use sub-pixel rendering, fonts will look different. To work around this, use this in your CSS:
+```css
+* {
+  -webkit-font-smoothing: antialiased;
+}
+```
+
+Puppeteer on Windows sometimes seems to use a different `line-height`, so it's recommended to fix it:
+```css
+body {
+  line-height: 1.2;
+}
+```
+
+See also https://meyerweb.com/eric/tools/css/reset/
+
 ### Useful commands for debugging videos
 
 #### Compare hash of video content of two videos

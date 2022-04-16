@@ -2,6 +2,10 @@
   -webkit-font-smoothing: antialiased;
 }
 
+body {
+  line-height: 1.2;
+}
+
 @font-face {
   font-family: 'Oswald bold';
   src: url('../../../../reactive-video-assets/Oswald-Bold.ttf') format('truetype');
