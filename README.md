@@ -131,11 +131,11 @@ const Editor = require('@reactive-video/builder');
     durationFrames,
     userData,
 
-    output: 'my-video.mp4',
+    output: 'my-video.mov',
     concurrency: 3,
     // headless: false,
     // extraPuppeteerArgs: ['--no-sandbox', '--disable-setuid-sandbox']
-    
+
     // Optionally set rawOutput to false if you want to encode output to h264 (if not it will create MJPEG)
     // rawOutput: false,
   });
