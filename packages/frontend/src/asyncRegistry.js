@@ -23,6 +23,8 @@ function finishRender() {
   errors = [];
   asyncRenders = [];
 
+  if (!window.isPuppeteer) return; // preview mode
+
   if (!asyncRenderDoneCb) throw new Error('asyncRenderDoneCb was not registered - this is most likely a bug');
   const cb = asyncRenderDoneCb;
   setAsyncRenderDoneCb(undefined);

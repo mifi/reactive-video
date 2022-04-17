@@ -107,6 +107,8 @@ const PuppeteerRoot = ({
 };
 
 window.setupReact = async ({ devMode, width, height, fps, serverPort, durationFrames, renderId, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret }) => {
+  window.isPuppeteer = true;
+
   await new Promise((resolve) => {
     ReactDOM.render((
       <PuppeteerRoot
