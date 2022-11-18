@@ -119,6 +119,7 @@ const customOutputFfmpegArgs = ['-c:v', 'libx264', '-crf', '30'];
 
 test('render video with overlay', async () => {
   const editor = getEditor({ logger: null });
+  // const editor = getEditor({ logger: console });
 
   const reactVideo = join(__dirname, 'video', 'ReactiveVideo.js');
 

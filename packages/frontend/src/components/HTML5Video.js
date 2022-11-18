@@ -1,12 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 
 import { useVideo } from '../contexts';
-import { useAsyncRenderer } from '../asyncRegistry';
+import { waitFor } from '../asyncRegistry';
 
 const HTML5Video = (props) => {
   const { src, style, ...rest } = props;
-
-  const { waitFor } = useAsyncRenderer();
 
   const { currentFrame, currentTime, fps } = useVideo();
 
@@ -42,7 +40,7 @@ const HTML5Video = (props) => {
       videoRef.current.src = src;
       videoRef.current.currentTime = currentTimeCorrected;
     }), 'HTML5Video');
-  }, [src, currentFrame, fps, currentTime, waitFor]);
+  }, [src, currentFrame, fps, currentTime]);
 
   // object-fit to make it similar to canvas
   // eslint-disable-next-line jsx-a11y/media-has-caption,jsx-a11y/media-has-caption,react/jsx-props-no-spreading

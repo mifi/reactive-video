@@ -210,7 +210,7 @@ impprt {
   Image,
   Segment,
   useVideo,
-  useAsyncRenderer,
+  waitFor,
 } from 'reactive-video'
 ```
 
@@ -279,14 +279,13 @@ const {
 } = useVideo();
 ```
 
-### useAsyncRenderer
+### `waitFor`
 
-A hook used to get a `waitFor` function that can be used to delay the frame capture operation due to an asynchronous task that needs to finish before drawing.
+A function that can be used to delay the frame capture operation due to an asynchronous task that needs to finish before drawing. You need to call this from a useEffect in your component. and it must be called in the same tick as the useEffect function (not after a promise or similar)
+
 ```js
 const MyVideoOrComponent = () => {
   // ...
-  const { waitFor } = useAsyncRenderer();
-
   useEffect(() => {
     waitFor(async () => {
       setState(await api.loadSomeData());

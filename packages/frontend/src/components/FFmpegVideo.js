@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 
 import { useVideo } from '../contexts';
-import { useAsyncRenderer } from '../asyncRegistry';
+import { waitFor } from '../asyncRegistry';
 
 // fetch seems to be faster than letting the <image> fetch the src itself
 // but it seems to be causing sporadic blank (white) image
@@ -10,7 +10,6 @@ const useFetch = false;
 const FFmpegVideo = (props) => {
   const { src, scaleToWidth, scaleToHeight, streamIndex = 0, style, isPuppeteer, ...rest } = props;
 
-  const { waitFor } = useAsyncRenderer();
   const { currentTime, fps, api, ffmpegStreamFormat = 'raw', jpegQuality } = useVideo();
 
   const canvasRef = useRef();
@@ -124,13 +123,13 @@ const FFmpegVideo = (props) => {
           })(),
         ]);
       }
-    });
+    }, 'FFmpegVideo');
 
     return () => {
       if (!isPuppeteer) canceled = true;
       if (useFetch && objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [src, currentTime, scaleToWidth, scaleToHeight, fps, api, streamIndex, waitFor, isPuppeteer, ffmpegStreamFormat, jpegQuality]);
+  }, [src, currentTime, scaleToWidth, scaleToHeight, fps, api, streamIndex, isPuppeteer, ffmpegStreamFormat, jpegQuality]);
 
   // eslint-disable-next-line react/jsx-props-no-spreading
   if (ffmpegStreamFormat === 'raw') return <canvas {...rest} style={style} ref={canvasRef} />;

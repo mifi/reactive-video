@@ -1,9 +1,10 @@
-import { useMemo } from 'react';
-
 let asyncRenderDoneCb;
+let currentFrameNumber;
 
-export function setAsyncRenderDoneCb(cb) {
+export function setAsyncRenderDoneCb(cb, n) {
+  // console.log('setAsyncRenderDoneCb frameNum', n)
   asyncRenderDoneCb = cb;
+  currentFrameNumber = n;
 }
 
 let asyncRenderCounter = 0;
@@ -16,53 +17,54 @@ function createAsyncRenderId() {
 let asyncRenders = [];
 let unfinishedAsyncRenders = [];
 let errors = [];
+const readyToFinishFrame = new Map();
 
-function finishRender() {
-  const allErrors = errors;
-  const allAsyncRenders = asyncRenders;
+function finishRender(frameNumber) {
+  // console.log('finishRender', frameNumber)
+  const ret = { asyncRenders, errors };
   errors = [];
   asyncRenders = [];
 
   if (!window.isPuppeteer) return; // preview mode
 
-  if (!asyncRenderDoneCb) throw new Error('asyncRenderDoneCb was not registered - this is most likely a bug');
+  if (!asyncRenderDoneCb) throw new Error(`asyncRenderDoneCb was not registered - this is most likely a bug (frameNumber ${frameNumber})`);
   const cb = asyncRenderDoneCb;
-  setAsyncRenderDoneCb(undefined);
-  cb({ asyncRenders: allAsyncRenders, errors: allErrors });
+  readyToFinishFrame.set(frameNumber, false);
+  setAsyncRenderDoneCb();
+  cb(ret);
 }
 
 export function checkForEmptyAsyncRenderers() {
+  // console.log('checkForEmptyAsyncRenderers frame', currentFrameNumber, unfinishedAsyncRenders.length);
+  readyToFinishFrame.set(currentFrameNumber, true);
   // If none were registered by now, (e.g. just simple HTML), there's nothing to wait for
-  if (asyncRenders.length === 0 && asyncRenderDoneCb) finishRender();
+  if (unfinishedAsyncRenders.length === 0 && asyncRenderDoneCb) finishRender(currentFrameNumber);
 }
 
-export const useAsyncRenderer = () => {
-  // const ref = useRef(createAsyncRenderId());
+export function waitFor(fnOrPromise, component) {
+  const waitingForFrameNumber = currentFrameNumber;
 
-  const ret = useMemo(() => {
-    const id = createAsyncRenderId();
+  const id = createAsyncRenderId();
+  // console.log('createAsyncRenderId', component, id)
 
-    function waitFor(fnOrPromise, component) {
-      asyncRenders.push({ component, id });
-      unfinishedAsyncRenders.push(fnOrPromise);
-      (async () => {
-        try {
-          await (typeof fnOrPromise === 'function' ? fnOrPromise() : fnOrPromise);
-        } catch (err) {
-          // console.error('Render error for', component, id, err);
-          errors.push({ component, id, message: err.message });
-        } finally {
-          // console.log('finishRender', id);
-          unfinishedAsyncRenders = unfinishedAsyncRenders.filter((r) => r !== fnOrPromise);
-          if (unfinishedAsyncRenders.length === 0) finishRender();
-        }
-      })();
+  const obj = { component, id };
+  asyncRenders.push(obj);
+  unfinishedAsyncRenders.push(obj);
+
+  (async () => {
+    try {
+      // console.log('waiting for', component, id);
+      await (typeof fnOrPromise === 'function' ? fnOrPromise() : fnOrPromise);
+    } catch (err) {
+      // console.error('Render error for', component, id, err.message);
+      errors.push({ component, id, message: err.message });
+    } finally {
+      // console.log('finishRender', component, id, 'unfinishedAsyncRenders:', unfinishedAsyncRenders.map((r) => r.id).join(','));
+      unfinishedAsyncRenders = unfinishedAsyncRenders.filter((r) => r.id !== id);
+      if (unfinishedAsyncRenders.length === 0) {
+        if (readyToFinishFrame.get(waitingForFrameNumber)) finishRender(waitingForFrameNumber);
+        // else console.warn('readyForFinish was false', component, id, waitingForFrameNumber);
+      }
     }
-
-    return {
-      waitFor,
-    };
-  }, []);
-
-  return ret;
-};
+  })();
+}

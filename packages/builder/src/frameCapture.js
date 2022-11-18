@@ -114,9 +114,8 @@ async function startScreencast({ format, page, jpegQuality }) {
 
 // Works most reliably but it's slow
 // Captures viewport only
-async function captureFrameScreenshot({ format, page, jpegQuality }) {
+async function captureFrameScreenshot({ format, client, jpegQuality }) {
   // eslint-disable-next-line no-underscore-dangle
-  const client = page._client;
   // https://github.com/puppeteer/puppeteer/blob/4d9dc8c0e613f22d4cdf237e8bd0b0da3c588edb/src/common/Page.ts#L2729
   const { data } = await client.send('Page.captureScreenshot', {
     format,
