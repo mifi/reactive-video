@@ -487,13 +487,17 @@ This project is maintained by me alone. The project will always remain free and 
 ## Release
 
 ```bash
-npm run test
-# Version and publish reactive-video
-(cd packages/frontend && npm version minor && git add package.json && git commit -m 'Release reactive-video' && npm publish)
-# If necessary (replace 2 with new major semver):
-(cd packages/builder && yarn add reactive-video@2 && git add package.json && git commit -m 'Upgrade builder reactive-video')
-# Version and publish builder:
-(cd packages/builder && npm version minor && git add package.json && git commit -m 'Release builder' && npm publish)
+# Version reactive-video
+(cd packages/frontend && yarn version patchminormajor && git add package.json && git commit -m 'Release reactive-video')
+# If necessary (replace "majorversion" with new major semver):
+(cd packages/builder && yarn add reactive-video@majorversion && git add package.json && git commit -m 'Upgrade builder reactive-video')
+# Version builder:
+(cd packages/builder && yarn version minor && git add package.json yarn.lock && git commit -m 'Release builder')
+
+# Now publish
+(cd packages/frontend && yarn npm publish)
+(cd packages/builder && yarn npm publish)
+
 # If all ok
 git push
 ```
