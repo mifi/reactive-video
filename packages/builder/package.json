@@ -16,7 +16,6 @@
     "type": "git",
     "url": "git+https://github.com/mifi/reactive-video.git"
   },
-  "scripts": {},
   "dependencies": {
     "@babel/core": "^7.14.0",
     "@babel/preset-env": "^7.14.1",
