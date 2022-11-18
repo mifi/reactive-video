@@ -32,7 +32,7 @@ const PuppeteerRoot = ({
   // We need to set this immediately (synchronously) or we risk the callee calling window.renderFrame before it has been set
   window.renderFrame = async (n) => {
     const waitForAsyncRenders = async () => new Promise((resolve) => {
-      setAsyncRenderDoneCb(resolve);
+      setAsyncRenderDoneCb(resolve, n);
     });
 
     const awaitLayoutEffect = async () => new Promise((resolve) => {
@@ -57,6 +57,7 @@ const PuppeteerRoot = ({
     // Need to wait for all components to register themselves
     await layoutEffectPromise;
 
+    // also wait for various other events, to be sure
     await awaitDomRenderSettled();
     // await new Promise((resolve) => setTimeout(resolve, 1000));
 

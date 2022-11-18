@@ -1,9 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 
-import { useAsyncRenderer } from '../asyncRegistry';
+import { waitFor } from '../asyncRegistry';
 
 const IFrame = (props) => {
-  const { waitFor } = useAsyncRenderer();
   const { src, onError, onLoad } = props;
 
   const errorRef = useRef();
@@ -23,8 +22,8 @@ const IFrame = (props) => {
     waitFor(new Promise((resolve, reject) => {
       errorRef.current = reject;
       loadRef.current = resolve;
-    }));
-  }, [src, waitFor]);
+    }), 'IFrame');
+  }, [src]);
 
   // eslint-disable-next-line jsx-a11y/iframe-has-title,react/jsx-props-no-spreading
   return <iframe {...props} onError={handleError} onLoad={handleLoad} />;

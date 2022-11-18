@@ -85,6 +85,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
   let browser;
   let context;
   let page;
+  let client;
   let extensionFrameCapturer;
   let screencast;
   let onPageError;
@@ -95,6 +96,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
     ({ browser, context, extensionFrameCapturer } = await createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs, headless, tempDir }));
 
     page = await context.newPage();
+    client = await page.target().createCDPSession();
 
     // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#consolemessagetype
     // log all in-page console logs as warn, for easier identification of any issues
@@ -225,7 +227,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
         switch (captureMethod) {
           case 'screencast': buf = await screencast.captureFrame(frameNum); break;
           case 'extension': buf = await extensionFrameCapturer.captureFrame(); break;
-          case 'screenshot': buf = await captureFrameScreenshot({ format: puppeteerCaptureFormat, page, jpegQuality }); break;
+          case 'screenshot': buf = await captureFrameScreenshot({ format: puppeteerCaptureFormat, client, jpegQuality }); break;
           default: throw new Error('Invalid captureMethod');
         }
 

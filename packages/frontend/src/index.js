@@ -8,7 +8,7 @@ import Video from './components/Video';
 import Api from './api';
 
 export { useVideo, VideoContextProvider } from './contexts';
-export { useAsyncRenderer } from './asyncRegistry';
+export { waitFor } from './asyncRegistry';
 
 export { checkForEmptyAsyncRenderers, setAsyncRenderDoneCb } from './asyncRegistry';
 
