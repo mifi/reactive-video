@@ -1,0 +1,10 @@
+{
+  "name": "@reactive-video/examples",
+  "version": "1.0.5",
+  "private": true,
+  "dependencies": {
+    "@reactive-video/builder": "*",
+    "execa": "5",
+    "jpeg-js": "^0.4.3"
+  }
+}
