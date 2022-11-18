@@ -469,6 +469,14 @@ body {
 
 See also https://meyerweb.com/eric/tools/css/reset/
 
+## Running on Apple Silicon (M1/M2 arm64)
+
+First download/unpack the ARM version of Chromium corresponding to your revision under `~/.cache/puppeteer/chrome/mac-REVISION`, then run Node/Puppeteer with:
+
+```
+PUPPETEER_EXECUTABLE_PATH=/path/to/Chromium.app/Contents/MacOS/Chromium npm test
+```
+
 ### Useful commands for debugging videos
 
 #### Compare hash of video content of two videos
