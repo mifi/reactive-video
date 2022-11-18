@@ -52,5 +52,8 @@
   "bugs": {
     "url": "https://github.com/mifi/reactive-video/issues"
   },
-  "homepage": "https://github.com/mifi/reactive-video#readme"
+  "homepage": "https://github.com/mifi/reactive-video#readme",
+  "publishConfig": {
+    "access": "public"
+  }  
 }
