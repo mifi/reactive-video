@@ -44,7 +44,7 @@ test('render, throws error on missing video', async () => {
     enablePerFrameLog: true,
   });
 
-  await expect(promise).rejects.toThrow('Render frame error: HTTP error');
+  await expect(promise).rejects.toThrow('Evaluation failed: Error: HTTP error');
 });
 
 test('render single frame from video', async () => {

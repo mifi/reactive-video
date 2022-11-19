@@ -210,7 +210,7 @@ impprt {
   Image,
   Segment,
   useVideo,
-  waitFor,
+  useAsyncRenderer,
 } from 'reactive-video'
 ```
 
@@ -279,18 +279,31 @@ const {
 } = useVideo();
 ```
 
-### `waitFor`
+### useAsyncRenderer
 
-A function that can be used to delay the frame capture operation due to an asynchronous task that needs to finish before drawing. You need to call this from a useEffect in your component. and it must be called in the same tick as the useEffect function (not after a promise or similar)
+A `useEffect`-like hook returning an async function that can be used to delay the frame capture operation due to an asynchronous task that needs to finish before drawing. Can also return an Array `[async () => {}, cleanup: () => {}]` if cleanup is needed. (will returned from `useEffect`). The first element of the array is the async function and the second element is the cleanup function.
 
 ```js
 const MyVideoOrComponent = () => {
   // ...
-  useEffect(() => {
-    waitFor(async () => {
-      setState(await api.loadSomeData());
-    });
-  }, [waitFor]);
+
+  useAsyncRenderer(async () => {
+    setState(await api.loadSomeData(someParam));
+  }, [someParam]);
+
+  // or if you need to cleanup
+  useAsyncRenderer(() => {
+    let aborted = false;
+    return [
+      async () => {
+        setState(await api.loadSomeData(someParam));
+      },
+      () => {
+        aborted = true;
+      }
+    ];
+  }, [someParam]);
+
   // ...
 };
 ```

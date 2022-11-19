@@ -1,70 +1,76 @@
-let asyncRenderDoneCb;
-let currentFrameNumber;
+import { useEffect } from 'react';
 
-export function setAsyncRenderDoneCb(cb, n) {
-  // console.log('setAsyncRenderDoneCb frameNum', n)
-  asyncRenderDoneCb = cb;
-  currentFrameNumber = n;
+import { useVideo } from './contexts';
+
+const framesDone = new Set();
+
+let promises = [];
+
+export async function awaitAsyncRenders(frameNumber) {
+  // console.log('awaitAsyncRenders', promises.length)
+  if (framesDone.has(frameNumber)) throw new Error(`Tried to awaitAsyncRenders already done frame ${frameNumber}`);
+  try {
+    return await Promise.all(promises);
+  } finally {
+    promises = [];
+    framesDone.add(frameNumber);
+  }
 }
 
-let asyncRenderCounter = 0;
-function createAsyncRenderId() {
-  const id = asyncRenderCounter;
-  asyncRenderCounter += 1;
-  return id;
-}
+export function useAsyncRenderer(fn, deps, component) {
+  const { video: { currentFrame } } = useVideo();
 
-let asyncRenders = [];
-let unfinishedAsyncRenders = [];
-let errors = [];
-const readyToFinishFrame = new Map();
+  // console.log('useAsyncRenderer', component, currentFrame)
 
-function finishRender(frameNumber) {
-  // console.log('finishRender', frameNumber)
-  const ret = { asyncRenders, errors };
-  errors = [];
-  asyncRenders = [];
+  if (framesDone.has(currentFrame)) {
+    throw new Error(`Tried to useAsyncRenderer already done frame ${currentFrame}`);
+  }
 
-  if (!window.isPuppeteer) return; // preview mode
+  let resolve;
+  let reject;
 
-  if (!asyncRenderDoneCb) throw new Error(`asyncRenderDoneCb was not registered - this is most likely a bug (frameNumber ${frameNumber})`);
-  const cb = asyncRenderDoneCb;
-  readyToFinishFrame.set(frameNumber, false);
-  setAsyncRenderDoneCb();
-  cb(ret);
-}
+  // add promises immediately when calling the hook so we don't lose them
+  promises.push(new Promise((resolve2, reject2) => {
+    resolve = resolve2;
+    reject = reject2;
+  }));
 
-export function checkForEmptyAsyncRenderers() {
-  // console.log('checkForEmptyAsyncRenderers frame', currentFrameNumber, unfinishedAsyncRenders.length);
-  readyToFinishFrame.set(currentFrameNumber, true);
-  // If none were registered by now, (e.g. just simple HTML), there's nothing to wait for
-  if (unfinishedAsyncRenders.length === 0 && asyncRenderDoneCb) finishRender(currentFrameNumber);
-}
+  let hasTriggeredAsyncEffect = false;
 
-export function waitFor(fnOrPromise, component) {
-  const waitingForFrameNumber = currentFrameNumber;
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    hasTriggeredAsyncEffect = true;
 
-  const id = createAsyncRenderId();
-  // console.log('createAsyncRenderId', component, id)
-
-  const obj = { component, id };
-  asyncRenders.push(obj);
-  unfinishedAsyncRenders.push(obj);
-
-  (async () => {
-    try {
-      // console.log('waiting for', component, id);
-      await (typeof fnOrPromise === 'function' ? fnOrPromise() : fnOrPromise);
-    } catch (err) {
-      // console.error('Render error for', component, id, err.message);
-      errors.push({ component, id, message: err.message });
-    } finally {
-      // console.log('finishRender', component, id, 'unfinishedAsyncRenders:', unfinishedAsyncRenders.map((r) => r.id).join(','));
-      unfinishedAsyncRenders = unfinishedAsyncRenders.filter((r) => r.id !== id);
-      if (unfinishedAsyncRenders.length === 0) {
-        if (readyToFinishFrame.get(waitingForFrameNumber)) finishRender(waitingForFrameNumber);
-        // else console.warn('readyForFinish was false', component, id, waitingForFrameNumber);
-      }
+    // allow returning an array with a cleanup function too
+    const arrayOrPromise = fn();
+    let cleanup;
+    let promise;
+    if (Array.isArray(arrayOrPromise)) {
+      [, cleanup] = arrayOrPromise;
+      promise = arrayOrPromise[0]();
+    } else {
+      promise = arrayOrPromise;
     }
-  })();
+
+    (async () => {
+      try {
+        // console.log('waiting for', component);
+        await promise;
+        // console.log('finishRender', component, currentFrame);
+        resolve({ component, currentFrame });
+      } catch (err) {
+        // console.error('Render error for', component, currentFrame, err.message);
+        reject(err);
+      }
+    })();
+
+    return cleanup;
+  }, deps);
+
+  useEffect(() => {
+    // if this render had no deps changes triggering the above useEffect, we need to just resolve the promise
+    if (!hasTriggeredAsyncEffect) {
+      resolve();
+    }
+  });
 }

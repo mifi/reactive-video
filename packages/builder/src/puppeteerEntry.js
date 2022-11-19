@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom';
 // eslint-disable-next-line import/no-unresolved
 import RootComponent from 'reactive-video-root-component';
 
-import { VideoContextProvider, setAsyncRenderDoneCb, checkForEmptyAsyncRenderers, Api } from 'reactive-video';
+import { VideoContextProvider, awaitAsyncRenders, Api } from 'reactive-video';
 
 const getId = (currentFrame) => `frame-${currentFrame}`;
 
@@ -31,10 +31,6 @@ const PuppeteerRoot = ({
 
   // We need to set this immediately (synchronously) or we risk the callee calling window.renderFrame before it has been set
   window.renderFrame = async (n) => {
-    const waitForAsyncRenders = async () => new Promise((resolve) => {
-      setAsyncRenderDoneCb(resolve, n);
-    });
-
     const awaitLayoutEffect = async () => new Promise((resolve) => {
       waitingForLayoutEffectRef.current = () => {
         waitingForLayoutEffectRef.current = undefined;
@@ -42,17 +38,9 @@ const PuppeteerRoot = ({
       };
     });
 
-    if (n == null) {
-      setCurrentFrame(); // clear screen
-      await awaitLayoutEffect();
-      return [];
-    }
-
-    const asyncRendersPromise = waitForAsyncRenders();
     const layoutEffectPromise = awaitLayoutEffect();
 
-    // const promise = tryElement(getId(n));
-    setCurrentFrame(n);
+    setCurrentFrame(n == null ? undefined : n); // null means clear screen
 
     // Need to wait for all components to register themselves
     await layoutEffectPromise;
@@ -61,10 +49,7 @@ const PuppeteerRoot = ({
     await awaitDomRenderSettled();
     // await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    // if none were registered by now, we need to trigger the finish event to resolve the asyncRendersPromise
-    checkForEmptyAsyncRenderers();
-
-    return asyncRendersPromise;
+    return awaitAsyncRenders(n);
   };
 
   useLayoutEffect(() => {

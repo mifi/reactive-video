@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-import { waitFor } from '../asyncRegistry';
+import { useAsyncRenderer } from '../asyncRegistry';
 
 const ImageInternal = (props) => {
   const { src, _originalSrc, onError, onLoad, ...rest } = props;
@@ -18,12 +18,10 @@ const ImageInternal = (props) => {
     if (onError) onError(err);
   }
 
-  useEffect(() => {
-    waitFor(new Promise((resolve, reject) => {
-      errorRef.current = reject;
-      loadRef.current = resolve;
-    }), 'ImageInternal');
-  }, [src]);
+  useAsyncRenderer(async () => new Promise((resolve, reject) => {
+    errorRef.current = reject;
+    loadRef.current = resolve;
+  }), [src], 'ImageInternal');
 
   // eslint-disable-next-line jsx-a11y/iframe-has-title,jsx-a11y/alt-text,react/jsx-props-no-spreading
   return <img {...rest} src={src} onError={handleError} onLoad={handleLoad} />;

@@ -8,9 +8,9 @@ import Video from './components/Video';
 import Api from './api';
 
 export { useVideo, VideoContextProvider } from './contexts';
-export { waitFor } from './asyncRegistry';
+export { useAsyncRenderer } from './asyncRegistry';
 
-export { checkForEmptyAsyncRenderers, setAsyncRenderDoneCb } from './asyncRegistry';
+export { awaitAsyncRenders } from './asyncRegistry';
 
 export {
   FFmpegVideo,
