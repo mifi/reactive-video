@@ -513,7 +513,7 @@ This project is maintained by me alone. The project will always remain free and 
 # If necessary (replace "majorversion" with new major semver):
 (cd packages/builder && yarn add reactive-video@majorversion && git add package.json && git commit -m 'Upgrade builder reactive-video')
 # Version builder:
-(cd packages/builder && yarn version minor && git add package.json yarn.lock && git commit -m 'Release builder')
+(cd packages/builder && yarn version minor && git add package.json && git commit -m 'Release builder')
 
 # Now publish
 (cd packages/frontend && yarn npm publish)
