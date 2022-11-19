@@ -222,7 +222,7 @@ function Editor({
         assert.strictEqual(actualDurationFrames, durationFrames);
       }
     } finally {
-      if (stopServer) stopServer();
+      if (stopServer) await stopServer();
       if (watcher) await tryStopBundleWatcher(bundler, watcher);
     }
 

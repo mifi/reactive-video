@@ -80,11 +80,12 @@ async function serve({ logger, ffmpegPath, ffprobePath, serveStaticPath, serveRo
     server = app.listen(port, resolve);
   });
 
-  if (enableRequestLog) logger.info('Listening on port', port);
+  if (enableRequestLog) logger.info('HTTP server listening on port', port);
 
-  const stop = () => {
+  const stop = async () => {
+    logger.info('Stopping HTTP server');
     server.close();
-    cleanupVideoProcessors();
+    await cleanupVideoProcessors();
   };
   return { port, stop };
 }

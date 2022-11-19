@@ -70,13 +70,14 @@ function createFfmpeg({ ffmpegPath, fps, uri: uriOrPath, width, height, scale, f
   return execa(ffmpegPath, args, { encoding: null, buffer: false, stderr: 'ignore' });
 }
 
-function cleanupProcess(key) {
-  if (!key) return;
+async function cleanupProcess(key) {
+  if (!key) return undefined;
   const videoProcess = videoProcesses[key];
   if (videoProcess && videoProcess.process) {
     videoProcess.process.kill();
+    delete videoProcesses[key].process;
   }
-  delete videoProcesses[key].process;
+  return videoProcess && videoProcess.process;
 }
 
 function createFrameReader({ process, ffmpegStreamFormat, width, height }) {
@@ -160,6 +161,9 @@ async function readFrame({ params, ffmpegPath, logger }) {
   // without this check, it could lead to bugs if concurrent reads lead to overlapping readNextFrame calls
   // https://github.com/mifi/reactive-video/issues/12
   if (videoProcesses[key].busy) throw new Error(`Busy processing previous frame: ${key} ${time}`);
+
+  // if (Math.random() < 0.2) throw new Error('Test error');
+
   videoProcesses[key].busy = true;
 
   try {
@@ -214,8 +218,8 @@ async function readFrame({ params, ffmpegPath, logger }) {
   }
 }
 
-function cleanupAll() {
-  Object.keys(videoProcesses).forEach((key) => cleanupProcess(key));
+async function cleanupAll() {
+  await Promise.allSettled(Object.keys(videoProcesses).map((key) => cleanupProcess(key)));
 }
 
 async function readVideoFormatMetadata({ ffprobePath, path }) {
