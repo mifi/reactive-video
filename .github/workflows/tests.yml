@@ -3,7 +3,7 @@ name: Tests
 on: [push, pull_request]
 
 env:
-  CHROME_BUILD_NUMBER: 1056772
+  CHROME_BUILD_NUMBER: 117.0.5938.149
 
 jobs:
   test:
@@ -52,7 +52,7 @@ jobs:
 
       - run: yarn
 
-      - run: npx @puppeteer/browsers install chrome@${{ env.CHROME_BUILD_NUMBER }} browser/chrome
+      - run: npx @puppeteer/browsers install chrome@${{ env.CHROME_BUILD_NUMBER }} --path browser
 
       - run: yarn workspace reactive-video build
       - run: npm test

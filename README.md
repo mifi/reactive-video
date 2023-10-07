@@ -78,9 +78,9 @@ export default () => {
 
 ### Download Chrome
 
-You need to have installed Chrome/Chromium. Currently Chrome buildId 1056772 is supported/tested. You can download the correct Chrome build to the directory `browser` (in the current directory):
+You need to have installed Chrome/Chromium. Currently Chrome buildId 117.0.5938.149 is supported/tested. You can download the correct Chrome build to the directory `browser` (in the current directory):
 ```bash
-npx @puppeteer/browsers install chromium@1056772 browser
+npx @puppeteer/browsers install chromium@117.0.5938.149 --path browser
 ```
 
 ### Shell
@@ -116,7 +116,7 @@ Create `index.js`:
 ```js
 const Editor = require('@reactive-video/builder');
 
-const browserExePath = require('@puppeteer/browsers').computeExecutablePath({ cacheDir: './browser', browser: 'chrome', buildId: '1056772' }); // remember to download it first
+const browserExePath = require('@puppeteer/browsers').computeExecutablePath({ cacheDir: './browser', browser: 'chrome', buildId: '117.0.5938.149' }); // remember to download it first
 
 (async () => {
   const editor = Editor({
