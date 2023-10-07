@@ -12,7 +12,7 @@
     "url": "git+https://github.com/mifi/reactive-video.git"
   },
   "scripts": {
-    "test": "NODE_OPTIONS='--experimental-vm-modules' jest --verbose",
+    "test": "cross-env NODE_OPTIONS='--experimental-vm-modules' jest --verbose",
     "lint": "eslint .",
     "watch": "yarn workspace reactive-video watch"
   },
@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "@types/jest": "^29.5.5",
+    "cross-env": "^7.0.3",
     "eslint": "^7.2.0",
     "eslint-config-airbnb": "18.2.1",
     "eslint-plugin-import": "^2.22.1",
