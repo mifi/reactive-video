@@ -37,18 +37,30 @@ const browserExePath = computeExecutablePath({ cacheDir: '.', browser: 'chromium
 // override logger: null to get log output
 const getEditor = (opts) => Editor({ ffmpegPath: 'ffmpeg', ffprobePath: 'ffprobe', browserExePath, logger: null, ...opts });
 
-async function checkVideosMatch(path1, path2, threshold = 0.98) {
-  const { stdout } = await execa('ffmpeg', ['-loglevel', 'error', '-i', path1, '-i', path2, '-lavfi', 'ssim=stats_file=-', '-f', 'null', '-']);
-  return stdout.split('\n').every((line) => {
-    const match = line.match(/^n:\d+ Y:[\d.]+ U:[\d.]+ V:[\d.]+ All:([\d.]+)/);
+async function checkVideosMatch(path1, referenceVideoPath, threshold = 0.98) {
+  const { stdout } = await execa('ffmpeg', ['-loglevel', 'error', '-i', path1, '-i', referenceVideoPath, '-lavfi', 'ssim=stats_file=-', '-f', 'null', '-']);
+  const ok = stdout.split('\n').every((line) => {
+    const match = line.match(/^n:(\d+) Y:[\d.]+ U:[\d.]+ V:[\d.]+ All:([\d.]+)/);
     if (!match) return false;
-    const similarity = parseFloat(match[1]);
+    const frameNum = parseFloat(match[1]);
+    const similarity = parseFloat(match[2]);
     if (similarity < threshold) {
-      console.warn('Similarity was off', stdout);
+      console.warn('All similarities:', stdout);
+      console.warn('Similarity was off', { frameNum, similarity });
+
       return false;
     }
     return true;
   });
+
+  if (!ok) {
+    console.log('Generating visual diff');
+    const args = ['-i', referenceVideoPath, '-i', path1, '-filter_complex', 'blend=all_mode=difference', '-c:v', 'libx264', '-crf', '18', '-c:a', 'copy', '-y', join(`${path1}-diff.mov`)];
+    console.log(args.join(' '));
+    await execa('ffmpeg', args);
+  }
+
+  return ok;
 }
 
 module.exports = {
