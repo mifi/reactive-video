@@ -1,6 +1,8 @@
 const { join } = require('path');
 const { mkdir, rm } = require('fs/promises');
 const execa = require('execa');
+// eslint-disable-next-line import/no-extraneous-dependencies
+const { computeExecutablePath } = require('@puppeteer/browsers');
 
 const Editor = require('..');
 
@@ -30,8 +32,10 @@ async function edit(editor, opts) {
   });
 }
 
+const browserExePath = computeExecutablePath({ cacheDir: '.', browser: 'chromium', buildId: '1056772' });
+
 // override logger: null to get log output
-const getEditor = (opts) => Editor({ ffmpegPath: 'ffmpeg', ffprobePath: 'ffprobe', logger: null, ...opts });
+const getEditor = (opts) => Editor({ ffmpegPath: 'ffmpeg', ffprobePath: 'ffprobe', browserExePath, logger: null, ...opts });
 
 async function checkVideosMatch(path1, path2, threshold = 0.98) {
   const { stdout } = await execa('ffmpeg', ['-loglevel', 'error', '-i', path1, '-i', path2, '-lavfi', 'ssim=stats_file=-', '-f', 'null', '-']);

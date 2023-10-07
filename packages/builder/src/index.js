@@ -43,9 +43,12 @@ async function processOptions({ durationTime, durationFramesIn, reactVideo, fps,
 function Editor({
   ffmpegPath = 'ffmpeg',
   ffprobePath = 'ffprobe',
+  browserExePath,
   devMode = false,
   logger: loggerIn = console,
 } = {}) {
+  assert(browserExePath, 'browserExePath (path to browser) is required');
+
   const bundleMode = devMode ? 'development' : 'production';
 
   const logger = loggerIn !== null ? loggerIn : { error: () => {}, warn: () => {}, info: () => {}, log: () => {}, debug: () => {}, trace: () => {} };
@@ -61,7 +64,6 @@ function Editor({
   }
 
   async function edit({
-    headless = true,
     width = 800,
     height = 600,
     fps = 30,
@@ -97,6 +99,10 @@ function Editor({
     enableFrameCountCheck = false,
 
     showProgress = true,
+
+    // debugging flags
+    headless = true,
+    keepBrowserRunning, // set this to a number of milliseconds you want to keep the browser instead of exiting after a fatal error (use with headless: false)
     enableFfmpegLog = false,
     enablePerFrameLog = false,
     enableRequestLog = false,
@@ -158,7 +164,7 @@ function Editor({
         logger.log('Launching puppeteer, concurrency:', concurrency);
 
         const extensionPath = join(__dirname, 'extension');
-        return createRenderer({ concurrency, captureMethod, headless, extraPuppeteerArgs, customOutputFfmpegArgs, numRetries, logger, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, enablePerFrameLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout });
+        return createRenderer({ concurrency, captureMethod, headless, extraPuppeteerArgs, customOutputFfmpegArgs, numRetries, logger, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, enablePerFrameLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout, browserExePath, keepBrowserRunning });
       })();
 
       const [{ renderPart, terminateRenderers }] = await Promise.all([createRendererPromise, serverPromise, startBundlerPromise]);
@@ -209,8 +215,11 @@ function Editor({
         }
         throw err;
       } finally {
-        logger.log('Terminating renderer workers');
+        if (keepBrowserRunning) {
+          await new Promise((resolve) => setTimeout(resolve, keepBrowserRunning));
+        }
         await terminateRenderers();
+        logger.log('Terminating renderer workers');
       }
 
       logger.log('Merging parts');

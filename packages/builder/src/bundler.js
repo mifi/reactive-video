@@ -62,7 +62,7 @@ function createBundler({ entryPath, userEntryPath, outDir, mode, entryOutName = 
       minimize: false,
     },
 
-    devtool: 'eval',
+    devtool: 'inline-source-map',
 
     plugins: [
       new webpack.DefinePlugin({

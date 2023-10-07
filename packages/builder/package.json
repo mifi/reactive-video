@@ -9,6 +9,9 @@
     "cli.js",
     "src"
   ],
+  "engines": {
+    "node": ">=16"
+  },
   "license": "GPL-3.0-only",
   "description": "Create videos using React!",
   "author": "Mikael Finstad <finstaden@gmail.com>",
@@ -38,10 +41,11 @@
     "json5": "^2.2.0",
     "lodash": "^4.17.21",
     "meow": "9",
+    "morgan": "^1.10.0",
     "p-map": "4",
     "p-timeout": "4",
     "png-split-stream": "^1.0.1",
-    "puppeteer": "^19.2.2",
+    "puppeteer-core": "^21.3.8",
     "react": "17",
     "react-dom": "17",
     "reactive-video": "3",

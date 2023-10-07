@@ -2,6 +2,9 @@ name: Tests
 
 on: [push, pull_request]
 
+env:
+  CHROMIUM_BUILD_NUMBER: 1056772
+
 jobs:
   test:
     strategy:
@@ -23,7 +26,8 @@ jobs:
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
 
-      - uses: actions/cache@v3
+      - name: yarn cache
+        uses: actions/cache@v3
         id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
@@ -31,15 +35,25 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
 
+      - name: Cache chromium
+        id: cache-chromium
+        uses: actions/cache@v3
+        with:
+          path: chromium
+          key: ${{ runner.os }}-chromium-${{ env.CHROMIUM_BUILD_NUMBER }}
+
       - uses: FedericoCarboni/setup-ffmpeg@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
 
       - run: yarn
+
+      - run: npx @puppeteer/browsers install chromium@$CHROMIUM_BUILD_NUMBER chromium
+
       - run: yarn workspace reactive-video build
       - run: npm run lint
       - run: npm test

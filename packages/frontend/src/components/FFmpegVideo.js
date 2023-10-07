@@ -45,7 +45,6 @@ const FFmpegVideo = (props) => {
         const cacheKey = src;
         if (!videoMetaCache.current[cacheKey]) {
           const videoMetadataResponse = await api.readVideoMetadata({ path: src, streamIndex });
-          if (!videoMetadataResponse.ok) throw new Error('HTTP error');
           const meta = await videoMetadataResponse.json();
           videoMetaCache.current[cacheKey] = { width: meta.width, height: meta.height, fps: meta.fps };
         }
@@ -60,11 +59,7 @@ const FFmpegVideo = (props) => {
 
         const getVideoFrameUrl = () => api.getVideoFrameUrl(ffmpegParams);
 
-        async function readVideoFrame() {
-          const response = await api.readVideoFrame(ffmpegParams);
-          if (!response.ok) throw new Error('HTTP error');
-          return response;
-        }
+        const readVideoFrame = async () => api.readVideoFrame(ffmpegParams);
 
         if (ffmpegStreamFormat === 'raw') {
           let fetchResponse;
@@ -76,9 +71,7 @@ const FFmpegVideo = (props) => {
             if (!ongoingRequestsRef.current) {
               ongoingRequestsRef.current = (async () => {
                 try {
-                  const response = await readVideoFrame();
-                  if (!response.ok) throw new Error('HTTP error');
-                  return response;
+                  return await readVideoFrame();
                 } finally {
                   ongoingRequestsRef.current = undefined;
                 }

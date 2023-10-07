@@ -80,7 +80,7 @@ export default () => {
 
 Then run the CLI:
 ```bash
-reactive-video --duration-frames 90 MyVideo.js
+reactive-video --browser-exe-path /path/to/chrome --duration-frames 90 MyVideo.js
 ```
 Duration can also be specified in seconds. See `reactive-video --help`
 
@@ -89,9 +89,9 @@ Duration can also be specified in seconds. See `reactive-video --help`
 Or to start a live preview:
 
 ```bash
-reactive-video --duration-frames 90 MyVideo.js --preview
+reactive-video --browser-exe-path /path/to/chrome --duration-frames 90 MyVideo.js --preview
 # or for HTML5 video:
-reactive-video --duration-frames 90 MyVideo.js --preview-html
+reactive-video --browser-exe-path /path/to/chrome --duration-frames 90 MyVideo.js --preview-html
 ```
 
 ### Programmatic API

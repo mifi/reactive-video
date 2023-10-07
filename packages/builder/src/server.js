@@ -3,6 +3,8 @@ const bodyParser = require('body-parser');
 const asyncHandler = require('express-async-handler');
 const basicAuth = require('express-basic-auth');
 const cookieParser = require('cookie-parser');
+const morgan = require('morgan');
+const { stat } = require('fs/promises');
 
 const { uriifyPath } = require('./util');
 
@@ -15,10 +17,7 @@ async function serve({ logger, ffmpegPath, ffprobePath, serveStaticPath, serveRo
   app.use(cookieParser());
 
   if (enableRequestLog) {
-    app.use((req, res, next) => {
-      logger.info('request', req.method, req.url);
-      next();
-    });
+    app.use(morgan('API :method :url :status :response-time ms - :res[content-length]', { stream: { write: (message) => logger.info(message.trim()) } }));
   }
 
   app.use((req, res, next) => {
@@ -68,12 +67,29 @@ async function serve({ logger, ffmpegPath, ffprobePath, serveStaticPath, serveRo
 
   app.post('/api/read-video-metadata', asyncHandler(async (req, res) => {
     const uri = uriifyPath(req.body.path);
+    try {
+      await stat(uri);
+    } catch (err) {
+      if (err.code === 'ENOENT') {
+        logger.error('File not found', uri);
+        res.sendStatus(404);
+        return;
+      }
+    }
+
     res.send(await readVideoStreamsMetadata({ ffprobePath, path: uri, streamIndex: req.body.streamIndex }));
   }));
 
   if (serveStaticPath) app.use(express.static(serveStaticPath));
 
   if (serveRoot) app.use('/root', express.static('/'));
+
+  // must be last
+  // eslint-disable-next-line no-unused-vars
+  app.use((err, req, res, next) => {
+    logger.error('Request error', err);
+    res.status(500).send('Internal server error');
+  });
 
   let server;
   await new Promise((resolve) => {

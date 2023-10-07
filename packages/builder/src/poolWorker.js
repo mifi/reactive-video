@@ -1,5 +1,5 @@
 const fileUrl = require('file-url');
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
 const { join } = require('path');
 const pTimeout = require('p-timeout');
 const workerpool = require('workerpool');
@@ -21,13 +21,14 @@ function onProgress(progress) {
 const logWithLevel = (level, ...args) => workerpool.workerEmit({ event: 'log', data: { level, args: args.map((arg) => (arg instanceof Error ? arg.message : arg)) } });
 const logger = Object.fromEntries(['log', 'info', 'debug', 'error', 'trace', 'warn'].map((fn) => [fn, (...args) => logWithLevel(fn, ...args)]));
 
-async function createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs, headless, tempDir }) {
+async function createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs, headless, tempDir, browserExePath }) {
   const extensionId = 'jjndjgheafjngoipoacpjgeicjeomjli';
 
   const userDataDir = join(tempDir, 'puppeteer_dev_chrome_profile-');
   await mkdir(userDataDir, { recursive: true });
 
   const browser = await puppeteer.launch({
+    executablePath: browserExePath,
     userDataDir,
 
     // this is important, see https://github.com/mifi/reactive-video/issues/11
@@ -77,7 +78,7 @@ async function createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs,
   };
 }
 
-async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customOutputFfmpegArgs, numRetries = 0, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, enablePerFrameLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout, partNum, partStart, partEnd }) {
+async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customOutputFfmpegArgs, numRetries = 0, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, enablePerFrameLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout, partNum, partStart, partEnd, browserExePath, keepBrowserRunning }) {
   const renderId = partStart; // Unique ID per concurrent renderer
 
   let frameNum = partStart;
@@ -90,17 +91,21 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
   let screencast;
   let onPageError;
 
+  async function closeBrowser() {
+    if (browser && !keepBrowserRunning) await browser.close();
+  }
+
   async function tryCreateBrowserAndPage() {
     onPageError = undefined;
 
-    ({ browser, context, extensionFrameCapturer } = await createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs, headless, tempDir }));
+    ({ browser, context, extensionFrameCapturer } = await createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs, headless, tempDir, browserExePath }));
 
     page = await context.newPage();
     client = await page.target().createCDPSession();
 
     // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#consolemessagetype
     // log all in-page console logs as warn, for easier identification of any issues
-    page.on('console', (msg) => logger.warn(`Part ${partNum},${frameNum} log`, msg.text()));
+    page.on('console', (msg) => logger.warn(`Part ${partNum},${frameNum} page console.log`, msg.text()));
     page.on('pageerror', (err) => {
       logger.warn(`Part ${partNum},${frameNum} page pageerror`, err);
       if (onPageError) onPageError(new PageBrokenError(err.message));
@@ -160,7 +165,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
         logger.warn(`Part ${partNum},${frameNum} browser is broken, restarting:`, err);
 
         try {
-          if (browser) await browser.close();
+          await closeBrowser();
         } catch (err2) {
           logger.warn('Failed to close browser', err2);
         }
@@ -271,7 +276,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
     logger.error(`Caught error at frame ${frameNum}, part ${partNum} (${partStart})`, err);
     throw err;
   } finally {
-    if (browser) await browser.close();
+    await closeBrowser();
   }
 }
 

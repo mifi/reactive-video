@@ -9,13 +9,16 @@ export default ({ serverPort, renderId, secret }) => {
       return btoa(`${username}:${secret}`);
     }
 
-    return fetch(`${baseUrl}${path}`, {
+    const response = await fetch(`${baseUrl}${path}`, {
       ...opts,
       headers: {
         ...headers,
         Authorization: `Basic ${base64()}`,
       },
     });
+
+    if (!response.ok) throw new Error(`Video server responded HTTP ${response.status} ${response.statusText}`);
+    return response;
   }
 
   const getQs = (params) => new URLSearchParams(Object.fromEntries(Object.entries({ ...params, renderId, secret }).filter(([, v]) => v != null))).toString();

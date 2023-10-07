@@ -42,9 +42,13 @@ test('render, throws error on missing video', async () => {
 
     enableRequestLog: true,
     enablePerFrameLog: true,
+
+    // combine with yarn test --verbose for immediate console output
+    // headless: false,
+    // keepBrowserRunning: 60000,
   });
 
-  await expect(promise).rejects.toThrow('Evaluation failed: Error: HTTP error');
+  await expect(promise).rejects.toThrow('Video server responded HTTP 404 Not Found');
 });
 
 test('render single frame from video', async () => {

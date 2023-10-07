@@ -10,3 +10,4 @@ dist
 reactive-video-tmp
 node_modules
 examples2
+/chromium

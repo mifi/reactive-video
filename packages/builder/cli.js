@@ -15,6 +15,7 @@ const cli = meow(`
   REQUIRED flags (one of these are required)
     --duration-frames, -f  Duration of the resulting video, in FRAMES
     --duration-time, -t  Duration of the resulting video, in SECONDS
+    --browser-exe-path  Path to browser executable
 
   Options
     --output  Resulting video file name or path
