@@ -55,8 +55,8 @@ jobs:
       - run: npx @puppeteer/browsers install chromium@$CHROMIUM_BUILD_NUMBER chromium
 
       - run: yarn workspace reactive-video build
-      - run: npm run lint
       - run: npm test
+      - run: npm run lint
 
       - uses: actions/upload-artifact@v3
         if: failure()
