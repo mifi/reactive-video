@@ -76,11 +76,11 @@ export default () => {
 };
 ```
 
-### Download chromium
+### Download Chrome
 
-You need to have installed chrome/chromium. Currently chromium buildId 1056772 is supported/tested. You can download the correct chromium build to the directory `chromium` (in the current directory):
+You need to have installed Chrome/Chromium. Currently Chrome buildId 1056772 is supported/tested. You can download the correct Chrome build to the directory `browser` (in the current directory):
 ```bash
-npx @puppeteer/browsers install chromium@1056772 chromium
+npx @puppeteer/browsers install chromium@1056772 browser
 ```
 
 ### Shell
@@ -116,7 +116,7 @@ Create `index.js`:
 ```js
 const Editor = require('@reactive-video/builder');
 
-const browserExePath = require('@puppeteer/browsers').computeExecutablePath({ cacheDir: '.', browser: 'chromium', buildId: '1056772' }); // remember to download it first
+const browserExePath = require('@puppeteer/browsers').computeExecutablePath({ cacheDir: './browser', browser: 'chrome', buildId: '1056772' }); // remember to download it first
 
 (async () => {
   const editor = Editor({
@@ -491,14 +491,6 @@ body {
 ```
 
 See also https://meyerweb.com/eric/tools/css/reset/
-
-## Running on Apple Silicon (M1/M2 arm64)
-
-First download/unpack the ARM version of Chromium corresponding to your revision under `~/.cache/puppeteer/chrome/mac-REVISION`, then run Node/Puppeteer with:
-
-```
-PUPPETEER_EXECUTABLE_PATH=/path/to/Chromium.app/Contents/MacOS/Chromium npm test
-```
 
 ### Useful commands for debugging videos
 

@@ -3,7 +3,7 @@ name: Tests
 on: [push, pull_request]
 
 env:
-  CHROMIUM_BUILD_NUMBER: 1056772
+  CHROME_BUILD_NUMBER: 1056772
 
 jobs:
   test:
@@ -35,12 +35,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
 
-      - name: Cache chromium
-        id: cache-chromium
+      - name: Cache browser
+        id: cache-browser
         uses: actions/cache@v3
         with:
-          path: chromium
-          key: ${{ runner.os }}-chromium-${{ env.CHROMIUM_BUILD_NUMBER }}
+          path: browser
+          key: ${{ runner.os }}-browser-${{ env.CHROME_BUILD_NUMBER }}
 
       - uses: FedericoCarboni/setup-ffmpeg@v2
         with:
@@ -52,7 +52,7 @@ jobs:
 
       - run: yarn
 
-      - run: npx @puppeteer/browsers install chromium@${{ env.CHROMIUM_BUILD_NUMBER }} chromium
+      - run: npx @puppeteer/browsers install chrome@${{ env.CHROME_BUILD_NUMBER }} browser/chrome
 
       - run: yarn workspace reactive-video build
       - run: npm test

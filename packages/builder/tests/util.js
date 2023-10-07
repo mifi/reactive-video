@@ -32,7 +32,7 @@ async function edit(editor, opts) {
   });
 }
 
-const browserExePath = computeExecutablePath({ cacheDir: '.', browser: 'chromium', buildId: '1056772' });
+const browserExePath = computeExecutablePath({ cacheDir: './browser', browser: 'chrome', buildId: '1056772' });
 
 // override logger: null to get log output
 const getEditor = (opts) => Editor({ ffmpegPath: 'ffmpeg', ffprobePath: 'ffprobe', browserExePath, logger: null, ...opts });
