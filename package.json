@@ -17,8 +17,10 @@
     "watch": "yarn workspace reactive-video watch",
     "version:frontend": "cd packages/frontend && mkdir -p .git && npm --tag-version-prefix='reactive-video/v' --workspaces-update=false version",
     "version:builder": "cd packages/builder && mkdir -p .git && npm --tag-version-prefix='@reactive-video/builder/v' --workspaces-update=false version",
-    "release:frontend": "yarn workspace reactive-video release",
-    "release:builder": "yarn workspace @reactive-video/builder release"
+    "pack:frontend": "yarn workspace reactive-video pack",
+    "pack:builder": "yarn workspace @reactive-video/builder pack",
+    "publish:frontend": "yarn workspace reactive-video yarn npm publish",
+    "publish:builder": "yarn workspace @reactive-video/builder yarn npm publish"
   },
   "jest": {
     "testEnvironment": "node"

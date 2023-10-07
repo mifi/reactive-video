@@ -15,7 +15,7 @@
   "scripts": {
     "build": "babel src -d dist --presets=@babel/preset-react",
     "watch": "babel -w src -d dist --presets=@babel/preset-react",
-    "prepublishOnly": "npm run build"
+    "prepack": "npm run build"
   },
   "devDependencies": {
     "@babel/cli": "^7.13.16",
