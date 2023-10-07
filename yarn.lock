@@ -2191,7 +2191,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@reactive-video/builder@*, @reactive-video/builder@workspace:packages/builder":
+"@reactive-video/builder@workspace:packages/builder":
   version: 0.0.0-use.local
   resolution: "@reactive-video/builder@workspace:packages/builder"
   dependencies:
@@ -2229,16 +2229,6 @@ __metadata:
     workerpool: ^6.2.0
   bin:
     reactive-video: cli.js
-  languageName: unknown
-  linkType: soft
-
-"@reactive-video/examples@workspace:packages/examples":
-  version: 0.0.0-use.local
-  resolution: "@reactive-video/examples@workspace:packages/examples"
-  dependencies:
-    "@reactive-video/builder": "*"
-    execa: 5
-    jpeg-js: ^0.4.3
   languageName: unknown
   linkType: soft
 
@@ -6183,13 +6173,6 @@ __metadata:
   bin:
     jest: bin/jest.js
   checksum: 17ca8d67504a7dbb1998cf3c3077ec9031ba3eb512da8d71cb91bcabb2b8995c4e4b292b740cb9bf1cbff5ce3e110b3f7c777b0cefb6f41ab05445f248d0ee0b
-  languageName: node
-  linkType: hard
-
-"jpeg-js@npm:^0.4.3":
-  version: 0.4.3
-  resolution: "jpeg-js@npm:0.4.3"
-  checksum: 9e5bacc9135efa7da340b62e81fa56fab0c8516ef617228758132af5b7d31b516cc6e1500cdffb82d3161629be341be980099f2b37eb76b81e26db6e3e848c77
   languageName: node
   linkType: hard
 

@@ -21,7 +21,8 @@
   },
   "workspaces": {
     "packages": [
-      "packages/*"
+      "packages/builder",
+      "packages/frontend"
     ]
   },
   "devDependencies": {
