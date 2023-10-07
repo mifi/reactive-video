@@ -52,7 +52,7 @@ jobs:
 
       - run: yarn
 
-      - run: npx @puppeteer/browsers install chromium@$CHROMIUM_BUILD_NUMBER chromium
+      - run: npx @puppeteer/browsers install chromium@${{ env.CHROMIUM_BUILD_NUMBER }} chromium
 
       - run: yarn workspace reactive-video build
       - run: npm test
