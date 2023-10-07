@@ -76,6 +76,13 @@ export default () => {
 };
 ```
 
+### Download chromium
+
+You need to have installed chrome/chromium. Currently chromium buildId 1056772 is supported/tested. You can download the correct chromium build to the directory `chromium` (in the current directory):
+```bash
+npx @puppeteer/browsers install chromium@1056772 chromium
+```
+
 ### Shell
 
 Then run the CLI:
@@ -109,10 +116,13 @@ Create `index.js`:
 ```js
 const Editor = require('@reactive-video/builder');
 
+const browserExePath = require('@puppeteer/browsers').computeExecutablePath({ cacheDir: '.', browser: 'chromium', buildId: '1056772' }); // remember to download it first
+
 (async () => {
   const editor = Editor({
     ffmpegPath: 'ffmpeg',
     ffprobePath: 'ffprobe',
+    browserExePath,
     devMode: true,
   });
 
