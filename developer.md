@@ -4,7 +4,7 @@
 
 ### frontend
 
-```
+```bash
 yarn version:frontend patch|minor|major
 
 npm version --workspaces-update=false --git-tag-version=true ...
@@ -17,7 +17,7 @@ yarn publish:frontend
 
 ### builder
 
-```
+```bash
 yarn version:builder patch|minor|major
 yarn pack:builder
 

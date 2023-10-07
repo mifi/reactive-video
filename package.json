@@ -19,8 +19,8 @@
     "version:builder": "cd packages/builder && mkdir -p .git && npm --tag-version-prefix='@reactive-video/builder/v' --workspaces-update=false version",
     "pack:frontend": "yarn workspace reactive-video pack",
     "pack:builder": "yarn workspace @reactive-video/builder pack",
-    "publish:frontend": "yarn workspace reactive-video yarn npm publish",
-    "publish:builder": "yarn workspace @reactive-video/builder yarn npm publish"
+    "publish:frontend": "yarn workspace reactive-video npm publish",
+    "publish:builder": "yarn workspace @reactive-video/builder npm publish"
   },
   "jest": {
     "testEnvironment": "node"
