@@ -1,0 +1,10 @@
+{
+  "extends": "@tsconfig/vite-react/tsconfig.json",
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "files": [
+    "custom.d.ts"
+  ]
+}

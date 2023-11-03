@@ -1,5 +1,3 @@
-export type UserData = object
-
 export type VideoComponentType = 'html' | 'ffmpeg'
 
 export type PuppeteerCaptureFormat = 'png' | 'jpeg';

@@ -56,8 +56,8 @@ jobs:
 
       - run: yarn workspace reactive-video build
       - run: yarn workspace @reactive-video/builder tsc
-      - run: npm test
-      - run: npm run lint
+      - run: yarn test
+      - run: yarn lint
 
       - uses: actions/upload-artifact@v3
         if: failure()

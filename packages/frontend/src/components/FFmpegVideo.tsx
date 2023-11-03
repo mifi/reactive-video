@@ -15,7 +15,6 @@ export interface FFmpegVideoProps {
   scaleToWidth?: number,
   scaleToHeight?: number,
   streamIndex?: number,
-  style?: React.CSSProperties,
   isPuppeteer?: boolean,
 }
 

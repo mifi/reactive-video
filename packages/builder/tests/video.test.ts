@@ -23,7 +23,7 @@ jest.setTimeout(60000);
 test('render, throws error on missing video', async () => {
   const editor = getEditor({ logger: console });
 
-  const reactVideo = join(__dirname, 'video', 'ReactiveVideo.js');
+  const reactVideo = join(__dirname, 'video', 'ReactiveVideo');
 
   const inputVideoPath = '/nonexistent-video';
   const userData = { videoUri: pathToFileURL(inputVideoPath), title: 'Title', description: 'Description' };
@@ -54,7 +54,7 @@ test('render, throws error on missing video', async () => {
 test('render single frame from video', async () => {
   const editor = getEditor();
 
-  const reactVideo = join(__dirname, 'video', 'ReactiveVideo.js');
+  const reactVideo = join(__dirname, 'video', 'ReactiveVideo');
 
   const inputVideoPath = join(testAssetsDir, 'Koh Kood.mp4');
   const userData = { videoUri: pathToFileURL(inputVideoPath), title: 'Koh Kood', description: 'Paradise in Thailand' };
@@ -79,7 +79,7 @@ test('render single frame from video', async () => {
 test('render single frame, simple', async () => {
   const editor = getEditor();
 
-  const reactVideo = join(__dirname, 'simple', 'ReactiveVideo.js');
+  const reactVideo = join(__dirname, 'simple', 'ReactiveVideo');
 
   const outPathPng = join(workDir, 'simple.png');
 
@@ -115,7 +115,7 @@ test('render single frame, simple', async () => {
   expect(await readFile(outPathPng2)).toMatchImageSnapshot({ failureThreshold: 0.0001 });
 });
 
-const getFileNameForTest = () => `${expect.getState().currentTestName.replace(/[^A-Za-z0-9]/g, '')}.mov`;
+const getFileNameForTest = () => `${(expect.getState().currentTestName ?? '').replace(/[^A-Za-z0-9]/g, '')}.mov`;
 const getOutputPath = () => join(outputDir, getFileNameForTest());
 const getVideoSnapshotPath = () => join(videoSnapshotsDir, getFileNameForTest());
 
@@ -125,7 +125,7 @@ test('render video with overlay', async () => {
   const editor = getEditor({ logger: null });
   // const editor = getEditor({ logger: console });
 
-  const reactVideo = join(__dirname, 'video', 'ReactiveVideo.js');
+  const reactVideo = join(__dirname, 'video', 'ReactiveVideo');
 
   const inputVideoPath = join(testAssetsDir, 'Koh Kood.mp4');
   const userData = { videoUri: pathToFileURL(inputVideoPath), title: 'Koh Kood', description: 'Paradise in Thailand' };
@@ -163,7 +163,7 @@ test('render segments', async () => {
 
   await edit(editor, {
     concurrency: 4,
-    reactVideo: join(__dirname, 'segments', 'ReactiveVideo.js'),
+    reactVideo: join(__dirname, 'segments', 'ReactiveVideo'),
 
     width,
     height,

@@ -144,7 +144,7 @@ function Editor({
 
     const finalOutPath = desiredOutPath || defaultOutPath;
 
-    const reactIndexPath = join(__dirname, 'puppeteerEntry.js');
+    const reactIndexPath = join(__dirname, 'react', 'puppeteerEntry.js');
     const reactHtmlDistName = 'index.html';
     const reactHtmlPath = join(__dirname, reactHtmlDistName);
 
@@ -274,7 +274,7 @@ function Editor({
       durationTime, durationFramesIn, reactVideo, fps, width, height, tempDirRel,
     });
 
-    const reactIndexPath = join(__dirname, 'previewEntry.js');
+    const reactIndexPath = join(__dirname, 'react', 'previewEntry.js');
     const reactHtmlDistName = 'preview.html';
     const reactHtmlPath = join(__dirname, reactHtmlDistName);
 

@@ -14,7 +14,7 @@ interface CommonParams {
   height?: number,
   fps?: number,
   userData: object,
-  videoComponentType: VideoComponentType,
+  videoComponentType?: VideoComponentType,
   ffmpegStreamFormat?: FFmpegStreamFormat,
   jpegQuality?: number,
   durationFrames?: number,

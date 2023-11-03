@@ -1,29 +1,22 @@
-import React, { SyntheticEvent, useRef } from 'react';
+import React, { useRef } from 'react';
 
 import { useAsyncRenderer } from '../asyncRegistry';
 
-interface Props {
-  src: string;
-  onLoad: (a: void) => void;
-}
-
-export type IFrameProps = Props & React.DetailedHTMLProps<React.IframeHTMLAttributes<HTMLIFrameElement>, HTMLIFrameElement>;
-
-const IFrame = (props: IFrameProps) => {
+const IFrame = (props: React.DetailedHTMLProps<React.IframeHTMLAttributes<HTMLIFrameElement>, HTMLIFrameElement>) => {
   const { src, onError, onLoad } = props;
 
   const errorRef = useRef<(a: Error) => void>();
   const loadRef = useRef<(a: void) => void>();
 
-  function handleLoad() {
+  const handleLoad: React.ReactEventHandler<HTMLIFrameElement> = (...args) => {
     if (loadRef.current) loadRef.current();
-    if (onLoad) onLoad();
-  }
+    onLoad?.(...args);
+  };
 
-  function handleError(error: SyntheticEvent<HTMLIFrameElement, Event>) {
+  const handleError: React.ReactEventHandler<HTMLIFrameElement> = (...args) => {
     if (errorRef.current) errorRef.current(new Error(`IFrame failed to load ${src}`));
-    if (onError) onError(error);
-  }
+    onError?.(...args);
+  };
 
   useAsyncRenderer(async () => new Promise((resolve: (a: void) => void, reject: (a: Error) => void) => {
     errorRef.current = reject;

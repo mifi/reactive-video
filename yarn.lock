@@ -2157,6 +2157,7 @@ __metadata:
     "@babel/preset-env": ^7.22.20
     "@babel/preset-react": ^7.22.15
     "@tsconfig/node18": ^18.2.2
+    "@types/jest-image-snapshot": ^6.2.2
     babel-loader: ^9.1.3
     binary-split: ^1.0.5
     body-parser: ^1.19.0
@@ -2355,6 +2356,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/jest-image-snapshot@npm:^6.2.2":
+  version: 6.2.2
+  resolution: "@types/jest-image-snapshot@npm:6.2.2"
+  dependencies:
+    "@types/jest": "*"
+    "@types/pixelmatch": "*"
+    ssim.js: ^3.1.1
+  checksum: 165842f61db774edfddc0f4ad3a1dd5710a2bae732893c02523ce72b5563c2961dd79264f8471f846fffe7a5cf7dc0b45afe8e63d2c7e21ed19d2be425b7d320
+  languageName: node
+  linkType: hard
+
+"@types/jest@npm:*":
+  version: 29.5.7
+  resolution: "@types/jest@npm:29.5.7"
+  dependencies:
+    expect: ^29.0.0
+    pretty-format: ^29.0.0
+  checksum: e28624ccb0ef1255a03fbbb4b5bc3e5cbcdc450d39e0739985ff679b124198f808c38c8c3e67859c6efc0e848196deeb8cfed028e12a821c511dfc1112a2d6e9
+  languageName: node
+  linkType: hard
+
 "@types/jest@npm:^29.5.5":
   version: 29.5.5
   resolution: "@types/jest@npm:29.5.5"
@@ -2411,6 +2433,15 @@ __metadata:
   version: 2.4.1
   resolution: "@types/normalize-package-data@npm:2.4.1"
   checksum: e87bccbf11f95035c89a132b52b79ce69a1e3652fe55962363063c9c0dae0fe2477ebc585e03a9652adc6f381d24ba5589cc5e51849df4ced3d3e004a7d40ed5
+  languageName: node
+  linkType: hard
+
+"@types/pixelmatch@npm:*":
+  version: 5.2.5
+  resolution: "@types/pixelmatch@npm:5.2.5"
+  dependencies:
+    "@types/node": "*"
+  checksum: 12ec849f9d9a7a21be7e2d4ca83f0f47a0d127a7c7863e16cc7342310f804cac6fc129d85b5b72147b6e35203ffb130415cf56889e58fb1b30fc3ee4990f93f5
   languageName: node
   linkType: hard
 

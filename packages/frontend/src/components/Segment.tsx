@@ -3,7 +3,7 @@ import { VideoContext, useVideo, calculateProgress } from '../contexts';
 
 const Segment = ({ children, start = 0, duration, render, override = true, cut = true }:
   PropsWithChildren<{
-    start?: number, duration: number, render?: (a: ReturnType<typeof useVideo>) => ReactNode, override?: boolean, cut?: boolean
+    start?: number, duration?: number, render?: (a: ReturnType<typeof useVideo>) => ReactNode, override?: boolean, cut?: boolean
 }>) => {
   const videoContext = useVideo();
 

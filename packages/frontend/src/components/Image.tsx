@@ -1,7 +1,7 @@
 import { useVideo } from '../contexts';
-import ImageInternal, { ImageInternalProps } from './ImageInternal';
+import ImageInternal, { ImageProps } from './ImageInternal';
 
-const Image = (props: ImageInternalProps) => {
+const Image = (props: ImageProps) => {
   const { isPuppeteer, getProxiedAssetUrl } = useVideo();
   const { src, ...rest } = props;
 

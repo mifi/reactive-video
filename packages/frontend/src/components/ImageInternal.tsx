@@ -1,28 +1,23 @@
-import { SyntheticEvent, useRef } from 'react';
+import { useRef } from 'react';
 
 import { useAsyncRenderer } from '../asyncRegistry';
 
-interface Props {
-  src: string;
-  _originalSrc: string;
-  onLoad: (a: void) => void;
-}
+export type ImageProps = React.DetailedHTMLProps<React.ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>
+  & { src: string };
 
-export type ImageInternalProps = Props & React.DetailedHTMLProps<React.ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>;
-
-const ImageInternal = ({ src, _originalSrc, onError, onLoad, ...rest }: ImageInternalProps) => {
+const ImageInternal = ({ src, _originalSrc, onError, onLoad, ...rest }: ImageProps & { _originalSrc: string }) => {
   const errorRef = useRef<(a: Error) => void>();
   const loadRef = useRef<(a: void) => void>();
 
-  function handleLoad() {
+  const handleLoad: React.ReactEventHandler<HTMLImageElement> = (...args) => {
     if (loadRef.current) loadRef.current();
-    if (onLoad) onLoad();
-  }
+    onLoad?.(...args);
+  };
 
-  function handleError(errorEvent: SyntheticEvent<HTMLImageElement, Event>) {
+  const handleError: React.ReactEventHandler<HTMLImageElement> = (...args) => {
     if (errorRef.current) errorRef.current(new Error(`Image failed to load ${_originalSrc}`));
-    if (onError) onError(errorEvent);
-  }
+    onError?.(...args);
+  };
 
   useAsyncRenderer(async () => new Promise((resolve: (a: void) => void, reject: (a: Error) => void) => {
     errorRef.current = reject;

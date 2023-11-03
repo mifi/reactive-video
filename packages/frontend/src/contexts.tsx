@@ -1,7 +1,7 @@
 import React, { useContext, useMemo, memo, PropsWithChildren } from 'react';
-import { API, FFmpegStreamFormat, UserData, VideoComponentType } from './types';
+import { API, FFmpegStreamFormat, VideoComponentType } from './types';
 
-interface VideoContextData {
+interface VideoContextData <UserData> {
   currentFrame: number,
   currentTime: number,
   durationFrames: number,
@@ -34,10 +34,11 @@ interface VideoContextData {
   jpegQuality: number,
 }
 
-export const VideoContext = React.createContext<VideoContextData | undefined>(undefined);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const VideoContext = React.createContext<VideoContextData<any> | null>(null);
 
-export const useVideo = () => {
-  const videoContext = useContext(VideoContext);
+export const useVideo = <UserData, >() => {
+  const videoContext = useContext<VideoContextData<UserData> | null>(VideoContext);
   if (videoContext == null) throw new Error('VideoContext not provided');
   return videoContext;
 };
@@ -48,7 +49,7 @@ export const calculateProgress = (currentFrame: number, duration: number) => Mat
 export const VideoContextProvider = memo(({
   currentFrame = 0, durationFrames, width = 800, height = 600, fps = 30, api, userData, videoComponentType = 'html', ffmpegStreamFormat, jpegQuality, isPuppeteer = false, children,
 }: PropsWithChildren<{
-  currentFrame?: number, durationFrames: number, width?: number, height?: number, fps?: number, api: API, userData: UserData, videoComponentType: VideoComponentType, ffmpegStreamFormat: FFmpegStreamFormat, jpegQuality: number, isPuppeteer?: boolean,
+  currentFrame?: number, durationFrames: number, width?: number, height?: number, fps?: number, api: API, userData?: unknown, videoComponentType: VideoComponentType, ffmpegStreamFormat: FFmpegStreamFormat, jpegQuality: number, isPuppeteer?: boolean,
 }>) => {
   const videoContext = useMemo(() => {
     const getFrameTime = (f: number) => f / fps;

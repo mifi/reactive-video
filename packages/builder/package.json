@@ -10,6 +10,7 @@
     "src",
     "dist/**/*.ts"
   ],
+  "types": "dist/index.d.ts",
   "engines": {
     "node": ">=16"
   },
@@ -68,6 +69,7 @@
   },
   "devDependencies": {
     "@tsconfig/node18": "^18.2.2",
+    "@types/jest-image-snapshot": "^6.2.2",
     "rimraf": "*",
     "typescript": "*"
   }
