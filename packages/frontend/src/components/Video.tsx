@@ -2,7 +2,11 @@ import FFmpegVideo from './FFmpegVideo';
 import HTML5Video from './HTML5Video';
 import { useVideo } from '../contexts';
 
-const Video = ({ src, htmlSrc, ...rest }: { src?: string, htmlSrc?: string }) => {
+type RestProps = React.DetailedHTMLProps<React.CanvasHTMLAttributes<HTMLCanvasElement>, HTMLCanvasElement>
+& React.DetailedHTMLProps<React.ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>
+& React.DetailedHTMLProps<React.VideoHTMLAttributes<HTMLVideoElement>, HTMLVideoElement>;
+
+const Video = ({ src, htmlSrc, ...rest }: RestProps & { htmlSrc?: string }) => {
   const { videoComponentType, isPuppeteer, getProxiedAssetUrl } = useVideo();
 
   if (videoComponentType === 'html') {
