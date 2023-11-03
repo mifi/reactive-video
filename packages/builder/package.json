@@ -7,7 +7,8 @@
   },
   "files": [
     "cli.js",
-    "src"
+    "src",
+    "dist/**/*.ts"
   ],
   "engines": {
     "node": ">=16"
@@ -18,6 +19,10 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mifi/reactive-video.git"
+  },
+  "scripts": {
+    "tsc": "tsc",
+    "prepack": "tsc"
   },
   "dependencies": {
     "@babel/core": "^7.23.0",
@@ -59,5 +64,9 @@
   "homepage": "https://github.com/mifi/reactive-video#readme",
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "@tsconfig/node18": "^18.2.2",
+    "typescript": "*"
   }
 }

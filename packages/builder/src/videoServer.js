@@ -151,6 +151,7 @@ async function readFrame({ params, ffmpegPath, logger }) {
 
   const { fps, uri, width, height, scale, fileFps, time = 0, streamIndex, ffmpegStreamFormat, jpegQuality } = params;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { time: ignored, ...allExceptTime } = params;
   const key = stringify(allExceptTime);
 

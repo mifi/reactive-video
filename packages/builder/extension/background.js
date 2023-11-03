@@ -1,4 +1,4 @@
-/* eslint-disable no-undef,no-unused-vars */
+/* eslint-disable no-undef,@typescript-eslint/no-unused-vars */
 // https://github.com/Flam3rboy/puppeteer-stream/blob/main/extension/background.js
 
 function captureFrame() {

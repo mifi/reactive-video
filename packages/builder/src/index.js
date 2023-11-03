@@ -40,6 +40,11 @@ async function processOptions({ durationTime, durationFramesIn, reactVideo, fps,
   };
 }
 
+/**
+ *
+ * @param {import('./types').EditorParams} param0
+ * @returns
+ */
 function Editor({
   ffmpegPath = 'ffmpeg',
   ffprobePath = 'ffprobe',
@@ -51,7 +56,7 @@ function Editor({
 
   const bundleMode = devMode ? 'development' : 'production';
 
-  const logger = loggerIn !== null ? loggerIn : { error: () => {}, warn: () => {}, info: () => {}, log: () => {}, debug: () => {}, trace: () => {} };
+  const logger = loggerIn !== null ? loggerIn : { error: () => undefined, warn: () => undefined, info: () => undefined, log: () => undefined, debug: () => undefined, trace: () => undefined };
 
   async function tryStopBundleWatcher(bundler, watcher) {
     logger.log('Stopping bundle watcher');
@@ -63,6 +68,10 @@ function Editor({
     }
   }
 
+  /**
+   *
+   * @param {import('./types').EditParams} param0
+   */
   async function edit({
     width = 800,
     height = 600,
@@ -238,6 +247,10 @@ function Editor({
     logger.log('Edit finished:', finalOutPath);
   }
 
+  /**
+   *
+   * @param {import('./types').PreviewParams} param0
+   */
   async function preview({
     width = 800,
     height = 600,
@@ -289,6 +302,10 @@ function Editor({
     });
   }
 
+  /**
+   *
+   * @param {import('./types').ReadVideoMetadataParams} param0
+   */
   async function readVideoMetadata({ path, streamIndex = 0, countFrames = false }) {
     const { width, height, fps } = await readVideoStreamsMetadata({ ffprobePath, path, streamIndex });
     const { duration: durationTime } = await readVideoFormatMetadata({ ffprobePath, path });

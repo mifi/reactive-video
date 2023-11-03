@@ -1,11 +1,10 @@
-import React from 'react';
 import { Video, useVideo, Image } from 'reactive-video';
 
 import './fonts.css';
 
 import flag from '../../../../reactive-video-assets/Flag_of_Thailand.svg';
 
-export default () => {
+export default function ReactiveVideo() {
   const { width, height, userData: { videoUri, title, description }, currentTime } = useVideo();
 
   const blurAmount = Math.floor((width * 0.008) / (1 + currentTime));
@@ -30,4 +29,4 @@ export default () => {
       </div>
     </div>
   );
-};
+}

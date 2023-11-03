@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { useVideo, Segment, Image } from 'reactive-video';
 
 import './segments.css';
@@ -30,7 +28,7 @@ const Counter = () => {
   );
 };
 
-export default () => {
+export default function ReactiveVideo() {
   const { currentTime } = useVideo();
 
   return (
@@ -55,4 +53,4 @@ export default () => {
       <Segment cut={false} start={40} duration={20} render={({ progress }) => (<div style={{ position: 'absolute', borderRadius: '.7vw', left: '1vw', top: '1vw', padding: '1vw', background: 'white', height: `${(0.1 + progress * 0.3) * 100}%` }}>{progress.toFixed(2)}</div>)} />
     </div>
   );
-};
+}

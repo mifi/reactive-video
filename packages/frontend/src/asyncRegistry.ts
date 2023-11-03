@@ -2,11 +2,13 @@ import { useEffect } from 'react';
 
 import { useVideo } from './contexts';
 
-const framesDone = new Set();
+const framesDone = new Set<number>();
 
-let promises = [];
+type ComponentName = string
 
-export async function awaitAsyncRenders(frameNumber) {
+let promises: Promise<{ component: ComponentName, currentFrame: number } | undefined>[] = [];
+
+export async function awaitAsyncRenders(frameNumber: number) {
   // console.log('awaitAsyncRenders', promises.length)
   if (framesDone.has(frameNumber)) throw new Error(`Tried to awaitAsyncRenders already done frame ${frameNumber}`);
   try {
@@ -17,7 +19,11 @@ export async function awaitAsyncRenders(frameNumber) {
   }
 }
 
-export function useAsyncRenderer(fn, deps, component) {
+export function useAsyncRenderer(
+  fn: (a: void) => Promise<void> | [(a2: void) => Promise<void>, ((a2: void) => void)],
+  deps: unknown[],
+  component: ComponentName,
+) {
   const { video: { currentFrame } } = useVideo();
 
   // console.log('useAsyncRenderer', component, currentFrame)
@@ -26,8 +32,8 @@ export function useAsyncRenderer(fn, deps, component) {
     throw new Error(`Tried to useAsyncRenderer already done frame ${currentFrame}`);
   }
 
-  let resolve;
-  let reject;
+  let resolve: (a: { component: ComponentName, currentFrame: number } | undefined) => void;
+  let reject: (a: Error) => void;
 
   // add promises immediately when calling the hook so we don't lose them
   promises.push(new Promise((resolve2, reject2) => {
@@ -44,10 +50,11 @@ export function useAsyncRenderer(fn, deps, component) {
     // allow returning an array with a cleanup function too
     const arrayOrPromise = fn();
     let cleanup;
-    let promise;
+    let promise: Promise<void>;
     if (Array.isArray(arrayOrPromise)) {
+      const [fn2] = arrayOrPromise;
       [, cleanup] = arrayOrPromise;
-      promise = arrayOrPromise[0]();
+      promise = fn2();
     } else {
       promise = arrayOrPromise;
     }
@@ -60,7 +67,7 @@ export function useAsyncRenderer(fn, deps, component) {
         resolve({ component, currentFrame });
       } catch (err) {
         // console.error('Render error for', component, currentFrame, err.message);
-        reject(err);
+        reject(err instanceof Error ? err : new Error('An unknown error occurred'));
       }
     })();
 
@@ -70,7 +77,7 @@ export function useAsyncRenderer(fn, deps, component) {
   useEffect(() => {
     // if this render had no deps changes triggering the above useEffect, we need to just resolve the promise
     if (!hasTriggeredAsyncEffect) {
-      resolve();
+      resolve(undefined);
     }
   });
 }

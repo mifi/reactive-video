@@ -7,25 +7,35 @@ import { useAsyncRenderer } from '../asyncRegistry';
 // but it seems to be causing sporadic blank (white) image
 const useFetch = false;
 
-const FFmpegVideo = (props) => {
-  const { src, scaleToWidth, scaleToHeight, streamIndex = 0, style, isPuppeteer, ...rest } = props;
+type RestProps = React.DetailedHTMLProps<React.CanvasHTMLAttributes<HTMLCanvasElement>, HTMLCanvasElement>
+  & React.DetailedHTMLProps<React.ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>;
 
+export interface FFmpegVideoProps {
+  src: string,
+  scaleToWidth?: number,
+  scaleToHeight?: number,
+  streamIndex?: number,
+  style?: React.CSSProperties,
+  isPuppeteer?: boolean,
+}
+
+const FFmpegVideo = ({ src, scaleToWidth, scaleToHeight, streamIndex = 0, style, isPuppeteer = false, ...rest }: FFmpegVideoProps & RestProps) => {
   const { currentTime, fps, api, ffmpegStreamFormat = 'raw', jpegQuality } = useVideo();
 
-  const canvasRef = useRef();
-  const imgRef = useRef();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
 
-  const videoMetaCache = useRef({});
+  const videoMetaCache = useRef<Record<string, {width: number, height: number, fps: number}>>({});
 
-  const ongoingRequestsRef = useRef();
+  const ongoingRequestsRef = useRef<Promise<Response>>();
 
   useAsyncRenderer(() => {
-    let objectUrl;
+    let objectUrl: string;
     let canceled = false;
 
     return [
       async () => {
-        function drawOnCanvas(ctx, rgbaImage, w, h) {
+        function drawOnCanvas(ctx: CanvasRenderingContext2D, rgbaImage: ArrayBuffer, w: number, h: number) {
           // https://developer.mozilla.org/en-US/docs/Web/API/ImageData/ImageData
           // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/putImageData
           ctx.putImageData(new ImageData(new Uint8ClampedArray(rgbaImage), w, h), 0, 0);
@@ -33,8 +43,14 @@ const FFmpegVideo = (props) => {
 
         // No need to flash white when preview
         if (isPuppeteer) {
-          if (ffmpegStreamFormat === 'raw') canvasRef.current.style.visibility = 'hidden';
-          if (['png', 'jpeg'].includes(ffmpegStreamFormat)) imgRef.current.src = '';
+          if (ffmpegStreamFormat === 'raw') {
+            if (canvasRef.current == null) throw new Error('canvasRef was nullish');
+            canvasRef.current.style.visibility = 'hidden';
+          }
+          if (['png', 'jpeg'].includes(ffmpegStreamFormat)) {
+            if (imgRef.current == null) throw new Error('imgRef was nullish');
+            imgRef.current.src = '';
+          }
         }
 
         // Allow optional resizing
@@ -49,29 +65,24 @@ const FFmpegVideo = (props) => {
           videoMetaCache.current[cacheKey] = { width: meta.width, height: meta.height, fps: meta.fps };
         }
         const cached = videoMetaCache.current[cacheKey];
-        if (!scale) {
-          width = cached.width;
-          height = cached.height;
-        }
+
+        if (!width) width = cached.width;
+        if (!height) height = cached.height;
         const fileFps = cached.fps;
 
         const ffmpegParams = { fps, uri: src, width, height, fileFps, scale, time: currentTime, streamIndex, ffmpegStreamFormat, jpegQuality };
 
-        const getVideoFrameUrl = () => api.getVideoFrameUrl(ffmpegParams);
-
-        const readVideoFrame = async () => api.readVideoFrame(ffmpegParams);
-
         if (ffmpegStreamFormat === 'raw') {
-          let fetchResponse;
+          let fetchResponse: Response;
 
           if (isPuppeteer) {
-            fetchResponse = await readVideoFrame();
+            fetchResponse = await api.readVideoFrame(ffmpegParams);
           } else {
             // Throttle requests to server when only previewing
             if (!ongoingRequestsRef.current) {
               ongoingRequestsRef.current = (async () => {
                 try {
-                  return await readVideoFrame();
+                  return await api.readVideoFrame(ffmpegParams);
                 } finally {
                   ongoingRequestsRef.current = undefined;
                 }
@@ -86,20 +97,25 @@ const FFmpegVideo = (props) => {
           if (canceled) return;
 
           const canvas = canvasRef.current;
+          if (canvas == null) throw new Error('canvas was nullish');
 
           canvas.width = width;
           canvas.height = height;
 
           const ctx = canvas.getContext('2d');
+          if (ctx == null) throw new Error('ctx was null');
 
           const arrayBuffer = await blob.arrayBuffer();
           drawOnCanvas(ctx, arrayBuffer, width, height);
-          canvasRef.current.style.visibility = null;
+
+          if (canvasRef.current == null) throw new Error('canvas was nullish');
+          canvasRef.current.style.visibility = '';
           return;
         }
 
         if (['png', 'jpeg'].includes(ffmpegStreamFormat)) {
           const loadPromise = new Promise((resolve, reject) => {
+            if (imgRef.current == null) throw new Error('imgRef was nullish');
             imgRef.current.addEventListener('load', resolve);
             imgRef.current.addEventListener('error', () => reject(new Error(`FFmpegVideo frame image at time ${currentTime} failed to load`)));
           });
@@ -108,11 +124,13 @@ const FFmpegVideo = (props) => {
             loadPromise,
             (async () => {
               if (useFetch) {
-                const response = await fetch(new Request(getVideoFrameUrl(ffmpegParams)));
+                const response = await fetch(new Request(api.getVideoFrameUrl(ffmpegParams)));
                 objectUrl = URL.createObjectURL(await response.blob());
+                if (imgRef.current == null) throw new Error('imgRef was nullish');
                 imgRef.current.src = objectUrl;
               } else {
-                imgRef.current.src = getVideoFrameUrl(ffmpegParams);
+                if (imgRef.current == null) throw new Error('imgRef was nullish');
+                imgRef.current.src = api.getVideoFrameUrl(ffmpegParams);
               }
             })(),
           ]);

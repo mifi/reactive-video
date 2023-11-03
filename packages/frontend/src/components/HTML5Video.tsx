@@ -3,19 +3,20 @@ import React, { useRef } from 'react';
 import { useVideo } from '../contexts';
 import { useAsyncRenderer } from '../asyncRegistry';
 
-const HTML5Video = (props) => {
+const HTML5Video = (props: React.DetailedHTMLProps<React.VideoHTMLAttributes<HTMLVideoElement>, HTMLVideoElement> & { src: string }) => {
   const { src, style, ...rest } = props;
 
   const { currentFrame, currentTime, fps } = useVideo();
 
-  const videoRef = useRef();
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  useAsyncRenderer(async () => new Promise((resolve, reject) => {
+  useAsyncRenderer(async () => new Promise((resolve: (a: void) => void, reject: (a: Error) => void) => {
     // It seems that if currentTime just a tiny fraction lower than the desired frame start time, HTML5 video will instead seek to the previous frame. So we add a bit of the frame duration
     // See also FFmpegVideo backend
     const frameDuration = 1 / fps;
     const currentTimeCorrected = currentTime + frameDuration * 0.1;
 
+    if (videoRef.current == null) throw new Error('videoRef was nullish');
     if (videoRef.current.src === src && videoRef.current.error == null) {
       if (Math.abs(videoRef.current.currentTime - currentTime) < frameDuration * 0.5) {
         if (videoRef.current.readyState >= 2) {
@@ -34,7 +35,9 @@ const HTML5Video = (props) => {
 
     videoRef.current.addEventListener('canplay', () => resolve(), { once: true });
     videoRef.current.addEventListener('ended', () => resolve(), { once: true });
-    videoRef.current.addEventListener('error', () => reject(videoRef.current.error), { once: true });
+    videoRef.current.addEventListener('error', () => {
+      reject(new Error(videoRef.current?.error ? `${videoRef.current.error.code} ${videoRef.current.error.message}` : 'Unknown HTML5 video error'));
+    }, { once: true });
 
     videoRef.current.src = src;
     videoRef.current.currentTime = currentTimeCorrected;
