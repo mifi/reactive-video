@@ -22,7 +22,8 @@
   },
   "scripts": {
     "tsc": "tsc",
-    "prepack": "tsc"
+    "clean": "rimraf dist",
+    "prepack": "yarn clean && yarn tsc"
   },
   "dependencies": {
     "@babel/core": "^7.23.0",
@@ -67,6 +68,7 @@
   },
   "devDependencies": {
     "@tsconfig/node18": "^18.2.2",
+    "rimraf": "*",
     "typescript": "*"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "reactive-video",
-  "version": "3.0.3",
+  "version": "3.1.0",
   "main": "dist/index.js",
   "files": [
     "dist/**"
@@ -15,11 +15,13 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
-    "prepack": "npm run build"
+    "clean": "rimraf dist",
+    "prepack": "yarn clean && yarn build"
   },
   "devDependencies": {
     "@tsconfig/vite-react": "^2.0.1",
     "@types/react": "^18.2.34",
+    "rimraf": "*",
     "typescript": "*"
   },
   "peerDependencies": {
