@@ -1,6 +1,6 @@
 {
   "name": "@reactive-video/builder",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "main": "src/index.js",
   "bin": {
     "reactive-video": "cli.js"
