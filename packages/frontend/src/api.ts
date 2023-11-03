@@ -1,7 +1,9 @@
-export default ({ serverPort, renderId, secret }) => {
+import { API, FFmpegParams } from './types';
+
+export default ({ serverPort, renderId, secret }: { serverPort: number, renderId: number, secret: string }): API => {
   const baseUrl = `http://localhost:${serverPort}`;
 
-  async function request(path, opts = {}) {
+  async function request(path: string, opts: RequestInit = {}) {
     const { headers } = opts;
 
     function base64() {
@@ -21,21 +23,26 @@ export default ({ serverPort, renderId, secret }) => {
     return response;
   }
 
-  const getQs = (params) => new URLSearchParams(Object.fromEntries(Object.entries({ ...params, renderId, secret }).filter(([, v]) => v != null))).toString();
+  const getQs = (params: FFmpegParams) => new URLSearchParams(
+    Object.fromEntries(
+      Object.entries({ ...params, renderId, secret })
+        .filter(([, v]) => v != null).map(([k, v]) => [k, String(v)]),
+    ),
+  ).toString();
 
-  function getVideoFrameUrl(params) {
-    return `${baseUrl}/api/frame?${getQs({ ...params, renderId, secret })}`;
+  function getVideoFrameUrl(params: FFmpegParams) {
+    return `${baseUrl}/api/frame?${getQs(params)}`;
   }
 
-  async function readVideoFrame(params) {
-    return request(`/api/frame?${getQs({ ...params, renderId })}`);
+  async function readVideoFrame(params: FFmpegParams) {
+    return request(`/api/frame?${getQs(params)}`);
   }
 
-  async function readVideoMetadata({ path, streamIndex }) {
+  async function readVideoMetadata({ path, streamIndex }: { path: string, streamIndex: number }) {
     return request('/api/read-video-metadata', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path, streamIndex }) });
   }
 
-  function getProxiedAssetUrl(uri) {
+  function getProxiedAssetUrl(uri: string) {
     if (uri.startsWith('file://')) return `${baseUrl}/root/${uri.replace(/^file:\/\//, '')}`;
     return uri;
   }

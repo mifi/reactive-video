@@ -268,7 +268,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
       onProgress({ frameNum });
     }
 
-    outProcess.stdin.end();
+    outProcess.stdin?.end?.();
     await outProcess;
     return outPath;
   } catch (err) {

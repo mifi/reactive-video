@@ -1,10 +1,8 @@
-import React from 'react';
-
 import { useVideo } from 'reactive-video';
 
 import './style.css';
 
-export default () => {
+export default function ReactiveVideo() {
   const { currentTime } = useVideo();
 
   return (
@@ -12,4 +10,4 @@ export default () => {
       {currentTime}
     </div>
   );
-};
+}

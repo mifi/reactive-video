@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useLayoutEffect, useRef } from 'react';
+import { useState, useMemo, useLayoutEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 
 // reactive-video-root-component is a webpack alias

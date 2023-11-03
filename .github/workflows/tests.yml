@@ -55,6 +55,7 @@ jobs:
       - run: npx @puppeteer/browsers install chrome@${{ env.CHROME_BUILD_NUMBER }} --path ${{ github.workspace }}/browser
 
       - run: yarn workspace reactive-video build
+      - run: yarn workspace @reactive-video/builder tsc
       - run: npm test
       - run: npm run lint
 

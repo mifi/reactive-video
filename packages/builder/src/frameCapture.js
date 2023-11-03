@@ -147,9 +147,7 @@ async function createExtensionFrameCapturer(browser) {
     const promise = new Promise((resolve) => {
       onCapturedFrame = resolve;
     });
-    // eslint-disable-next-line no-await-in-loop
     await videoCaptureExtension.evaluate((opts) => captureFrame(opts), {});
-    // eslint-disable-next-line no-await-in-loop
     const base64Data = await promise;
     if (!base64Data) throw new Error('Got no screenshot data');
     return Buffer.from(base64Data.replace(/^data:image\/(png|jpeg);base64,/, ''), 'base64');

@@ -118,48 +118,46 @@ const Editor = require('@reactive-video/builder');
 
 const browserExePath = require('@puppeteer/browsers').computeExecutablePath({ cacheDir: './browser', browser: 'chrome', buildId: '117.0.5938.149' }); // remember to download it first
 
-(async () => {
-  const editor = Editor({
-    ffmpegPath: 'ffmpeg',
-    ffprobePath: 'ffprobe',
-    browserExePath,
-    devMode: true,
-  });
+const editor = Editor({
+  ffmpegPath: 'ffmpeg',
+  ffprobePath: 'ffprobe',
+  browserExePath,
+  devMode: true,
+});
 
-  const width = 1280;
-  const height = 720;
-  const fps = 25;
-  const durationFrames = 90;
-  const reactVideo = 'MyVideo.js';
-  const userData = { some: 'value' };
+const width = 1280;
+const height = 720;
+const fps = 25;
+const durationFrames = 90;
+const reactVideo = 'MyVideo.js';
+const userData = { some: 'value' };
 
-  // Build the video
-  await editor.edit({
-    reactVideo,
-    width,
-    height,
-    durationFrames,
-    userData,
+// Build the video
+await editor.edit({
+  reactVideo,
+  width,
+  height,
+  durationFrames,
+  userData,
 
-    output: 'my-video.mov',
-    concurrency: 3,
-    // headless: false,
-    // extraPuppeteerArgs: ['--no-sandbox', '--disable-setuid-sandbox']
+  output: 'my-video.mov',
+  concurrency: 3,
+  // headless: false,
+  // extraPuppeteerArgs: ['--no-sandbox', '--disable-setuid-sandbox']
 
-    // Optionally set rawOutput to false if you want to encode output to h264 (if not it will create MJPEG)
-    // rawOutput: false,
-  });
+  // Optionally set rawOutput to false if you want to encode output to h264 (if not it will create MJPEG)
+  // rawOutput: false,
+});
 
-  // Or start a live preview:
-  await editor.preview({
-    reactVideo,
-    width,
-    height,
-    fps,
-    durationFrames,
-    userData,
-  });
-})().catch(console.error);
+// Or start a live preview:
+await editor.preview({
+  reactVideo,
+  width,
+  height,
+  fps,
+  durationFrames,
+  userData,
+});
 ```
 
 ## Node API
@@ -509,21 +507,7 @@ This project is maintained by me alone. The project will always remain free and 
 
 ## Release
 
-```bash
-# Version reactive-video
-(cd packages/frontend && yarn version patchminormajor && git add package.json && git commit -m 'Release reactive-video')
-# If necessary (replace "majorversion" with new major semver):
-(cd packages/builder && yarn add reactive-video@majorversion && git add package.json && git commit -m 'Upgrade builder reactive-video')
-# Version builder:
-(cd packages/builder && yarn version patchminormajor && git add package.json && git commit -m 'Release builder')
-
-# Now publish
-(cd packages/frontend && yarn npm publish)
-(cd packages/builder && yarn npm publish)
-
-# If all ok
-git push
-```
+[Developer notes](./developer.md)
 
 ## See also
 
