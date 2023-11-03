@@ -17,6 +17,9 @@ function createBundler({ entryPath, userEntryPath, outDir, mode, entryOutName = 
       extensions: ['.jsx', '.js'],
       alias: {
         'reactive-video': require.resolve('reactive-video'),
+        // needed for react 17 automatic runtime. Must be before `react`:
+        'react/jsx-runtime': require.resolve('react/jsx-runtime.js'),
+        'react/jsx-dev-runtime': require.resolve('react/jsx-dev-runtime.js'),
         react: require.resolve('react'), // Use reactive-video's react package
         'react-dom': require.resolve('react-dom'),
         'reactive-video-root-component': userEntryPath,
@@ -42,7 +45,7 @@ function createBundler({ entryPath, userEntryPath, outDir, mode, entryOutName = 
                     chrome: 90,
                   },
                 }],
-                require.resolve('@babel/preset-react'),
+                [require.resolve('@babel/preset-react'), { runtime: 'automatic' }],
               ],
             },
           }],
