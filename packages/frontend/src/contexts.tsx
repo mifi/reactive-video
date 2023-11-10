@@ -49,7 +49,7 @@ export const calculateProgress = (currentFrame: number, duration: number) => Mat
 export const VideoContextProvider = memo(({
   currentFrame = 0, durationFrames, width = 800, height = 600, fps = 30, api, userData, videoComponentType = 'html', ffmpegStreamFormat = 'raw', jpegQuality, isPuppeteer = false, children,
 }: PropsWithChildren<{
-  currentFrame?: number, durationFrames: number, width?: number, height?: number, fps?: number, api?: API, userData?: unknown, videoComponentType?: VideoComponentType, ffmpegStreamFormat: FFmpegStreamFormat, jpegQuality?: number, isPuppeteer?: boolean,
+  currentFrame?: number, durationFrames: number, width?: number, height?: number, fps?: number, api?: API, userData?: unknown, videoComponentType?: VideoComponentType, ffmpegStreamFormat?: FFmpegStreamFormat, jpegQuality?: number, isPuppeteer?: boolean,
 }>) => {
   const videoContext = useMemo(() => {
     const getFrameTime = (f: number) => f / fps;
