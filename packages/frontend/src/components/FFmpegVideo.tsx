@@ -19,7 +19,8 @@ export interface FFmpegVideoProps {
 }
 
 const FFmpegVideo = ({ src, scaleToWidth, scaleToHeight, streamIndex = 0, style, isPuppeteer = false, ...rest }: FFmpegVideoProps & RestProps) => {
-  const { currentTime, fps, api, ffmpegStreamFormat = 'raw', jpegQuality } = useVideo();
+  const { currentTime, fps, api, ffmpegStreamFormat, jpegQuality } = useVideo();
+  if (api == null) throw new Error('No API in context');
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);

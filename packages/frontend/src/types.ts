@@ -16,7 +16,7 @@ export interface FFmpegParams {
   time: number;
   streamIndex: number;
   ffmpegStreamFormat: FFmpegStreamFormat;
-  jpegQuality: number;
+  jpegQuality?: number;
 }
 
 export interface API {

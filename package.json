@@ -13,6 +13,7 @@
   },
   "scripts": {
     "test": "cross-env NODE_OPTIONS='--experimental-vm-modules' jest --verbose",
+    "tsc": "yarn workspaces foreach -pW run tsc",
     "lint": "eslint .",
     "watch": "yarn workspace reactive-video watch",
     "version:frontend": "cd packages/frontend && mkdir -p .git && npm --tag-version-prefix='reactive-video/v' --workspaces-update=false version",
@@ -49,5 +50,6 @@
     "rimraf": "^5.0.5",
     "sharp": "^0.30.3",
     "typescript": "^5.2.2"
-  }
+  },
+  "packageManager": "yarn@4.0.1"
 }

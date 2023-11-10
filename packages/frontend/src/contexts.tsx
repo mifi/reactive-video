@@ -25,13 +25,13 @@ interface VideoContextData <UserData> {
 
   userData: UserData,
 
-  api: API,
+  api?: API,
   getProxiedAssetUrl: (a: string) => string,
 
   isPuppeteer: boolean,
   videoComponentType: VideoComponentType,
   ffmpegStreamFormat: FFmpegStreamFormat,
-  jpegQuality: number,
+  jpegQuality?: number,
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,9 +47,9 @@ export const calculateProgress = (currentFrame: number, duration: number) => Mat
 
 // eslint-disable-next-line react/display-name
 export const VideoContextProvider = memo(({
-  currentFrame = 0, durationFrames, width = 800, height = 600, fps = 30, api, userData, videoComponentType = 'html', ffmpegStreamFormat, jpegQuality, isPuppeteer = false, children,
+  currentFrame = 0, durationFrames, width = 800, height = 600, fps = 30, api, userData, videoComponentType = 'html', ffmpegStreamFormat = 'raw', jpegQuality, isPuppeteer = false, children,
 }: PropsWithChildren<{
-  currentFrame?: number, durationFrames: number, width?: number, height?: number, fps?: number, api: API, userData?: unknown, videoComponentType: VideoComponentType, ffmpegStreamFormat: FFmpegStreamFormat, jpegQuality: number, isPuppeteer?: boolean,
+  currentFrame?: number, durationFrames: number, width?: number, height?: number, fps?: number, api?: API, userData?: unknown, videoComponentType?: VideoComponentType, ffmpegStreamFormat: FFmpegStreamFormat, jpegQuality?: number, isPuppeteer?: boolean,
 }>) => {
   const videoContext = useMemo(() => {
     const getFrameTime = (f: number) => f / fps;
@@ -83,7 +83,7 @@ export const VideoContextProvider = memo(({
 
       userData: userData || {},
 
-      api: api || {},
+      api,
       getProxiedAssetUrl: (src: string) => (api && api.getProxiedAssetUrl ? api.getProxiedAssetUrl(src) : src),
 
       isPuppeteer,
