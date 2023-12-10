@@ -80,7 +80,7 @@ export default () => {
 
 You need to have installed Chrome/Chromium. Currently Chrome buildId 117.0.5938.149 is supported/tested. You can download the correct Chrome build to the directory `browser` (in the current directory):
 ```bash
-npx @puppeteer/browsers install chrome@117.0.5938.149 --path browser
+npx @puppeteer/browsers install chrome@117.0.5938.149 --path /absolute/path/to/browser/dir
 ```
 
 ### Shell
