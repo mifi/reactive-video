@@ -20,7 +20,7 @@ function splitIntoParts({ startFrame, durationFrames, concurrency }) {
   return parts.map(([partStart, partEnd]) => [startFrame + partStart, startFrame + partEnd]);
 }
 
-async function processOptions({ durationTime, durationFramesIn, reactVideo, fps, width, height, tempDirRel }) {
+async function processOptions({ durationTime, durationFramesIn, reactVideo, fps, width, height, tempDirMaybeRel }) {
   assert(durationTime || durationFramesIn, 'durationTime or durationFrames required');
   assert(reactVideo, 'reactVideo required');
   assert(!Number.isNaN(fps), 'Invalid fps');
@@ -29,7 +29,7 @@ async function processOptions({ durationTime, durationFramesIn, reactVideo, fps,
   let durationFrames = durationFramesIn;
   if (durationTime) durationFrames = Math.round(durationTime * fps);
 
-  const tempDir = resolvePath(tempDirRel);
+  const tempDir = resolvePath(tempDirMaybeRel);
 
   await mkdirp(tempDir);
   const distPath = join(tempDir, 'dist');
@@ -93,11 +93,12 @@ function Editor({
     durationTime,
 
     reactVideo,
-    tempDir: tempDirRel = 'reactive-video-tmp',
+    tempDir: tempDirMaybeRel = 'reactive-video-tmp',
 
     // Output video path
     output: desiredOutPath,
 
+    // takes a lot of space, but is faster
     rawOutput = true,
 
     frameRenderTimeout = 30000,
@@ -121,7 +122,7 @@ function Editor({
     const {
       durationFrames, tempDir, distPath, userEntryPath,
     } = await processOptions({
-      durationTime, durationFramesIn, reactVideo, fps, width, height, tempDirRel,
+      durationTime, durationFramesIn, reactVideo, fps, width, height, tempDirMaybeRel,
     });
 
     assert(durationFrames > 0);
@@ -266,12 +267,12 @@ function Editor({
     durationTime,
 
     reactVideo,
-    tempDir: tempDirRel = 'reactive-video-tmp',
+    tempDir: tempDirMaybeRel = 'reactive-video-tmp',
   }) {
     const {
       durationFrames, distPath, userEntryPath,
     } = await processOptions({
-      durationTime, durationFramesIn, reactVideo, fps, width, height, tempDirRel,
+      durationTime, durationFramesIn, reactVideo, fps, width, height, tempDirMaybeRel,
     });
 
     const reactIndexPath = join(__dirname, 'react', 'previewEntry.js');
