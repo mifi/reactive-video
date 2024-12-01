@@ -1,10 +1,10 @@
-import fileUrl from 'file-url';
 import puppeteer, { Browser, BrowserContext, CDPSession, Page } from 'puppeteer-core';
 import { join } from 'node:path';
 import pTimeout from 'p-timeout';
 import workerpool from 'workerpool';
 import { mkdir } from 'node:fs/promises';
 import { ExecaChildProcess } from 'execa';
+import { pathToFileURL } from 'node:url';
 
 import { CaptureMethod, FFmpegStreamFormat, PuppeteerCaptureFormat, VideoComponentType } from 'reactive-video/dist/types.js';
 import type { SetupReact, RenderFrameFn, AwaitDomRenderSettled, HaveFontsLoaded } from './react/puppeteerEntry.js';
@@ -210,7 +210,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
     // await page.setViewport({ width, height, deviceScaleFactor: 1 });
 
     // await page.goto(`http://localhost:${port}/index.html`);
-    await page.goto(fileUrl(join(distPath, 'index.html')));
+    await page.goto(pathToFileURL(join(distPath, 'index.html')).toString());
 
     if (await page.evaluate(() => !window.setupReact)) {
       throw new Error('React webpage failed to initialize');

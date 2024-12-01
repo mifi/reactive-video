@@ -1873,8 +1873,6 @@ __metadata:
     express: "npm:^4.17.1"
     express-async-handler: "npm:^1.1.4"
     express-basic-auth: "npm:^1.2.0"
-    file-uri-to-path: "npm:^2.0.0"
-    file-url: "npm:^3.0.0"
     get-port: "npm:^5.1.1"
     json-stable-stringify: "npm:^1.0.1"
     json5: "npm:^2.2.0"
@@ -5259,20 +5257,6 @@ __metadata:
   dependencies:
     flat-cache: "npm:^3.0.4"
   checksum: 099bb9d4ab332cb93c48b14807a6918a1da87c45dce91d4b61fd40e6505d56d0697da060cb901c729c90487067d93c9243f5da3dc9c41f0358483bfdebca736b
-  languageName: node
-  linkType: hard
-
-"file-uri-to-path@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "file-uri-to-path@npm:2.0.0"
-  checksum: 604c269718708a87e4014c537613b2216192f4e56096fb9f63817b4117760234371ea79a23747fd7f7dbbbb7e4ea7322242bcce5a875f5e39f977a19f123d4d4
-  languageName: node
-  linkType: hard
-
-"file-url@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "file-url@npm:3.0.0"
-  checksum: f15c1bdd81df1a09238f3411f877274d7849703df837ec327c4d1df631314f60036cb700a59d826d8c96b79ff66429d3c758480005e1899c00961541b98d5bfe
   languageName: node
   linkType: hard
 
