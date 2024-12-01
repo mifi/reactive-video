@@ -63,7 +63,9 @@ jobs:
           cd ${{ github.workspace }}
           wget -O chrome-mac-x64.zip https://storage.googleapis.com/chrome-for-testing-public/${{ env.CHROME_BUILD_NUMBER }}/mac-x64/chrome-mac-x64.zip
           unzip chrome-mac-x64.zip
-          mv 'chrome-mac-x64/Google Chrome for Testing.app' browser/mac_arm-${{ env.CHROME_BUILD_NUMBER }}/chrome-mac-arm64/
+          export DEST=browser/mac_arm-${{ env.CHROME_BUILD_NUMBER }}/chrome-mac-arm64
+          mkdir "$DEST"
+          mv 'chrome-mac-x64/Google Chrome for Testing.app' "$DEST"/
       - if: runner.os != 'macOS'
         run: npx @puppeteer/browsers install chrome@${{ env.CHROME_BUILD_NUMBER }} --path ${{ github.workspace }}/browser
 
