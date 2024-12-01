@@ -3,8 +3,8 @@ import { join } from 'node:path';
 import pTimeout from 'p-timeout';
 import workerpool from 'workerpool';
 import { mkdir } from 'node:fs/promises';
-import { ExecaChildProcess } from 'execa';
 import { pathToFileURL } from 'node:url';
+import { randomBytes } from 'node:crypto';
 
 import { CaptureMethod, FFmpegStreamFormat, PuppeteerCaptureFormat, VideoComponentType } from 'reactive-video/dist/types.js';
 import type { SetupReact, RenderFrameFn, AwaitDomRenderSettled, HaveFontsLoaded } from './react/puppeteerEntry.js';
@@ -72,7 +72,8 @@ async function createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs,
 }) {
   const extensionId = 'jjndjgheafjngoipoacpjgeicjeomjli';
 
-  const userDataDir = join(tempDir, 'puppeteer_dev_chrome_profile-');
+  // https://github.com/puppeteer/puppeteer/issues/10517
+  const userDataDir = join(tempDir, `puppeteer_dev_chrome_profile-${randomBytes(10).toString('hex')}-`);
   await mkdir(userDataDir, { recursive: true });
 
   const browser = await puppeteer.launch({
@@ -83,6 +84,9 @@ async function createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs,
     ignoreDefaultArgs: ['--disable-dev-shm-usage'],
 
     args: [
+      // https://stackoverflow.com/a/52070244/6519037
+      '--incognito',
+
       ...(captureMethod === 'extension' ? [
         `--load-extension=${extensionPath}`,
         `--disable-extensions-except=${extensionPath}`,
@@ -117,7 +121,7 @@ async function createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs,
     // defaultViewport: null,
   });
 
-  const context = await browser.createIncognitoBrowserContext();
+  const context = await browser.createBrowserContext();
 
   return {
     browser,
@@ -263,7 +267,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
     throw lastErr;
   }
 
-  let outProcess: ExecaChildProcess<Buffer> | undefined;
+  let outProcess: ReturnType<typeof createOutputFfmpeg> | undefined;
 
   try {
     const outPath = join(tempDir, `part ${partNum}-${partStart}-${partEnd}.mkv`);
@@ -363,7 +367,9 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
     await outProcess;
     return outPath;
   } catch (err) {
-    if (outProcess) outProcess.kill();
+    // Don't kill, because execa will cleanup when the worker exits
+    // and there seems to be a bug where it crashes on Windows if we kill it here
+    // if (outProcess) outProcess.kill();
     logger.error(`Caught error at frame ${frameNum}, part ${partNum} (${partStart})`, err);
     throw err;
   } finally {

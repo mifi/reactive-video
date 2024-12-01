@@ -1,5 +1,5 @@
 import stringify from 'json-stable-stringify';
-import execa, { ExecaChildProcess } from 'execa';
+import { execa, ResultPromise } from 'execa';
 // @ts-expect-error todo
 import pngSplitStream from 'png-split-stream';
 import binarySplit from 'binary-split';
@@ -13,7 +13,11 @@ import { uriifyPath } from './util.js';
 import type { Logger } from './index.js';
 
 const videoProcesses: Record<string, {
-  process?: ExecaChildProcess<Buffer>,
+  process?: ResultPromise<{
+    encoding: 'buffer',
+    buffer: false,
+    stderr: 'ignore',
+  }> | undefined,
   time?: number,
   busy?: boolean,
   readNextFrame?: () => Promise<{ buffer: Buffer } | { stream: Readable | undefined }>,
@@ -78,7 +82,7 @@ function createFfmpeg({ ffmpegPath, cutFrom, fps, uri: uriOrPath, width, height,
 
   // console.log(args.join(' '));
 
-  return execa(ffmpegPath, args, { encoding: null, buffer: false, stderr: 'ignore' });
+  return execa(ffmpegPath, args, { encoding: 'buffer', buffer: false, stderr: 'ignore' });
 }
 
 async function cleanupProcess(key: string) {
@@ -92,7 +96,11 @@ async function cleanupProcess(key: string) {
 }
 
 function createFrameReader({ process, ffmpegStreamFormat, width, height }: {
-  process: ExecaChildProcess<Buffer>,
+  process: ResultPromise<{
+    encoding: 'buffer',
+    buffer: false,
+    stderr: 'ignore',
+  }>,
   ffmpegStreamFormat: FFmpegStreamFormat,
   width: number,
   height: number,
@@ -167,7 +175,11 @@ export async function readFrame({ params, ffmpegPath, logger }: {
   ffmpegPath: string,
   logger: Logger,
 }) {
-  let process: ExecaChildProcess<Buffer> | undefined;
+  let process: ResultPromise<{
+    encoding: 'buffer',
+    buffer: false,
+    stderr: 'ignore',
+  }> | undefined;
 
   const { fps, uri, width, height, scale, fileFps, time = 0, streamIndex, ffmpegStreamFormat, jpegQuality } = params;
 

@@ -37,7 +37,7 @@ export async function edit(editor: ReturnType<typeof Editor>, opts: Parameters<R
   });
 }
 
-const chromeBuildId = '117.0.5938.149';
+const chromeBuildId = '131.0.6778.85';
 
 const browserExePath = computeExecutablePath({ cacheDir: './browser', browser: Browser.CHROME, buildId: chromeBuildId });
 

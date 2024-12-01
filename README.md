@@ -78,10 +78,21 @@ export default () => {
 
 ### Download Chrome
 
-You need to have installed Chrome/Chromium. Currently Chrome buildId 117.0.5938.149 is supported/tested. You can download the correct Chrome build to the directory `browser` (in the current directory):
+You need to have installed Chrome/Chromium. Each version of Puppeteer is [paired](https://pptr.dev/faq#q-why-doesnt-puppeteer-vxxx-work-with-chromium-vyyy) with a specific version of Chrome for Testing. Currently Chrome buildId 131.0.6778.85 is supported/tested. You can download the correct Chrome build to the directory `browser` (in the current directory):
 ```bash
-npx @puppeteer/browsers install chrome@117.0.5938.149 --path /absolute/path/to/browser/dir
+yarn dlx @puppeteer/browsers install chrome@131.0.6778.85 --path /absolute/path/to/browser/dir
 ```
+
+#### Linux ARM64
+
+Chrome for Testing [doesn't provide builds](https://github.com/GoogleChromeLabs/chrome-for-testing/issues/1) for Linux ARM64. However Playwright has Chromium builds for Linux ARM64, which [can be used](https://github.com/puppeteer/puppeteer/issues/7740#issuecomment-1833202428) with `puppeteer-core`.
+
+Steps to download Chromium:
+
+1. Find the version of `puppeteer-core` used by `reactive-video`.
+1. Find the *Chrome for Testing* version that our `puppeteer-core` version uses [here](https://pptr.dev/supported-browsers) (see also: https://github.com/puppeteer/puppeteer/blob/ddbb43cd09ccf8c4b3087960f8d2b20a385a8ec8/packages/puppeteer-core/src/revisions.ts).
+- Find the Playwright `revision` field of `chromium` based on `browserVersion` (Chrome) by going back in git history in [browsers.json](https://github.com/microsoft/playwright/blob/3b16bbd04a5051688979d99178e030d76576df56/packages/playwright-core/browsers.json).
+- Then put the `revision` into the URL to download: `wget https://playwright.azureedge.net/builds/chromium/$REVISION/chromium-linux-arm64.zip`
 
 ### Shell
 
@@ -118,7 +129,7 @@ import Editor from '@reactive-video/builder';
 import { computeExecutablePath } from '@puppeteer/browsers';
 
 // remember to download it first
-const browserExePath = computeExecutablePath({ cacheDir: './browser', browser: 'chrome', buildId: '117.0.5938.149' });
+const browserExePath = computeExecutablePath({ cacheDir: './browser', browser: 'chrome', buildId: '131.0.6778.85' });
 
 const editor = Editor({
   ffmpegPath: 'ffmpeg',
