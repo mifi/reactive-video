@@ -58,13 +58,13 @@ jobs:
 
       - run: yarn
 
-      - if: runner.os == 'macos-13'
+      - if: runner.os == 'macOS'
         run: |
           cd ${{ github.workspace }}
           wget -O chrome-mac-x64.zip https://storage.googleapis.com/chrome-for-testing-public/${{ env.CHROME_BUILD_NUMBER }}/mac-x64/chrome-mac-x64.zip
           unzip chrome-mac-x64.zip
           mv 'chrome-mac-x64/Google Chrome for Testing.app' browser/mac_arm-${{ env.CHROME_BUILD_NUMBER }}/chrome-mac-arm64/
-      - if: runner.os != 'macos-13'
+      - if: runner.os != 'macOS'
         run: npx @puppeteer/browsers install chrome@${{ env.CHROME_BUILD_NUMBER }} --path ${{ github.workspace }}/browser
 
       - run: yarn tsc
