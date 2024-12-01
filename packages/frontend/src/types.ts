@@ -6,17 +6,20 @@ export type CaptureMethod = 'screencast' | 'screenshot' | 'extension';
 
 export type FFmpegStreamFormat = 'raw' | 'jpeg' | 'png';
 
-export interface FFmpegParams {
-  fps: number;
-  uri: string;
-  width: number;
-  height: number;
-  fileFps: number;
-  scale: boolean;
-  time: number;
-  streamIndex: number;
-  ffmpegStreamFormat: FFmpegStreamFormat;
+export interface FfmpegBaseParams {
+  fps: number,
+  fileFps: number,
+  uri: string,
+  width: number,
+  height: number,
+  scale: boolean,
+  streamIndex: number,
+  ffmpegStreamFormat: FFmpegStreamFormat,
   jpegQuality?: number | undefined;
+}
+
+export interface FFmpegParams extends FfmpegBaseParams {
+  time: number;
 }
 
 export interface API {

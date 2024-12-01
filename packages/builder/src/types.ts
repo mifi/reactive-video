@@ -1,6 +1,6 @@
 import { FFmpegStreamFormat } from 'reactive-video/dist/types.js';
 
-export interface ReadFrameParams {
+export interface CreateFfmpegParams {
   fps: number,
   fileFps: number,
   uri: string,

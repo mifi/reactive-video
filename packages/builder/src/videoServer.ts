@@ -6,11 +6,10 @@ import binarySplit from 'binary-split';
 import { Readable } from 'node:stream';
 import assert from 'node:assert';
 
-import { FFmpegStreamFormat } from 'reactive-video/dist/types.js';
+import { FfmpegBaseParams, FFmpegParams, FFmpegStreamFormat } from 'reactive-video/dist/types.js';
 
 import createSplitter from './splitStream.js';
 import { uriifyPath } from './util.js';
-import { ReadFrameParams } from './types.js';
 import type { Logger } from './index.js';
 
 const videoProcesses: Record<string, {
@@ -20,7 +19,7 @@ const videoProcesses: Record<string, {
   readNextFrame?: () => Promise<{ buffer: Buffer } | { stream: Readable | undefined }>,
 }> = {};
 
-function createFfmpeg({ ffmpegPath, fps, uri: uriOrPath, width, height, scale, fileFps, cutFrom, streamIndex, ffmpegStreamFormat, jpegQuality }: ReadFrameParams & {
+function createFfmpeg({ ffmpegPath, cutFrom, fps, uri: uriOrPath, width, height, scale, fileFps, streamIndex, ffmpegStreamFormat, jpegQuality }: FfmpegBaseParams & {
   ffmpegPath: string,
   cutFrom: number,
 }) {
@@ -164,7 +163,7 @@ function createFrameReader({ process, ffmpegStreamFormat, width, height }: {
 }
 
 export async function readFrame({ params, ffmpegPath, logger }: {
-  params: ReadFrameParams & { time?: number },
+  params: FFmpegParams,
   ffmpegPath: string,
   logger: Logger,
 }) {
