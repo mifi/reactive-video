@@ -51,6 +51,7 @@ export default async function serve({ logger, ffmpegPath, ffprobePath, serveStat
 
   app.get('/api/frame', asyncHandler(async (req, res) => {
     try {
+      // todo type check this
       const params = Object.fromEntries(Object.entries(req.query).map(([key, val]) => {
         if (['fps', 'width', 'height', 'fileFps', 'time', 'streamIndex', 'renderId', 'jpegQuality'].includes(key)) return [key, val != null && typeof val === 'string' ? parseFloat(val) : undefined];
         if (key === 'scale') return [key, val === 'true'];
@@ -81,6 +82,7 @@ export default async function serve({ logger, ffmpegPath, ffprobePath, serveStat
   }));
 
   app.post('/api/read-video-metadata', asyncHandler(async (req, res) => {
+    // todo type check body
     const uri = uriifyPath(req.body.path);
     try {
       await stat(uri);

@@ -1,5 +1,10 @@
 import { API, FFmpegParams } from './types';
 
+export interface ReadMetadataParams {
+  path: string,
+  streamIndex: number,
+}
+
 export default ({ serverPort, renderId, secret }: {
   serverPort: number,
   renderId?: number,
@@ -44,7 +49,7 @@ export default ({ serverPort, renderId, secret }: {
   }
 
   async function readVideoMetadata({ path, streamIndex }: { path: string, streamIndex: number }) {
-    return request('/api/read-video-metadata', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path, streamIndex }) });
+    return request('/api/read-video-metadata', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path, streamIndex } satisfies ReadMetadataParams) });
   }
 
   function getProxiedAssetUrl(uri: string) {
