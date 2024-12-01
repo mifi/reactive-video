@@ -3,7 +3,6 @@ import { join } from 'node:path';
 import pTimeout from 'p-timeout';
 import workerpool from 'workerpool';
 import { mkdir } from 'node:fs/promises';
-import { ExecaChildProcess } from 'execa';
 import { pathToFileURL } from 'node:url';
 
 import { CaptureMethod, FFmpegStreamFormat, PuppeteerCaptureFormat, VideoComponentType } from 'reactive-video/dist/types.js';
@@ -263,7 +262,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
     throw lastErr;
   }
 
-  let outProcess: ExecaChildProcess<Buffer> | undefined;
+  let outProcess: ReturnType<typeof createOutputFfmpeg> | undefined;
 
   try {
     const outPath = join(tempDir, `part ${partNum}-${partStart}-${partEnd}.mkv`);

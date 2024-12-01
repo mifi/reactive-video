@@ -1,5 +1,5 @@
 import { writeFile } from 'node:fs/promises';
-import execa from 'execa';
+import { execa } from 'execa';
 
 export const getCodecArgs = ({ remuxOnly }: { remuxOnly: boolean }) => (remuxOnly ? [
   '-c', 'copy',
@@ -57,6 +57,6 @@ export function createOutputFfmpeg({ puppeteerCaptureFormat, customOutputFfmpegA
 
     '-y', outPath,
   ], {
-    encoding: null, buffer: false, stdin: 'pipe', stdout: log ? process.stdout : 'ignore', stderr: log ? process.stderr : 'ignore',
+    encoding: 'buffer', buffer: false, stdin: 'pipe', stdout: log ? process.stdout : 'ignore', stderr: log ? process.stderr : 'ignore',
   });
 }

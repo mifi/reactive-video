@@ -57,6 +57,7 @@ jobs:
       - run: yarn dlx @puppeteer/browsers install chrome@${{ env.CHROME_BUILD_NUMBER }} --path ${{ github.workspace }}/browser
   
       - run: yarn
+      - run: yarn dedupe --check
       - run: yarn tsc
       - run: yarn test
       - run: yarn lint

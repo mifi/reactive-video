@@ -52,7 +52,7 @@
     "eslint-plugin-react": "^7.28.0",
     "eslint-plugin-react-hooks": "^4.3.0",
     "eslint-plugin-unicorn": "^51.0.1",
-    "execa": "5",
+    "execa": "^9.5.1",
     "jest-image-snapshot": "^6.4.0",
     "rimraf": "^5.0.5",
     "sharp": "^0.30.3",
