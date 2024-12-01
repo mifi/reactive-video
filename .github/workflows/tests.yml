@@ -15,8 +15,8 @@ jobs:
     strategy:
       matrix:
         # https://github.com/federicocarboni/setup-ffmpeg/issues/21
-#        os: [macos-13, ubuntu-latest, windows-latest]
-        os: [macos-13]
+        os: [macos-13, ubuntu-latest, windows-latest]
+#        os: [macos-13]
 
     runs-on: ${{ matrix.os }}
 
