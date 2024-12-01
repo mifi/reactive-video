@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import workerpool from 'workerpool';
 
 import type { RenderPartParams, WorkerEvent, WorkerProgress } from './poolWorker.js';
-import { srcDir, type Logger } from './index.js';
+import { type Logger } from './index.js';
 
 export default async ({ concurrency, captureMethod, headless, extraPuppeteerArgs, customOutputFfmpegArgs, numRetries, logger, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, enablePerFrameLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout, browserExePath, keepBrowserRunning }: RenderPartParams & {
   concurrency: number,
@@ -13,7 +13,7 @@ export default async ({ concurrency, captureMethod, headless, extraPuppeteerArgs
   logger: Logger,
 }) => {
   const workerType = 'process';
-  const pool = workerpool.pool(join(srcDir, 'poolWorker.js'), { maxWorkers: concurrency, minWorkers: concurrency, maxQueueSize: 0, workerType });
+  const pool = workerpool.pool(join(__dirname, 'poolWorker.js'), { maxWorkers: concurrency, minWorkers: concurrency, maxQueueSize: 0, workerType });
 
   function renderPart({ partNum, partStart, partEnd, onProgress }: {
     partNum: number,

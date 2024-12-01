@@ -5,9 +5,8 @@ import { createRequire } from 'node:module';
 
 import { ReactVideoInitData } from './react/previewEntry';
 
-export function createBundler({ entryPath, reactiveVideoPath, userEntryPath, outDir, mode, entryOutName = 'index.js', initData }: {
+export function createBundler({ entryPath, userEntryPath, outDir, mode, entryOutName = 'index.js', initData }: {
   entryPath: string,
-  reactiveVideoPath: string,
   userEntryPath: string,
   outDir: string,
   mode: NonNullable<Configuration['mode']>,
@@ -29,7 +28,7 @@ export function createBundler({ entryPath, reactiveVideoPath, userEntryPath, out
     resolve: {
       extensions: ['.jsx', '.js', '.ts', '.tsx'],
       alias: {
-        'reactive-video': reactiveVideoPath,
+        'reactive-video': require.resolve('reactive-video'),
         // needed for react 17 automatic runtime. Must be before `react`:
         'react/jsx-runtime': require.resolve('react/jsx-runtime'),
         'react/jsx-dev-runtime': require.resolve('react/jsx-dev-runtime'),

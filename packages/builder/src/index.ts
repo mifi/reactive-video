@@ -5,7 +5,6 @@ import os from 'node:os';
 import getPort from 'get-port';
 import { Compiler, Watching } from 'webpack';
 import { fileURLToPath } from 'node:url';
-import { createRequire } from 'node:module';
 
 import { PuppeteerCaptureFormat, CaptureMethod, FFmpegStreamFormat, VideoComponentType } from 'reactive-video/dist/types.js';
 
@@ -21,11 +20,8 @@ import { ReactVideoInitData } from './react/previewEntry.js';
 // eslint-disable-next-line no-underscore-dangle
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// in dev we need to build first to dist, in prod we are in dist already:
-export const srcDir = __dirname.endsWith('dist') ? __dirname : join(__dirname, '..', 'dist');
-
-const require = createRequire(import.meta.url);
-const reactiveVideoPath = __dirname.endsWith('dist') ? require.resolve('reactive-video') : join(__dirname, '..', '..', 'frontend', 'dist', 'index.js');
+const reactHtmlBasePath = join(__dirname, '..');
+const reactIndexJsBasePath = join(__dirname, 'react');
 
 function splitIntoParts({ startFrame, durationFrames, concurrency }: {
   startFrame: number,
@@ -236,11 +232,11 @@ export default function Editor({
 
     const finalOutPath = desiredOutPath || defaultOutPath;
 
-    const reactIndexPath = join(srcDir, 'react', 'puppeteerEntry.js');
+    const reactIndexPath = join(reactIndexJsBasePath, 'puppeteerEntry.js');
     const reactHtmlDistName = 'index.html';
-    const reactHtmlPath = join(__dirname, reactHtmlDistName);
+    const reactHtmlPath = join(reactHtmlBasePath, reactHtmlDistName);
 
-    const bundler = createBundler({ entryPath: reactIndexPath, reactiveVideoPath, userEntryPath, outDir: distPath, mode: bundleMode });
+    const bundler = createBundler({ entryPath: reactIndexPath, userEntryPath, outDir: distPath, mode: bundleMode });
 
     let stopServer: (() => Promise<void>) | undefined;
     let watcher;
@@ -369,14 +365,14 @@ export default function Editor({
       durationTime, durationFramesIn, reactVideo, fps, width, height, tempDirMaybeRel,
     });
 
-    const reactIndexPath = join(__dirname, 'react', 'previewEntry.js');
+    const reactIndexPath = join(reactIndexJsBasePath, 'previewEntry.js');
     const reactHtmlDistName = 'preview.html';
-    const reactHtmlPath = join(__dirname, reactHtmlDistName);
+    const reactHtmlPath = join(reactHtmlBasePath, reactHtmlDistName);
 
     const secret = await generateSecret();
 
     const initData: ReactVideoInitData = { width, height, fps, serverPort: port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret };
-    const bundler = createBundler({ entryPath: reactIndexPath, reactiveVideoPath, userEntryPath, outDir: distPath, mode: bundleMode, entryOutName: 'preview.js', initData });
+    const bundler = createBundler({ entryPath: reactIndexPath, userEntryPath, outDir: distPath, mode: bundleMode, entryOutName: 'preview.js', initData });
 
     logger.log('Compiling Reactive Video Javascript');
     const watcher = await startBundler({ bundler, reactHtmlPath, reactHtmlDistName, distPath });

@@ -9,7 +9,9 @@
     "reactive-video": "dist/cli.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "index.html",
+    "preview.html"
   ],
   "type": "module",
   "engines": {
