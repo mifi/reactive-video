@@ -1,3 +1,4 @@
+// eslint-disable-line unicorn/filename-case
 import React, { useRef } from 'react';
 
 import { useVideo } from '../contexts';
@@ -10,7 +11,7 @@ const HTML5Video = (props: React.DetailedHTMLProps<React.VideoHTMLAttributes<HTM
 
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  useAsyncRenderer(async () => new Promise((resolve: (a: void) => void, reject: (a: Error) => void) => {
+  useAsyncRenderer(async () => new Promise<void>((resolve, reject) => {
     // It seems that if currentTime just a tiny fraction lower than the desired frame start time, HTML5 video will instead seek to the previous frame. So we add a bit of the frame duration
     // See also FFmpegVideo backend
     const frameDuration = 1 / fps;

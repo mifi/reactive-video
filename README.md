@@ -114,9 +114,11 @@ npm i --save @reactive-video/builder
 
 Create `index.js`:
 ```js
-const Editor = require('@reactive-video/builder');
+import Editor from '@reactive-video/builder';
+import { computeExecutablePath } from '@puppeteer/browsers';
 
-const browserExePath = require('@puppeteer/browsers').computeExecutablePath({ cacheDir: './browser', browser: 'chrome', buildId: '117.0.5938.149' }); // remember to download it first
+// remember to download it first
+const browserExePath = computeExecutablePath({ cacheDir: './browser', browser: 'chrome', buildId: '117.0.5938.149' });
 
 const editor = Editor({
   ffmpegPath: 'ffmpeg',
@@ -171,7 +173,7 @@ Data can be passed from Node.js to React via `userData`, which will become avail
 ### `Editor.edit` / `Editor.preview`
 
 ```js
-const Editor = require('@reactive-video/builder');
+import Editor from '@reactive-video/builder';
 
 const { edit, preview } = Editor({ ffmpegPath, ffprobePath });
 ```
@@ -183,7 +185,8 @@ See [editor.js edit and preview](packages/builder/index.js) for options.
 Useful to read an input video's parameters and use it for your video, for instance if you want to render something on top of an existing video. Returns `durationTime`. If `countFrames` is `true`, returns also `durationFrames`, which is more accurate, but slower. Example:
 
 ```js
-const { pathToFileURL } = require('url');
+import { pathToFileURL } from 'url';
+
 const inputVideoPath = '/path/to/input-video.mp4';
 
 const { edit, readVideoMetadata } = Editor();
@@ -248,7 +251,7 @@ Works the same as HTML `<iframe>`. Waits for data to load.
 
 ### `src` attribute
 
-`src` must be a full, absolute `file://` or `http(s)://` URI (e.g. `file:///Users/me/video.webm` or `https://example.com/image.jpeg`). Note the three slashes for local files! **Tip:** In Node.js you can use `require('url').pathToFileURL` to convert local (also relative) paths to `file://` URIs. See example above.
+`src` must be a full, absolute `file://` or `http(s)://` URI (e.g. `file:///Users/me/video.webm` or `https://example.com/image.jpeg`). Note the three slashes for local files! **Tip:** In Node.js you can use `url.pathToFileURL` to convert local (also relative) paths to `file://` URIs. See example above.
 
 ### useVideo
 

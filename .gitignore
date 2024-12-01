@@ -11,3 +11,5 @@ reactive-video-tmp
 node_modules
 examples2
 /browser
+
+tsconfig.tsbuildinfo

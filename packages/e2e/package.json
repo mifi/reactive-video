@@ -1,0 +1,14 @@
+{
+  "name": "@reactive-video/e2e",
+  "description": "End-to-end tests for Reactive Video",
+  "version": "0.0.0",
+  "dependencies": {
+    "@reactive-video/builder": "workspace:^",
+    "execa": "*",
+    "reactive-video": "workspace:^",
+    "vitest": "*"
+  },
+  "peerDependencies": {
+    "react": "18"
+  }
+}

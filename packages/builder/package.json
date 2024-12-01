@@ -1,18 +1,19 @@
 {
   "name": "@reactive-video/builder",
   "version": "3.1.1",
-  "main": "src/index.js",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "default": "./dist/index.js"
+  },
   "bin": {
-    "reactive-video": "cli.js"
+    "reactive-video": "dist/cli.js"
   },
   "files": [
-    "cli.js",
-    "src",
-    "dist/**/*.ts"
+    "dist"
   ],
-  "types": "dist/index.d.ts",
+  "type": "module",
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   },
   "license": "GPL-3.0-only",
   "description": "Create videos using React!",
@@ -22,9 +23,7 @@
     "url": "git+https://github.com/mifi/reactive-video.git"
   },
   "scripts": {
-    "tsc": "tsc",
-    "clean": "rimraf dist",
-    "prepack": "yarn clean && yarn tsc"
+    "clean": "rimraf dist"
   },
   "dependencies": {
     "@babel/core": "^7.23.0",
@@ -42,19 +41,17 @@
     "express-basic-auth": "^1.2.0",
     "file-uri-to-path": "^2.0.0",
     "file-url": "^3.0.0",
-    "fs-extra": "^10.0.0",
     "get-port": "^5.1.1",
     "json-stable-stringify": "^1.0.1",
     "json5": "^2.2.0",
-    "lodash": "^4.17.21",
     "meow": "9",
     "morgan": "^1.10.0",
     "p-map": "4",
     "p-timeout": "4",
     "png-split-stream": "^1.0.1",
     "puppeteer-core": "^21.3.8",
-    "react": "17",
-    "react-dom": "17",
+    "react": "18",
+    "react-dom": "18",
     "reactive-video": "3",
     "style-loader": "^2.0.0",
     "webpack": "^5.88.2",
@@ -70,6 +67,8 @@
   "devDependencies": {
     "@tsconfig/node18": "^18.2.2",
     "@types/jest-image-snapshot": "^6.2.2",
+    "@types/react": "18",
+    "@types/react-dom": "18",
     "rimraf": "*",
     "typescript": "*"
   }

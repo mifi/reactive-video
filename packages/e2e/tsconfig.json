@@ -1,13 +1,11 @@
 {
   "extends": ["@tsconfig/strictest", "@tsconfig/node18/tsconfig.json"],
   "include": [
-    "src/**/*"
+    "src/**/*",
   ],
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist",
-    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
-    "composite": true,
     "allowJs": false,
     "checkJs": false,
 
@@ -25,7 +23,13 @@
     "paths": {
       "reactive-video/dist/*": ["../frontend/src/*"],
       "reactive-video": ["../frontend/src/index.ts"],
+      "@reactive-video/builder/dist/*": ["../builder/src/*"],
+      "@reactive-video/builder": ["../builder/src/index.ts"],
     }
   },
-  "references": [{ "path": "../frontend" }]
+  "references": [
+    { "path": "../frontend" },
+    { "path": "../builder" }
+  ],
+  "files": ["custom.d.ts"]
 }

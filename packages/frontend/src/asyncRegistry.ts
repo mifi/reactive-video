@@ -2,13 +2,13 @@ import { useEffect } from 'react';
 
 import { useVideo } from './contexts';
 
-const framesDone = new Set<number>();
+const framesDone = new Set<number | null>();
 
 type ComponentName = string
 
 let promises: Promise<{ component: ComponentName, currentFrame: number } | undefined>[] = [];
 
-export async function awaitAsyncRenders(frameNumber: number) {
+export async function awaitAsyncRenders(frameNumber: number | null) {
   // console.log('awaitAsyncRenders', promises.length)
   if (framesDone.has(frameNumber)) throw new Error(`Tried to awaitAsyncRenders already done frame ${frameNumber}`);
   try {
@@ -20,7 +20,7 @@ export async function awaitAsyncRenders(frameNumber: number) {
 }
 
 export function useAsyncRenderer(
-  fn: (a: void) => Promise<void> | [(a2: void) => Promise<void>, ((a2: void) => void)],
+  fn: () => Promise<void> | [() => Promise<void>, (() => void)],
   deps: unknown[],
   component: ComponentName,
 ) {

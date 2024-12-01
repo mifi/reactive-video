@@ -66,9 +66,9 @@ const FFmpegVideo = ({ src, scaleToWidth, scaleToHeight, streamIndex = 0, style,
         }
         const cached = videoMetaCache.current[cacheKey];
 
-        if (!width) width = cached.width;
-        if (!height) height = cached.height;
-        const fileFps = cached.fps;
+        if (!width) width = cached!.width;
+        if (!height) height = cached!.height;
+        const fileFps = cached!.fps;
 
         const ffmpegParams = { fps, uri: src, width, height, fileFps, scale, time: currentTime, streamIndex, ffmpegStreamFormat, jpegQuality };
 

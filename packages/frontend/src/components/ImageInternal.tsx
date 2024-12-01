@@ -7,7 +7,7 @@ export type ImageProps = React.DetailedHTMLProps<React.ImgHTMLAttributes<HTMLIma
 
 const ImageInternal = ({ src, _originalSrc, onError, onLoad, ...rest }: ImageProps & { _originalSrc: string }) => {
   const errorRef = useRef<(a: Error) => void>();
-  const loadRef = useRef<(a: void) => void>();
+  const loadRef = useRef<() => void>();
 
   const handleLoad: React.ReactEventHandler<HTMLImageElement> = (...args) => {
     if (loadRef.current) loadRef.current();
@@ -19,7 +19,7 @@ const ImageInternal = ({ src, _originalSrc, onError, onLoad, ...rest }: ImagePro
     onError?.(...args);
   };
 
-  useAsyncRenderer(async () => new Promise((resolve: (a: void) => void, reject: (a: Error) => void) => {
+  useAsyncRenderer(async () => new Promise<void>((resolve, reject) => {
     errorRef.current = reject;
     loadRef.current = resolve;
   }), [src], 'ImageInternal');

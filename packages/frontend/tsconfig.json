@@ -1,11 +1,25 @@
 {
-  "extends": "@tsconfig/vite-react/tsconfig.json",
+  "extends": ["@tsconfig/strictest"],
   "include": [
     "src/**/*"
   ],
   "compilerOptions": {
+    "rootDir": "src",
     "outDir": "dist",
-    "noEmit": false,
-    "declaration": true,
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
+    "composite": true,
+    "allowJs": false,
+    "checkJs": false,
+
+    // taken from @tsconfig/vite-react
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+
+    /* Bundler mode */
+    "moduleResolution": "Bundler",
+    "moduleDetection": "force",
+    "jsx": "react-jsx",
   }
 }

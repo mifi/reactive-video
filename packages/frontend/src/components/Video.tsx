@@ -6,7 +6,7 @@ type RestProps = React.DetailedHTMLProps<React.CanvasHTMLAttributes<HTMLCanvasEl
 & React.DetailedHTMLProps<React.ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>
 & React.DetailedHTMLProps<React.VideoHTMLAttributes<HTMLVideoElement>, HTMLVideoElement>;
 
-const Video = ({ src, htmlSrc, ...rest }: RestProps & { htmlSrc?: string }) => {
+const Video = ({ src, htmlSrc, ...rest }: RestProps & { htmlSrc?: string, scaleToWidth?: number, scaleToHeight?: number }) => {
   const { videoComponentType, isPuppeteer, getProxiedAssetUrl } = useVideo();
 
   if (videoComponentType === 'html') {

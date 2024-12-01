@@ -6,7 +6,7 @@ const IFrame = (props: React.DetailedHTMLProps<React.IframeHTMLAttributes<HTMLIF
   const { src, onError, onLoad } = props;
 
   const errorRef = useRef<(a: Error) => void>();
-  const loadRef = useRef<(a: void) => void>();
+  const loadRef = useRef<() => void>();
 
   const handleLoad: React.ReactEventHandler<HTMLIFrameElement> = (...args) => {
     if (loadRef.current) loadRef.current();
@@ -18,7 +18,7 @@ const IFrame = (props: React.DetailedHTMLProps<React.IframeHTMLAttributes<HTMLIF
     onError?.(...args);
   };
 
-  useAsyncRenderer(async () => new Promise((resolve: (a: void) => void, reject: (a: Error) => void) => {
+  useAsyncRenderer(async () => new Promise<void>((resolve, reject) => {
     errorRef.current = reject;
     loadRef.current = resolve;
   }), [src], 'IFrame');

@@ -1,55 +1,64 @@
 {
   "name": "reactive-video-root",
   "version": "1.0.5",
-  "main": "index.js",
-  "bin": "cli.js",
   "license": "GPL-3.0-only",
   "private": true,
   "description": "Create videos using React!",
   "author": "Mikael Finstad <finstaden@gmail.com>",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mifi/reactive-video.git"
   },
   "scripts": {
-    "test": "cross-env NODE_OPTIONS='--experimental-vm-modules' jest --verbose",
-    "tsc": "yarn workspaces foreach -pW run tsc",
+    "test": "vitest",
+    "clean": "yarn workspaces foreach -pW run clean",
+    "tsc": "tsc -b",
     "lint": "eslint .",
-    "watch": "yarn workspace reactive-video watch",
+    "watch": "tsc -b -w",
     "version:frontend": "cd packages/frontend && mkdir -p .git && npm --tag-version-prefix='reactive-video/v' --workspaces-update=false version",
     "version:builder": "cd packages/builder && mkdir -p .git && npm --tag-version-prefix='@reactive-video/builder/v' --workspaces-update=false version",
-    "pack:frontend": "yarn workspace reactive-video pack",
-    "pack:builder": "yarn workspace @reactive-video/builder pack",
+    "pack:frontend": "yarn tsc && yarn workspace reactive-video pack",
+    "pack:builder": "yarn tsc && yarn workspace @reactive-video/builder pack",
     "publish:frontend": "yarn workspace reactive-video npm publish",
     "publish:builder": "yarn workspace @reactive-video/builder npm publish"
-  },
-  "jest": {
-    "testEnvironment": "node"
   },
   "workspaces": {
     "packages": [
       "packages/builder",
-      "packages/frontend"
+      "packages/frontend",
+      "packages/e2e"
     ]
   },
   "devDependencies": {
-    "@types/jest": "^29.5.5",
-    "@typescript-eslint/eslint-plugin": "^6.9.1",
-    "@typescript-eslint/parser": "^6.9.1",
-    "cross-env": "^7.0.3",
-    "eslint": "^8.52.0",
-    "eslint-config-airbnb": "18.2.1",
-    "eslint-import-resolver-typescript": "^3.6.1",
-    "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-jsx-a11y": "^6.4.1",
-    "eslint-plugin-react": "^7.21.5",
-    "eslint-plugin-react-hooks": "^4.2.0",
+    "@tsconfig/node18": "^18.2.4",
+    "@tsconfig/strictest": "^2.0.5",
+    "@types/binary-split": "^1.0.3",
+    "@types/cookie-parser": "^1.4.8",
+    "@types/debug": "^4.1.12",
+    "@types/eslint-plugin-jsx-a11y": "^6",
+    "@types/express": "4",
+    "@types/json-stable-stringify": "^1.1.0",
+    "@types/morgan": "^1.9.9",
+    "@types/node": "18",
+    "@types/sharp": "0.30.3",
+    "@types/workerpool": "6",
+    "@typescript-eslint/eslint-plugin": "^6.12.0",
+    "@typescript-eslint/parser": "^6.12.0",
+    "eslint": "^8.2.0",
+    "eslint-config-mifi": "^0.0.6",
+    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-jsx-a11y": "^6.5.1",
+    "eslint-plugin-react": "^7.28.0",
+    "eslint-plugin-react-hooks": "^4.3.0",
+    "eslint-plugin-unicorn": "^51.0.1",
     "execa": "5",
-    "jest": "^29.7.0",
-    "jest-image-snapshot": "^4.5.1",
+    "jest-image-snapshot": "^6.4.0",
     "rimraf": "^5.0.5",
     "sharp": "^0.30.3",
-    "typescript": "^5.2.2"
+    "type-fest": "^4.29.0",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.6"
   },
   "packageManager": "yarn@4.0.1"
 }

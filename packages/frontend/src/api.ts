@@ -1,6 +1,10 @@
 import { API, FFmpegParams } from './types';
 
-export default ({ serverPort, renderId, secret }: { serverPort: number, renderId: number, secret: string }): API => {
+export default ({ serverPort, renderId, secret }: {
+  serverPort: number,
+  renderId?: number,
+  secret: string
+}): API => {
   const baseUrl = `http://localhost:${serverPort}`;
 
   async function request(path: string, opts: RequestInit = {}) {
@@ -11,7 +15,8 @@ export default ({ serverPort, renderId, secret }: { serverPort: number, renderId
       return btoa(`${username}:${secret}`);
     }
 
-    const response = await fetch(`${baseUrl}${path}`, {
+    const url = `${baseUrl}${path}`;
+    const response = await fetch(url, {
       ...opts,
       headers: {
         ...headers,
@@ -19,7 +24,7 @@ export default ({ serverPort, renderId, secret }: { serverPort: number, renderId
       },
     });
 
-    if (!response.ok) throw new Error(`Video server responded HTTP ${response.status} ${response.statusText}`);
+    if (!response.ok) throw new Error(`Video server responded HTTP ${url} ${response.status} ${response.statusText}`);
     return response;
   }
 

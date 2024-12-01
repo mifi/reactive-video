@@ -1,0 +1,8 @@
+{
+  "references": [
+    { "path": "packages/builder" },
+    { "path": "packages/frontend" },
+    { "path": "packages/e2e" },
+  ],
+  "files": []
+}
