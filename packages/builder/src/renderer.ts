@@ -1,5 +1,5 @@
 import { CaptureMethod } from 'reactive-video/dist/types.js';
-import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import workerpool from 'workerpool';
 
@@ -13,7 +13,7 @@ export default async ({ concurrency, captureMethod, headless, extraPuppeteerArgs
   logger: Logger,
 }) => {
   const workerType = 'process';
-  const pool = workerpool.pool(join(__dirname, 'poolWorker.js'), { maxWorkers: concurrency, minWorkers: concurrency, maxQueueSize: 0, workerType });
+  const pool = workerpool.pool(fileURLToPath(new URL('poolWorker.js', import.meta.url)), { maxWorkers: concurrency, minWorkers: concurrency, maxQueueSize: 0, workerType });
 
   function renderPart({ partNum, partStart, partEnd, onProgress }: {
     partNum: number,
