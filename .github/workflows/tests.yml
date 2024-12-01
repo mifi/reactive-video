@@ -32,15 +32,6 @@ jobs:
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
 
-      - name: yarn cache
-        uses: actions/cache@v3
-        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
       - name: Cache browser
         id: cache-browser
         uses: actions/cache@v3
@@ -52,9 +43,10 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: 'yarn'
 
       - run: yarn
 
@@ -63,7 +55,7 @@ jobs:
           cd ${{ github.workspace }}
           wget -O chrome-mac-x64.zip https://storage.googleapis.com/chrome-for-testing-public/${{ env.CHROME_BUILD_NUMBER }}/mac-x64/chrome-mac-x64.zip
           unzip chrome-mac-x64.zip
-          export DEST=browser/chrome/mac_arm-${{ env.CHROME_BUILD_NUMBER }}/chrome-mac-arm64
+          export DEST=browser/chrome/mac-${{ env.CHROME_BUILD_NUMBER }}/chrome-mac-x64
           mkdir -p "$DEST"
           mv 'chrome-mac-x64/Google Chrome for Testing.app' "$DEST"/
       - if: runner.os != 'macOS'
