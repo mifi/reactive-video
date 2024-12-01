@@ -15,7 +15,9 @@ jobs:
     strategy:
       matrix:
         # https://github.com/federicocarboni/setup-ffmpeg/issues/21
-        os: [macos-13, ubuntu-latest, windows-latest]
+        # TODO linux arm64 when available https://github.com/orgs/community/discussions/19197
+        # macos-13 is macos x64, macos-latest is macos arm64 (Apple Silicon)
+        os: [macos-13, macos-latest, ubuntu-latest, windows-latest]
 #        os: [macos-13]
 
     runs-on: ${{ matrix.os }}
@@ -24,7 +26,7 @@ jobs:
       # Windows fix. See https://github.com/actions/checkout/issues/226
       - run: git config --global core.autocrlf false
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
 
@@ -39,9 +41,15 @@ jobs:
           path: browser
           key: ${{ runner.os }}-browser-${{ env.CHROME_BUILD_NUMBER }}
 
-      - uses: FedericoCarboni/setup-ffmpeg@v3
+      # https://github.com/federicocarboni/setup-ffmpeg/issues/21
+      - if: runner.os != 'macOS' || runner.arch != 'ARM64'
+        uses: FedericoCarboni/setup-ffmpeg@v3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+      - if: runner.os == 'macOS' && runner.arch == 'ARM64'
+        run: brew install ffmpeg
+
+      - uses: FedericoCarboni/setup-ffmpeg@v3
 
       - uses: actions/setup-node@v4
         with:
