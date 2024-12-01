@@ -48,19 +48,9 @@ jobs:
           node-version: 18
           cache: 'yarn'
 
+      - run: yarn dlx @puppeteer/browsers install chrome@${{ env.CHROME_BUILD_NUMBER }} --path ${{ github.workspace }}/browser
+  
       - run: yarn
-
-      - if: runner.os == 'macOS'
-        run: |
-          cd ${{ github.workspace }}
-          wget -O chrome-mac-x64.zip https://storage.googleapis.com/chrome-for-testing-public/${{ env.CHROME_BUILD_NUMBER }}/mac-x64/chrome-mac-x64.zip
-          unzip chrome-mac-x64.zip
-          export DEST=browser/chrome/mac-${{ env.CHROME_BUILD_NUMBER }}/chrome-mac-x64
-          mkdir -p "$DEST"
-          mv 'chrome-mac-x64/Google Chrome for Testing.app' "$DEST"/
-      - if: runner.os != 'macOS'
-        run: npx @puppeteer/browsers install chrome@${{ env.CHROME_BUILD_NUMBER }} --path ${{ github.workspace }}/browser
-
       - run: yarn tsc
       - run: yarn test
       - run: yarn lint
