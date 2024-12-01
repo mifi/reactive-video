@@ -42,7 +42,7 @@ jobs:
           path: browser
           key: ${{ runner.os }}-browser-${{ env.CHROME_BUILD_NUMBER }}
 
-      - uses: FedericoCarboni/setup-ffmpeg@v2
+      - uses: FedericoCarboni/setup-ffmpeg@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
