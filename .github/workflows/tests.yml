@@ -8,7 +8,7 @@ on:
     - cron: '0 10 * * *'
 
 env:
-  CHROME_BUILD_NUMBER: 117.0.5938.149
+  CHROME_BUILD_NUMBER: 131.0.6778.85
 
 jobs:
   test:

@@ -78,14 +78,14 @@ export default () => {
 
 ### Download Chrome
 
-You need to have installed Chrome/Chromium. Currently Chrome buildId 117.0.5938.149 is supported/tested. You can download the correct Chrome build to the directory `browser` (in the current directory):
+You need to have installed Chrome/Chromium. Each version of Puppeteer is [paired](https://pptr.dev/faq#q-why-doesnt-puppeteer-vxxx-work-with-chromium-vyyy) with a specific version of Chrome for Testing. Currently Chrome buildId 131.0.6778.85 is supported/tested. You can download the correct Chrome build to the directory `browser` (in the current directory):
 ```bash
-yarn dlx @puppeteer/browsers install chrome@117.0.5938.149 --path /absolute/path/to/browser/dir
+yarn dlx @puppeteer/browsers install chrome@131.0.6778.85 --path /absolute/path/to/browser/dir
 ```
 
 #### Linux ARM64
 
-Each version of Puppeteer is [paired](https://pptr.dev/faq#q-why-doesnt-puppeteer-vxxx-work-with-chromium-vyyy) with a specific version of Chrome for Testing, but Chrome for Testing [doesn't provide builds](https://github.com/GoogleChromeLabs/chrome-for-testing/issues/1) for Linux ARM64. However Playwright has Chromium builds for Linux ARM64, which [can be used](https://github.com/puppeteer/puppeteer/issues/7740#issuecomment-1833202428) with `puppeteer-core`.
+Chrome for Testing [doesn't provide builds](https://github.com/GoogleChromeLabs/chrome-for-testing/issues/1) for Linux ARM64. However Playwright has Chromium builds for Linux ARM64, which [can be used](https://github.com/puppeteer/puppeteer/issues/7740#issuecomment-1833202428) with `puppeteer-core`.
 
 Steps to download Chromium:
 
@@ -129,7 +129,7 @@ import Editor from '@reactive-video/builder';
 import { computeExecutablePath } from '@puppeteer/browsers';
 
 // remember to download it first
-const browserExePath = computeExecutablePath({ cacheDir: './browser', browser: 'chrome', buildId: '117.0.5938.149' });
+const browserExePath = computeExecutablePath({ cacheDir: './browser', browser: 'chrome', buildId: '131.0.6778.85' });
 
 const editor = Editor({
   ffmpegPath: 'ffmpeg',

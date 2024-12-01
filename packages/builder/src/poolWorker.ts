@@ -4,6 +4,7 @@ import pTimeout from 'p-timeout';
 import workerpool from 'workerpool';
 import { mkdir } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
+import { randomBytes } from 'node:crypto';
 
 import { CaptureMethod, FFmpegStreamFormat, PuppeteerCaptureFormat, VideoComponentType } from 'reactive-video/dist/types.js';
 import type { SetupReact, RenderFrameFn, AwaitDomRenderSettled, HaveFontsLoaded } from './react/puppeteerEntry.js';
@@ -71,7 +72,8 @@ async function createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs,
 }) {
   const extensionId = 'jjndjgheafjngoipoacpjgeicjeomjli';
 
-  const userDataDir = join(tempDir, 'puppeteer_dev_chrome_profile-');
+  // https://github.com/puppeteer/puppeteer/issues/10517
+  const userDataDir = join(tempDir, `puppeteer_dev_chrome_profile-${randomBytes(10).toString('hex')}-`);
   await mkdir(userDataDir, { recursive: true });
 
   const browser = await puppeteer.launch({
@@ -82,6 +84,9 @@ async function createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs,
     ignoreDefaultArgs: ['--disable-dev-shm-usage'],
 
     args: [
+      // https://stackoverflow.com/a/52070244/6519037
+      '--incognito',
+
       ...(captureMethod === 'extension' ? [
         `--load-extension=${extensionPath}`,
         `--disable-extensions-except=${extensionPath}`,
@@ -116,7 +121,7 @@ async function createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs,
     // defaultViewport: null,
   });
 
-  const context = await browser.createIncognitoBrowserContext();
+  const context = await browser.createBrowserContext();
 
   return {
     browser,
