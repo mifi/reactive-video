@@ -1642,7 +1642,7 @@ __metadata:
     puppeteer-core: "npm:^23.9.0"
     react: "npm:18"
     react-dom: "npm:18"
-    reactive-video: "npm:3"
+    reactive-video: "npm:4"
     rimraf: "npm:*"
     style-loader: "npm:^4.0.0"
     typescript: "npm:*"
@@ -7558,7 +7558,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"reactive-video@npm:3, reactive-video@workspace:^, reactive-video@workspace:packages/frontend":
+"reactive-video@npm:4, reactive-video@workspace:^, reactive-video@workspace:packages/frontend":
   version: 0.0.0-use.local
   resolution: "reactive-video@workspace:packages/frontend"
   dependencies:

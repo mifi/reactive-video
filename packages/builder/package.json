@@ -52,7 +52,7 @@
     "puppeteer-core": "^23.9.0",
     "react": "18",
     "react-dom": "18",
-    "reactive-video": "3",
+    "reactive-video": "4",
     "style-loader": "^4.0.0",
     "webpack": "^5.96.1",
     "workerpool": "^6.2.0"
