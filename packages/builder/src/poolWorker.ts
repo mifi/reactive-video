@@ -362,11 +362,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
     await outProcess;
     return outPath;
   } catch (err) {
-    try {
-      if (outProcess) outProcess.kill();
-    } catch (err2) {
-      logger.error('Failed to kill', err2);
-    }
+    // if (outProcess) outProcess.kill();
     logger.error(`Caught error at frame ${frameNum}, part ${partNum} (${partStart})`, err);
     throw err;
   } finally {
