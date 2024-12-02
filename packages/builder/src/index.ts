@@ -266,7 +266,7 @@ export default function Editor({
 
       const [{ renderPart, terminateRenderers }] = await Promise.all([createRendererPromise, serverPromise, startBundlerPromise]);
 
-      logger.log('Rendering frames');
+      logger.log(`Rendering frames with ${parts.length} workers`);
       const partProgresses: Record<string, { frameNum: number, durationFrames: number }> = {};
       let startTime: Date;
 
@@ -318,8 +318,9 @@ export default function Editor({
         if (keepBrowserRunning) {
           await new Promise((resolve) => setTimeout(resolve, keepBrowserRunning));
         }
+        logger.log(`Terminating ${renderers.length} renderer worker(s)`);
         await terminateRenderers();
-        logger.log('Terminating renderer workers');
+        logger.log('Terminated renderer workers');
       }
 
       logger.log('Merging parts');

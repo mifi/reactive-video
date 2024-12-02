@@ -19,6 +19,8 @@ const getFileNameForTest = (ext: string) => `${(expect.getState().currentTestNam
 const getOutputPath = (ext: string) => join(outputDir, getFileNameForTest(ext));
 const getVideoSnapshotPath = (ext: string) => join(videoSnapshotsDir, getFileNameForTest(ext));
 
+const enableDebugLogging = process.env['RUNNER_DEBUG'] === '1';
+
 describe('render videos', () => {
   beforeAll(async () => {
     const toMatchImageSnapshot = configureToMatchImageSnapshot({ customSnapshotsDir: imageSnapshotsDir, comparisonMethod: 'ssim', failureThresholdType: 'percent' });
@@ -51,8 +53,8 @@ describe('render videos', () => {
 
       enableRequestLog: true,
       enablePerFrameLog: true,
+      enableFfmpegLog: enableDebugLogging,
 
-      // combine with yarn test --verbose for immediate console output
       // headless: false,
       // keepBrowserRunning: 60000,
     });
@@ -61,7 +63,7 @@ describe('render videos', () => {
   }, timeout);
 
   test('render single frame from video', async () => {
-    const editor = getEditor();
+    const editor = getEditor({ logger: console });
 
     const reactVideo = join(reactiveVideoRoot, 'video', 'ReactiveVideo');
 
@@ -79,6 +81,10 @@ describe('render videos', () => {
       startFrame: 30,
       userData,
       output: outPathPng,
+
+      enableRequestLog: true,
+      enablePerFrameLog: true,
+      enableFfmpegLog: enableDebugLogging,
     });
 
     expect(await readFile(outPathPng)).toMatchImageSnapshot({ failureThreshold: 0.2 }); // font rendering is slightly different on macos/linux
@@ -86,7 +92,7 @@ describe('render videos', () => {
 
   // Test a simple page without any resources, to see that it works even with an empty asyncRegistry
   test('render single frame, simple', async () => {
-    const editor = getEditor();
+    const editor = getEditor({ logger: console });
 
     const reactVideo = join(reactiveVideoRoot, 'simple', 'ReactiveVideo');
 
@@ -100,6 +106,10 @@ describe('render videos', () => {
       width: 1920,
       height: 1080,
       output: outPathPng,
+
+      enableRequestLog: true,
+      enablePerFrameLog: true,
+      enableFfmpegLog: enableDebugLogging,
     });
 
     // try also jpeg because it's faster, so commonly used
@@ -126,7 +136,7 @@ describe('render videos', () => {
   const customOutputFfmpegArgs = ['-c:v', 'libx264', '-crf', '30'];
 
   test('render video with overlay', async () => {
-    const editor = getEditor();
+    const editor = getEditor({ logger: console });
     // const editor = getEditor({ logger: console });
 
     const reactVideo = join(reactiveVideoRoot, 'video', 'ReactiveVideo');
@@ -150,6 +160,10 @@ describe('render videos', () => {
       userData,
       customOutputFfmpegArgs,
       output,
+
+      enableRequestLog: enableDebugLogging,
+      enablePerFrameLog: enableDebugLogging,
+      enableFfmpegLog: enableDebugLogging,
     });
 
     expect(await checkVideosMatch(output, getVideoSnapshotPath('mov'), 0.96)).toBeTruthy();
@@ -175,6 +189,10 @@ describe('render videos', () => {
       durationFrames,
       customOutputFfmpegArgs,
       output,
+
+      enableRequestLog: enableDebugLogging,
+      enablePerFrameLog: enableDebugLogging,
+      enableFfmpegLog: enableDebugLogging,
     });
 
     expect(await checkVideosMatch(output, getVideoSnapshotPath('mov'), 0.96)).toBeTruthy();

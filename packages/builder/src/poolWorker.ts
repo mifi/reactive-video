@@ -48,20 +48,6 @@ function onProgress(progress: WorkerProgress) {
   } satisfies WorkerEvent);
 }
 
-// creating a logging bridge over the worker channel
-const logWithLevel = (level: keyof Logger, ...args: unknown[]) => workerpool.workerEmit({
-  event: 'log',
-  data: { level, args: args.map((arg) => (arg instanceof Error ? arg.message : arg)) },
-} satisfies WorkerEvent);
-const logger = {
-  log: (...args: unknown[]) => logWithLevel('log', ...args),
-  info: (...args: unknown[]) => logWithLevel('info', ...args),
-  debug: (...args: unknown[]) => logWithLevel('debug', ...args),
-  error: (...args: unknown[]) => logWithLevel('error', ...args),
-  trace: (...args: unknown[]) => logWithLevel('trace', ...args),
-  warn: (...args: unknown[]) => logWithLevel('warn', ...args),
-};
-
 async function createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs, headless, tempDir, browserExePath }: {
   captureMethod: CaptureMethod,
   extensionPath: string,
@@ -168,6 +154,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
 }) {
   const renderId = partStart; // Unique ID per concurrent renderer
 
+  // state:
   let frameNum = partStart;
 
   let browser: Browser;
@@ -178,12 +165,29 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
   let screencast: Awaited<ReturnType<typeof startScreencast>> | undefined;
   let onPageError: ((err: Error) => void) | undefined;
 
+  // creating a logging bridge over the worker channel
+  const logWithLevel = (level: keyof Logger, ...args: unknown[]) => workerpool.workerEmit({
+    event: 'log',
+    data: { level, args: [`P${partNum},${partStart} F${frameNum}/${partEnd}:`, ...args.map((arg) => (arg instanceof Error ? arg.message : arg))] },
+  } satisfies WorkerEvent);
+
+  const logger = {
+    log: (...args: unknown[]) => logWithLevel('log', ...args),
+    info: (...args: unknown[]) => logWithLevel('info', ...args),
+    debug: (...args: unknown[]) => logWithLevel('debug', ...args),
+    error: (...args: unknown[]) => logWithLevel('error', ...args),
+    trace: (...args: unknown[]) => logWithLevel('trace', ...args),
+    warn: (...args: unknown[]) => logWithLevel('warn', ...args),
+  };
+
   async function closeBrowser() {
     if (browser && !keepBrowserRunning) await browser.close();
   }
 
   async function tryCreateBrowserAndPage() {
     onPageError = undefined;
+
+    logger.info('Creating browser', { partStart });
 
     ({ browser, context, extensionFrameCapturer } = await createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs, headless, tempDir, browserExePath }));
 
@@ -192,13 +196,13 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
 
     // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#consolemessagetype
     // log all in-page console logs as warn, for easier identification of any issues
-    page.on('console', (msg) => logger.warn(`Part ${partNum},${frameNum} page console.log`, msg.text()));
+    page.on('console', (msg) => logger.warn('Page console.log', msg.text()));
     page.on('pageerror', (err) => {
-      logger.warn(`Part ${partNum},${frameNum} page pageerror`, err);
+      logger.warn('Page pageerror', err);
       if (onPageError) onPageError(new PageBrokenError(err.message));
     });
     page.on('error', (error) => {
-      logger.warn(`Part ${partNum},${frameNum} page error`, error && error.toString());
+      logger.warn('Page error', error && error.toString());
       if (onPageError) onPageError(new PageBrokenError(error.toString()));
     });
     page.on('requestfailed', (request) => {
@@ -206,15 +210,18 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
       // net::ERR_INSUFFICIENT_RESOURCES error can be reproduced on ubuntu (not mac) with a high concurrency (10)
       // net::ERR_FAILED is hard to reproduce, but it happened if an (inline?) svg failed to load
       const requestFailedErrorText = request.failure()!.errorText;
-      logger.warn(`Part ${partNum},${frameNum} page requestfailed`, requestFailedErrorText);
+      logger.warn('Page requestfailed', requestFailedErrorText);
       if (onPageError) onPageError(new PageBrokenError(requestFailedErrorText));
     });
 
     await page.setViewport({ width, height });
     // await page.setViewport({ width, height, deviceScaleFactor: 1 });
 
+    const url = pathToFileURL(join(distPath, 'index.html')).toString();
+    logger.info('Navigating to', url);
+
     // await page.goto(`http://localhost:${port}/index.html`);
-    await page.goto(pathToFileURL(join(distPath, 'index.html')).toString());
+    await page.goto(url);
 
     if (await page.evaluate(() => !window.setupReact)) {
       throw new Error('React webpage failed to initialize');
@@ -251,7 +258,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
           || (err && err instanceof Error && 'name' in err && 'originalMessage' in err && err.name === 'ProtocolError' && err.originalMessage === 'Unable to capture screenshot')
         )) throw err;
 
-        logger.warn(`Part ${partNum},${frameNum} browser is broken, restarting:`, err);
+        logger.warn('Browser is broken, restarting:', err);
 
         try {
           await closeBrowser();
@@ -288,7 +295,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
     // eslint-disable-next-line no-inner-declarations
     async function renderFrame() {
       function logFrame(...args: unknown[]) {
-        if (enablePerFrameLog) logger.debug(frameNum, ...args);
+        if (enablePerFrameLog) logger.debug(...args);
       }
 
       let buf: Buffer | undefined;
@@ -372,8 +379,8 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
     await outProcess;
     return outPath;
   } catch (err) {
-    if (outProcess) outProcess.kill();
-    logger.error(`Caught error at frame ${frameNum}, part ${partNum} (${partStart})`, err);
+    if (outProcess) outProcess.kill('SIGKILL');
+    logger.error(`Caught error in renderPart (partStart ${partStart})`, err);
     throw err;
   } finally {
     await closeBrowser();
