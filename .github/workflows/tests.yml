@@ -54,7 +54,7 @@ jobs:
           node-version: 18
           cache: 'yarn'
 
-      - run: yarn dlx @puppeteer/browsers install chrome@${{ env.CHROME_BUILD_NUMBER }} --path ${{ github.workspace }}/browser
+      - run: npx @puppeteer/browsers install chrome@${{ env.CHROME_BUILD_NUMBER }} --path ${{ github.workspace }}/browser
   
       - run: yarn install --immutable
       - run: yarn dedupe --check

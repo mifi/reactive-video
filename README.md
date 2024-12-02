@@ -80,7 +80,7 @@ export default () => {
 
 You need to have installed Chrome/Chromium. Each version of Puppeteer is [paired](https://pptr.dev/faq#q-why-doesnt-puppeteer-vxxx-work-with-chromium-vyyy) with a specific version of Chrome for Testing. Currently Chrome buildId 131.0.6778.85 is supported/tested. You can download the correct Chrome build to the directory `browser` (in the current directory):
 ```bash
-yarn dlx @puppeteer/browsers install chrome@131.0.6778.85 --path /absolute/path/to/browser/dir
+npx @puppeteer/browsers install chrome@131.0.6778.85 --path /absolute/path/to/browser/dir
 ```
 
 #### Linux ARM64
@@ -470,6 +470,8 @@ Submit a PR if you want to share your Reactive Video here.
 - videoServer need to kill ffmpeg when finished with file? or use -t
 - live video mode
 - maybe not currently properly supporting different framerates. FFmpegVideo `-vf fps` in videoServer.js?
+- use esbuild instead of webpack? https://esbuild.github.io/api/ so we can support typescript
+  - or maybe remove bundler and allow people to bundle their own code for the reactive video
 
 ## Ideas
 
