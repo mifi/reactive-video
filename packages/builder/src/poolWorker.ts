@@ -181,9 +181,26 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
   };
 
   async function closeBrowser() {
-    logger.info('Closing browser');
-    if (browser && !keepBrowserRunning) await browser.close();
-    logger.info('Closed browser');
+    if (browser && !keepBrowserRunning) {
+      logger.debug('Closing browser pages');
+      const pages = await browser.pages();
+      // sometimes browser.close will hang
+      // https://github.com/puppeteer/puppeteer/issues/7922#issuecomment-1549052725
+      for (const p of pages) {
+        await p.close();
+      }
+      logger.info('Closing browser');
+      const t = setTimeout(() => {
+        logger.warn('Timed out closing browser, killing it');
+        browser.process()?.kill('SIGKILL');
+      }, 10000);
+      try {
+        await browser.close();
+        logger.info('Closed browser');
+      } finally {
+        clearTimeout(t);
+      }
+    }
   }
 
   async function tryCreateBrowserAndPage() {
@@ -194,7 +211,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
     ({ browser, context, extensionFrameCapturer } = await createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs, headless, tempDir, browserExePath }));
 
     page = await context.newPage();
-    client = await page.target().createCDPSession();
+    client = await page.createCDPSession();
 
     // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#consolemessagetype
     // log all in-page console logs as warn, for easier identification of any issues
@@ -244,7 +261,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
   // net::ERR_INSUFFICIENT_RESOURCES or the page itself crashing.
   // https://stackoverflow.com/questions/57956697/unhandledpromiserejectionwarning-error-page-crashed-while-using-puppeteer
   async function withCrashRecovery(operation: () => Promise<void>) {
-    let lastErr;
+    let lastErr: unknown;
 
     /* eslint-disable no-await-in-loop */
     for (let i = 0; i <= numRetries; i += 1) {
