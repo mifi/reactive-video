@@ -12,7 +12,7 @@ export async function awaitAsyncRenders(frameNumber: number | null) {
   // console.log('awaitAsyncRenders', promises.length)
   if (framesDone.has(frameNumber)) throw new Error(`Tried to awaitAsyncRenders already done frame ${frameNumber}`);
   try {
-    return await Promise.all(promises);
+    return (await Promise.all(promises)).filter((v) => v != null); // we don't need to return those that are undefined (will be converted to null by JSON.stringify)
   } finally {
     promises = [];
     framesDone.add(frameNumber);

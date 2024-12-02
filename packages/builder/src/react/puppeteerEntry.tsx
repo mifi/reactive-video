@@ -24,7 +24,7 @@ const awaitDomRenderSettled = async () => new Promise<void>((resolve) => {
   });
 });
 
-export type RenderFrameFn = (n: number | null) => Promise<({ component: string; currentFrame: number; } | undefined)[]>;
+export type RenderFrameFn = (n: number | null) => Promise<{ component: string; currentFrame: number }[]>;
 
 const PuppeteerRoot = ({ callback, devMode, width, height, fps, serverPort, durationFrames, renderId, userData, videoComponentType = 'ffmpeg', ffmpegStreamFormat, jpegQuality, secret }: {
   callback: () => void,
@@ -64,7 +64,8 @@ const PuppeteerRoot = ({ callback, devMode, width, height, fps, serverPort, dura
 
     const layoutEffectPromise = awaitLayoutEffect();
 
-    setCurrentFrame(n == null ? undefined : n); // null means clear screen
+    // null means clear screen
+    setCurrentFrame(n == null ? undefined : n);
 
     // Need to wait for all components to register themselves
     await layoutEffectPromise;
@@ -84,6 +85,7 @@ const PuppeteerRoot = ({ callback, devMode, width, height, fps, serverPort, dura
 
   const api = useMemo(() => Api({ serverPort, renderId, secret }), [renderId, serverPort, secret]);
 
+  // Clear the screen
   // if (currentFrame == null) return <div id="frame-cleared" />;
   if (currentFrame == null) return null;
 
