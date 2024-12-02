@@ -59,6 +59,10 @@ jobs:
       - run: yarn install --immutable
       - run: yarn dedupe --check
       - run: yarn tsc
+
+      - name: CPU and memory
+        run: node --experimental-default-type module -e 'import os from "os"; console.log("CPUs:", os.cpus().length, "mem:", (os.freemem()/1e9).toFixed(1), "/", (os.totalmem()/1e9).toFixed(1), "GB");'
+
       - run: yarn test
       - run: yarn lint
 
