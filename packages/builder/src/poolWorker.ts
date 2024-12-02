@@ -278,6 +278,10 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
       logger.log('Output ffmpeg exited with code', code);
     });
 
+    outProcess.on('error', (err) => {
+      logger.log('Output ffmpeg failed', err);
+    });
+
     // todo log stdout/stderr if outProcess crashes
 
     // eslint-disable-next-line no-inner-declarations
@@ -367,9 +371,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
     await outProcess;
     return outPath;
   } catch (err) {
-    // Don't kill, because execa will cleanup when the worker exits
-    // and there seems to be a bug where it crashes on Windows if we kill it here
-    // if (outProcess) outProcess.kill();
+    if (outProcess) outProcess.kill();
     logger.error(`Caught error at frame ${frameNum}, part ${partNum} (${partStart})`, err);
     throw err;
   } finally {
