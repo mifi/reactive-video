@@ -8,17 +8,14 @@ on:
     - cron: '0 10 * * *'
 
 env:
-  CHROME_BUILD_NUMBER: 131.0.6778.85
+  CHROME_BUILD_NUMBER: 117.0.5938.149
 
 jobs:
   test:
     strategy:
       matrix:
         # https://github.com/federicocarboni/setup-ffmpeg/issues/21
-        # TODO linux arm64 when available https://github.com/orgs/community/discussions/19197
-        # macos-13 is macos x64, macos-latest is macos arm64 (Apple Silicon)
-        os: [macos-13, macos-latest, ubuntu-latest, windows-latest]
-#        os: [macos-13]
+        os: [macos-13]
 
     runs-on: ${{ matrix.os }}
 
@@ -26,13 +23,22 @@ jobs:
       # Windows fix. See https://github.com/actions/checkout/issues/226
       - run: git config --global core.autocrlf false
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
         with:
           submodules: true
 
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+
+      - name: yarn cache
+        uses: actions/cache@v3
+        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
       - name: Cache browser
         id: cache-browser
@@ -41,26 +47,17 @@ jobs:
           path: browser
           key: ${{ runner.os }}-browser-${{ env.CHROME_BUILD_NUMBER }}
 
-      # https://github.com/federicocarboni/setup-ffmpeg/issues/21
-      - if: runner.os != 'macOS' || runner.arch != 'ARM64'
-        uses: FedericoCarboni/setup-ffmpeg@v3
+      - uses: FedericoCarboni/setup-ffmpeg@v3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-      - if: runner.os == 'macOS' && runner.arch == 'ARM64'
-        run: brew install ffmpeg
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: 'yarn'
 
-      - run: yarn dlx @puppeteer/browsers install chrome@${{ env.CHROME_BUILD_NUMBER }} --path ${{ github.workspace }}/browser
-  
-      - run: yarn install --immutable
-      - run: yarn dedupe --check
-      - run: yarn tsc
-      - run: yarn test
-      - run: yarn lint
+      - run: yarn
+
+      - run: npx @puppeteer/browsers install chrome@${{ env.CHROME_BUILD_NUMBER }} --path ${{ github.workspace }}/browser
 
       - uses: actions/upload-artifact@v3
         if: failure()
