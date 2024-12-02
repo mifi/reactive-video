@@ -278,7 +278,8 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
       logger.log('Output ffmpeg exited with code', code);
     });
 
-    outProcess.on('error', (err) => {
+    // to prevent process from exiting if it dies (e.g. we .kill it)
+    outProcess.catch((err) => {
       logger.log('Output ffmpeg failed', err);
     });
 
