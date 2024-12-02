@@ -181,7 +181,9 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
   };
 
   async function closeBrowser() {
+    logger.info('Closing browser');
     if (browser && !keepBrowserRunning) await browser.close();
+    logger.info('Closed browser');
   }
 
   async function tryCreateBrowserAndPage() {
@@ -282,7 +284,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
     outProcess = createOutputFfmpeg({ puppeteerCaptureFormat, customOutputFfmpegArgs, ffmpegPath, fps, outPath, log: enableFfmpegLog });
 
     outProcess.on('exit', (code) => {
-      logger.log('Output ffmpeg exited with code', code);
+      if (code !== 0) logger.log('Output ffmpeg exited with code', code);
     });
 
     // to prevent process from exiting if it dies (e.g. we .kill it)
@@ -310,7 +312,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
         try {
           // eslint-disable-next-line no-shadow
           const results = await page.evaluate(async (frameNum) => window.renderFrame!(frameNum), frameNum);
-          logFrame(results);
+          logFrame('renderFrame results', results);
         } catch (err) {
           if (failOnWebErrors) throw err;
         }
@@ -331,7 +333,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
         await page.waitForNetworkIdle({ idleTime: sleepTimeBeforeCapture });
         // await new Promise((resolve) => setTimeout(resolve, 500));
 
-        logFrame('Capturing');
+        logFrame('Capturing frame');
 
         // Implemented three different ways
         switch (captureMethod) {
@@ -345,7 +347,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
           default: throw new Error('Invalid captureMethod');
         }
 
-        logFrame('Capture done');
+        logFrame('Captured frame');
       });
 
       // logger.log('data', opts);
@@ -375,8 +377,10 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
       onProgress({ frameNum });
     }
 
+    logger.info('Rendered frames, closing output ffmpeg stream and waiting for process to exit');
     outProcess.stdin?.end?.();
     await outProcess;
+    logger.info('ffmpeg process exited');
     return outPath;
   } catch (err) {
     if (outProcess) outProcess.kill('SIGKILL');

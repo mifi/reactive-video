@@ -307,6 +307,7 @@ export default function Editor({
       let outPaths;
       try {
         outPaths = await Promise.all(promises);
+        logger.info('Renderer workers finished');
       } catch (err) {
         if (renderers.length > 1) {
           logger.error('Caught error in one part, aborting the rest');
@@ -316,6 +317,7 @@ export default function Editor({
         throw err;
       } finally {
         if (keepBrowserRunning) {
+          logger.info('Keeping browser running for', keepBrowserRunning, 'ms');
           await new Promise((resolve) => setTimeout(resolve, keepBrowserRunning));
         }
         logger.log(`Terminating ${renderers.length} renderer worker(s)`);
