@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 import { PuppeteerCaptureFormat, CaptureMethod, FFmpegStreamFormat, VideoComponentType } from 'reactive-video/dist/types.js';
 
-import { generateSecret } from './util.js';
+import { generateSecret, splitIntoParts } from './util.js';
 import { concatParts } from './ffmpeg.js';
 import createRenderer from './renderer.js';
 
@@ -23,23 +23,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const reactHtmlBasePath = join(__dirname, '..');
 const reactIndexJsBasePath = join(__dirname, 'react');
 
-function splitIntoParts({ startFrame, durationFrames, concurrency }: {
-  startFrame: number,
-  durationFrames: number,
-  concurrency: number,
-}) {
-  const partLength = Math.floor(durationFrames / concurrency);
-  const parts = Array.from({ length: concurrency }).fill(undefined).map((_v, i) => {
-    const ret: [number, number] = [i * partLength, (i + 1) * partLength];
-    return ret;
-  });
-  const remainder = durationFrames % concurrency;
-  if (remainder > 0) parts.at(-1)![1] += remainder;
-  return parts.map(([partStart, partEnd]) => {
-    const ret: [number, number] = [startFrame + partStart, startFrame + partEnd];
-    return ret;
-  });
-}
 
 async function processOptions({ durationTime, durationFramesIn, reactVideo, fps, width, height, tempDirMaybeRel }: {
   durationTime: number | undefined,
