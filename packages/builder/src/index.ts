@@ -33,23 +33,22 @@ async function processOptions({ durationTime, durationFramesIn, reactVideo, fps,
   height: number,
   tempDirMaybeRel: string,
 }) {
-  assert(durationTime || durationFramesIn, 'durationTime or durationFrames required');
+  assert(durationTime || durationFramesIn, 'Either one of durationTime or durationFrames required');
   assert(reactVideo, 'reactVideo required');
   assert(!Number.isNaN(fps), 'Invalid fps');
   assert(!Number.isNaN(width) && !Number.isNaN(height), 'Invalid width/height');
 
   let durationFrames = durationFramesIn;
   if (durationTime) durationFrames = Math.round(durationTime * fps);
-  // todo?
-  // assert(Number.isInteger(durationFrames), 'durationFrames must be an integer');
+  assert(durationFrames != null);
+  // precaution:
+  if (!Number.isInteger(durationFrames)) durationFrames = Math.round(durationFrames);
 
   const tempDir = resolvePath(tempDirMaybeRel);
 
   await mkdir(tempDir, { recursive: true });
   const distPath = join(tempDir, 'dist');
   const userEntryPath = resolvePath(reactVideo);
-
-  assert(durationFrames != null);
 
   return {
     durationFrames, tempDir, distPath, userEntryPath,
@@ -158,7 +157,7 @@ export default function Editor({
     extraPuppeteerArgs = [],
     customOutputFfmpegArgs,
 
-    startFrame = 0,
+    startFrame: startFrameIn = 0,
     durationFrames: durationFramesIn,
     durationTime,
 
@@ -194,6 +193,8 @@ export default function Editor({
     } = await processOptions({
       durationTime, durationFramesIn, reactVideo, fps, width, height, tempDirMaybeRel,
     });
+
+    const startFrame = Number.isInteger(startFrameIn) ? startFrameIn : Math.round(startFrameIn);
 
     assert(durationFrames > 0);
 
@@ -249,7 +250,7 @@ export default function Editor({
 
       const [{ renderPart, terminateRenderers }] = await Promise.all([createRendererPromise, serverPromise, startBundlerPromise]);
 
-      logger.log(`Rendering frames with ${parts.length} workers`);
+      logger.log(`Rendering frames with ${parts.length} worker(s)`);
       const partProgresses: Record<string, { frameNum: number, durationFrames: number }> = {};
       let startTime: Date;
 
