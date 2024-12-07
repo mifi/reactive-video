@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url';
 import { randomBytes } from 'node:crypto';
 
 import { CaptureMethod, FFmpegStreamFormat, PuppeteerCaptureFormat, VideoComponentType } from 'reactive-video/dist/types.js';
-import type { SetupReact, RenderFrameFn, AwaitDomRenderSettled, HaveFontsLoaded } from './react/puppeteerEntry.js';
+import { type SetupReact, type RenderFrameFn, type AwaitDomRenderSettled, type HaveFontsLoaded, getFrameId } from './react/puppeteerEntry.js';
 
 import { createExtensionFrameCapturer, captureFrameScreenshot, startScreencast } from './frameCapture.js';
 import { createOutputFfmpeg } from './ffmpeg.js';
@@ -341,7 +341,7 @@ async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customO
         ));
 
         logFrame('waitForSelector');
-        await page.waitForSelector(`#frame-${frameNum}`);
+        await page.waitForSelector(`#${getFrameId(frameNum)}`);
 
         logFrame('awaitDomRenderSettled');
         await page.evaluate(() => window.awaitDomRenderSettled!());

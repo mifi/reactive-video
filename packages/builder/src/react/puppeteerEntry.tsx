@@ -11,7 +11,7 @@ import { FFmpegStreamFormat, VideoComponentType } from 'reactive-video/dist/type
 
 type RootComponent = ComponentType;
 
-const getId = (currentFrame: number) => `frame-${currentFrame}`;
+export const getFrameId = (frameNum: number) => `frame-${frameNum}`;
 
 // https://github.com/mifi/reactive-video/issues/4
 // This is a bit hacky. trying to make sure we don't get dupe frames (previous frame rendered again)
