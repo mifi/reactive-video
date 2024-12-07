@@ -11,7 +11,8 @@
     "url": "git+https://github.com/mifi/reactive-video.git"
   },
   "scripts": {
-    "test": "vitest",
+    "test": "vitest --exclude='packages/e2e/**/*'",
+    "test:e2e": "vitest",
     "clean": "yarn workspaces foreach -pW run clean",
     "tsc": "tsc -b",
     "lint": "eslint .",
