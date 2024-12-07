@@ -1,6 +1,6 @@
 {
   "name": "@reactive-video/builder",
-  "version": "4.0.4",
+  "version": "4.0.5",
   "exports": {
     "types": "./dist/index.d.ts",
     "default": "./dist/index.js"
