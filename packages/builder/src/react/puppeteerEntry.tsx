@@ -98,7 +98,7 @@ const PuppeteerRoot = ({ callback, devMode, width, height, fps, serverPort, dura
 
   // <div key={currentFrame} id={getId(currentFrame)}>
   return (
-    <div id={getId(currentFrame)} style={frameCanvasStyle}>
+    <div id={getFrameId(currentFrame)} style={frameCanvasStyle}>
       <VideoContextProvider
         currentFrame={currentFrame}
         durationFrames={durationFrames}
