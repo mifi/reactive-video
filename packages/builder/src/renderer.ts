@@ -3,10 +3,10 @@ import { fileURLToPath } from 'node:url';
 
 import workerpool from 'workerpool';
 
-import type { RenderPartParams, WorkerEvent, WorkerProgress } from './poolWorker.js';
+import type { RenderPartBaseParams, RenderPartParams, WorkerEvent, WorkerProgress } from './poolWorker.js';
 import { type Logger } from './index.js';
 
-export default async ({ concurrency, captureMethod, headless, extraPuppeteerArgs, customOutputFfmpegArgs, numRetries, logger, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, enablePerFrameLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout, browserExePath, keepBrowserRunning }: RenderPartParams & {
+export default async ({ concurrency, captureMethod, headless, extraPuppeteerArgs, customOutputFfmpegArgs, numRetries, logger, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, enablePerFrameLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout, browserExePath, keepBrowserRunning }: RenderPartBaseParams & {
   concurrency: number,
   captureMethod: CaptureMethod,
   headless: boolean,
@@ -23,7 +23,7 @@ export default async ({ concurrency, captureMethod, headless, extraPuppeteerArgs
   }) {
     const task = pool.exec(
       'renderPart',
-      [{ concurrency, captureMethod, headless, extraPuppeteerArgs, customOutputFfmpegArgs, numRetries, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, enablePerFrameLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout, partNum, partStart, partEnd, browserExePath, keepBrowserRunning }],
+      [{ captureMethod, headless, extraPuppeteerArgs, customOutputFfmpegArgs, numRetries, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, enablePerFrameLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout, partNum, partStart, partEnd, browserExePath, keepBrowserRunning } satisfies RenderPartParams],
       {
         on: ({ event, data }: WorkerEvent) => {
           if (event === 'progress') {

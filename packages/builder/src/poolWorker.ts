@@ -121,7 +121,7 @@ async function createBrowser({ captureMethod, extensionPath, extraPuppeteerArgs,
   };
 }
 
-export interface RenderPartParams {
+export interface RenderPartBaseParams {
   captureMethod: CaptureMethod,
   headless: boolean,
   extraPuppeteerArgs: string[],
@@ -152,11 +152,13 @@ export interface RenderPartParams {
   keepBrowserRunning?: number | undefined,
 }
 
-async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customOutputFfmpegArgs, numRetries = 0, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, enablePerFrameLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout, partNum, partStart, partEnd, browserExePath, keepBrowserRunning }: RenderPartParams & {
+export interface RenderPartParams extends RenderPartBaseParams {
   partNum: number,
   partStart: number,
   partEnd: number,
-}) {
+}
+
+async function renderPart({ captureMethod, headless, extraPuppeteerArgs, customOutputFfmpegArgs, numRetries = 0, tempDir, extensionPath, puppeteerCaptureFormat, ffmpegPath, fps, enableFfmpegLog, enablePerFrameLog, width, height, devMode, port, durationFrames, userData, videoComponentType, ffmpegStreamFormat, jpegQuality, secret, distPath, failOnWebErrors, sleepTimeBeforeCapture, frameRenderTimeout, partNum, partStart, partEnd, browserExePath, keepBrowserRunning }: RenderPartParams) {
   const renderId = partStart; // Unique ID per concurrent renderer
 
   // state:
