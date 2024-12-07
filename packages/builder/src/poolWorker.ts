@@ -7,11 +7,16 @@ import { pathToFileURL } from 'node:url';
 import { randomBytes } from 'node:crypto';
 
 import { CaptureMethod, FFmpegStreamFormat, PuppeteerCaptureFormat, VideoComponentType } from 'reactive-video/dist/types.js';
-import { type SetupReact, type RenderFrameFn, type AwaitDomRenderSettled, type HaveFontsLoaded, getFrameId } from './react/puppeteerEntry.js';
+
+import type { SetupReact, RenderFrameFn, AwaitDomRenderSettled, HaveFontsLoaded } from './react/puppeteerEntry.js';
 
 import { createExtensionFrameCapturer, captureFrameScreenshot, startScreencast } from './frameCapture.js';
 import { createOutputFfmpeg } from './ffmpeg.js';
 import { Logger } from './index.js';
+
+
+// see also in puppeteerEntry
+export const getFrameId = (frameNum: number) => `frame-${frameNum}`;
 
 class PageBrokenError extends Error {
   constructor(message: string) {

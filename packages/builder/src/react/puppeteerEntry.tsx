@@ -9,9 +9,11 @@ import RootComponent from 'reactive-video-root-component';
 import { VideoContextProvider, awaitAsyncRenders, Api } from 'reactive-video';
 import { FFmpegStreamFormat, VideoComponentType } from 'reactive-video/dist/types.js';
 
-type RootComponent = ComponentType;
 
+// see also in poolWorker
 export const getFrameId = (frameNum: number) => `frame-${frameNum}`;
+
+type RootComponent = ComponentType;
 
 // https://github.com/mifi/reactive-video/issues/4
 // This is a bit hacky. trying to make sure we don't get dupe frames (previous frame rendered again)
