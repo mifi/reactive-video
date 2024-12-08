@@ -11,6 +11,7 @@ import sharp from 'sharp';
 
 import { initTests, cleanupTests, imageSnapshotsDir, videoSnapshotsDir, testAssetsDir, workDir, edit, outputDir, getEditor, checkVideosMatch } from './util.js';
 import { UserData as VideoUserData } from './src/video/ReactiveVideo.js';
+import { UserData as SimpleVideoUserData } from './src/video-simple/ReactiveVideo.js';
 
 // eslint-disable-next-line no-underscore-dangle
 const reactiveVideoRoot = join(dirname(fileURLToPath(import.meta.url)), 'dist');
@@ -88,6 +89,34 @@ describe('render videos', () => {
     });
 
     expect(await readFile(outPathPng)).toMatchImageSnapshot({ failureThreshold: 0.2 }); // font rendering is slightly different on macos/linux
+  }, timeout);
+
+  test('vertical video', async () => {
+    const editor = getEditor({ logger: console });
+
+    const reactVideo = join(reactiveVideoRoot, 'video-simple', 'ReactiveVideo');
+
+    const inputVideoPath = join(testAssetsDir, 'square-container-aspect-1-2.mp4');
+    const userData: SimpleVideoUserData = { videoUri: pathToFileURL(inputVideoPath).toString() };
+
+    const outPathPng = getOutputPath('png');
+    await edit(editor, {
+      reactVideo,
+      ffmpegStreamFormat: 'png',
+      puppeteerCaptureFormat: 'png',
+      width: 200,
+      height: 400,
+      durationFrames: 1,
+      startFrame: 0,
+      userData,
+      output: outPathPng,
+
+      enableRequestLog: true,
+      enablePerFrameLog: true,
+      enableFfmpegLog: enableDebugLogging,
+    });
+
+    expect(await readFile(outPathPng)).toMatchImageSnapshot({ failureThreshold: 0.0001 });
   }, timeout);
 
   // Test a simple page without any resources, to see that it works even with an empty asyncRegistry
