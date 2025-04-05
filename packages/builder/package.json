@@ -55,7 +55,7 @@
     "reactive-video": "4",
     "style-loader": "^4.0.0",
     "webpack": "^5.96.1",
-    "workerpool": "^6.2.0"
+    "workerpool": "^9.2.0"
   },
   "bugs": {
     "url": "https://github.com/mifi/reactive-video/issues"

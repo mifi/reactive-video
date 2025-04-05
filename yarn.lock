@@ -1647,7 +1647,7 @@ __metadata:
     style-loader: "npm:^4.0.0"
     typescript: "npm:*"
     webpack: "npm:^5.96.1"
-    workerpool: "npm:^6.2.0"
+    workerpool: "npm:^9.2.0"
   bin:
     reactive-video: dist/cli.js
   languageName: unknown
@@ -2164,15 +2164,6 @@ __metadata:
   version: 2.0.1
   resolution: "@types/stack-utils@npm:2.0.1"
   checksum: 10/205fdbe3326b7046d7eaf5e494d8084f2659086a266f3f9cf00bccc549c8e36e407f88168ad4383c8b07099957ad669f75f2532ed4bc70be2b037330f7bae019
-  languageName: node
-  linkType: hard
-
-"@types/workerpool@npm:6":
-  version: 6.4.7
-  resolution: "@types/workerpool@npm:6.4.7"
-  dependencies:
-    "@types/node": "npm:*"
-  checksum: 10/523c873f3ac9fd47932db3e3912ceff3157bde2a8eaf906040ce750e1c9dbf010760ab6d6054f92eaeae3d990e443d36f90df85d92724bfd5ab0a26e4f1b238d
   languageName: node
   linkType: hard
 
@@ -7538,7 +7529,6 @@ __metadata:
     "@types/morgan": "npm:^1.9.9"
     "@types/node": "npm:18"
     "@types/sharp": "npm:0.30.3"
-    "@types/workerpool": "npm:6"
     "@typescript-eslint/eslint-plugin": "npm:^6.12.0"
     "@typescript-eslint/parser": "npm:^6.12.0"
     eslint: "npm:^8.2.0"
@@ -9411,10 +9401,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"workerpool@npm:^6.2.0":
-  version: 6.2.1
-  resolution: "workerpool@npm:6.2.1"
-  checksum: 10/3e637f76320cab92eaeffa4fbefb351db02e20aa29245d8ee05fa7c088780ef7b4446bfafff2668a22fd94b7d9d97c7020117036ac77a76370ecea278b9a9b91
+"workerpool@npm:^9.2.0":
+  version: 9.2.0
+  resolution: "workerpool@npm:9.2.0"
+  checksum: 10/53b7a08001493a2bc24899f562ff6cc0824c942f656c05a68436c3db2c228cb1eea3090d8e726ecba4b02c08b35ace46e1a5435eee50444e683334329a7510da
   languageName: node
   linkType: hard
 
