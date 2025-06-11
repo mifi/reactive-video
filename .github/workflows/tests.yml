@@ -5,7 +5,7 @@ on:
   pull_request:
   workflow_dispatch:
   schedule:
-    - cron: '0 10 * * *'
+    - cron: '0 10 * * 0'
 
 env:
   CHROME_BUILD_NUMBER: 131.0.6778.85
