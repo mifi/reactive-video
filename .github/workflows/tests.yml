@@ -16,8 +16,7 @@ jobs:
       matrix:
         # https://github.com/federicocarboni/setup-ffmpeg/issues/21
         # TODO linux arm64 when available https://github.com/orgs/community/discussions/19197
-        # macos-13 is macos x64, macos-latest is macos arm64 (Apple Silicon)
-        os: [macos-13, macos-latest, ubuntu-latest, windows-latest]
+        os: [macos-26, macos-26-intel, ubuntu-24.04, ubuntu-24.04-arm, windows-2025]
 #        os: [macos-13]
 
     runs-on: ${{ matrix.os }}
