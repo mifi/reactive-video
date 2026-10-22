@@ -61,14 +61,14 @@ export default () => {
         start={30}
         duration={30}
         render={(segment) => (
-          <Image src="https://static.mifi.no/losslesscut/47320816_571610306620180_5860442193520120371_n.jpg" style={{ width: '100%', transform: `scale(${1 + (segment.currentFrame / segment.durationFrames) * 0.1})` }} />
+          <Image src="https://static.mifi.no/dist/losslesscut/website/generation-loss-original-2000.jpg" style={{ width: '100%', transform: `scale(${1 + (segment.currentFrame / segment.durationFrames) * 0.1})` }} />
         )}
       />
 
       {/* This segment starts from 60 frames. Starts 100 frames into the source video (seek to) */}
       <Segment start={60}>
         <Segment start={-100}>
-          <Video src="https://static.mifi.no/Zv5RvLhCz4M-small.mp4" style={{ width: '100%' }} />
+          <Video src="https://static.mifi.no/mifi.no/Zv5RvLhCz4M-small.mp4" style={{ width: '100%' }} />
         </Segment>
       </Segment>
     </>
